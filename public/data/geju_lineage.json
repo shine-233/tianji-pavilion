@@ -1,0 +1,634 @@
+[
+ {
+  "name": "龙归大海",
+  "cat": "正格配搭类",
+  "sources": [
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "明·集大成 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 4
+ },
+ {
+  "name": "拱贵",
+  "cat": "神煞外格类",
+  "sources": [
+   "滴天髓阐微",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 9
+ },
+ {
+  "name": "暗禄",
+  "cat": "神煞外格类",
+  "sources": [
+   "三命通会",
+   "渊海子平"
+  ],
+  "era_span": "明·集大成 ~ 宋·源头",
+  "ancient_lineage": true,
+  "snips_n": 4
+ },
+ {
+  "name": "金章",
+  "cat": "神煞外格类",
+  "sources": [
+   "穷通宝鉴",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·调候派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 6
+ },
+ {
+  "name": "天阙地轴",
+  "cat": "神煞外格类",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "官贵堂",
+  "cat": "神煞外格类",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "六乙鼠贵",
+  "cat": "神煞外格类",
+  "sources": [
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "明·集大成 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 6
+ },
+ {
+  "name": "六阴朝阳",
+  "cat": "神煞外格类",
+  "sources": [
+   "滴天髓阐微",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 8
+ },
+ {
+  "name": "飞天禄马",
+  "cat": "神煞外格类",
+  "sources": [
+   "滴天髓阐微",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "魁罡",
+  "cat": "神煞外格类",
+  "sources": [
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·格局派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 9
+ },
+ {
+  "name": "曲直",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 16
+ },
+ {
+  "name": "炎上",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 13
+ },
+ {
+  "name": "稼穑",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": false,
+  "snips_n": 11
+ },
+ {
+  "name": "从革",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 10
+ },
+ {
+  "name": "润下",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 12
+ },
+ {
+  "name": "从财",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 12
+ },
+ {
+  "name": "从杀",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "从儿",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注"
+  ],
+  "era_span": "清·任氏体系 ~ 清·格局派",
+  "ancient_lineage": false,
+  "snips_n": 7
+ },
+ {
+  "name": "从势",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微"
+  ],
+  "era_span": "清·任氏体系 ~ 清·任氏体系",
+  "ancient_lineage": false,
+  "snips_n": 3
+ },
+ {
+  "name": "化土",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 11
+ },
+ {
+  "name": "化金",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": false,
+  "snips_n": 12
+ },
+ {
+  "name": "化水",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": false,
+  "snips_n": 12
+ },
+ {
+  "name": "化木",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": false,
+  "snips_n": 14
+ },
+ {
+  "name": "化火",
+  "cat": "专旺从化类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 12
+ },
+ {
+  "name": "两干不杂",
+  "cat": "四柱奇全类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 10
+ },
+ {
+  "name": "天元一气",
+  "cat": "四柱奇全类",
+  "sources": [
+   "穷通宝鉴",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·调候派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 6
+ },
+ {
+  "name": "财官双美",
+  "cat": "正格配搭类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "金白水清",
+  "cat": "正格配搭类",
+  "sources": [
+   "千里命稿",
+   "穷通宝鉴",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "民国·实用 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 10
+ },
+ {
+  "name": "水火既济",
+  "cat": "其他",
+  "sources": [
+   "滴天髓阐微",
+   "穷通宝鉴",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": false,
+  "snips_n": 4
+ },
+ {
+  "name": "木火交辉",
+  "cat": "其他",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "青龙伏形",
+  "cat": "其他",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 2
+ },
+ {
+  "name": "白虎持势",
+  "cat": "其他",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 2
+ },
+ {
+  "name": "朱雀乘风",
+  "cat": "其他",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "勾陈得位",
+  "cat": "其他",
+  "sources": [
+   "穷通宝鉴",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·调候派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "玄武当权",
+  "cat": "其他",
+  "sources": [
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "宋·源头 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 5
+ },
+ {
+  "name": "井栏叉",
+  "cat": "其他",
+  "sources": [
+   "子平真诠评注",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·格局派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 4
+ },
+ {
+  "name": "日德",
+  "cat": "神煞外格类",
+  "sources": [
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·格局派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 9
+ },
+ {
+  "name": "岁德",
+  "cat": "其他",
+  "sources": [
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "明·集大成 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 4
+ },
+ {
+  "name": "弃命从",
+  "cat": "其他",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 13
+ },
+ {
+  "name": "专旺",
+  "cat": "专旺从化类",
+  "sources": [
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·格局派 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 8
+ },
+ {
+  "name": "食神制杀",
+  "cat": "正格配搭类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 6
+ },
+ {
+  "name": "杀印相生",
+  "cat": "正格配搭类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "穷通宝鉴",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "财官印",
+  "cat": "正格配搭类",
+  "sources": [
+   "滴天髓阐微",
+   "千里命稿",
+   "子平真诠评注",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 14
+ },
+ {
+  "name": "禄马同乡",
+  "cat": "神煞外格类",
+  "sources": [
+   "千里命稿",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "民国·实用 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 7
+ },
+ {
+  "name": "四库全",
+  "cat": "四柱奇全类",
+  "sources": [
+   "三命通会",
+   "渊海子平"
+  ],
+  "era_span": "明·集大成 ~ 宋·源头",
+  "ancient_lineage": true,
+  "snips_n": 4
+ },
+ {
+  "name": "四正全",
+  "cat": "四柱奇全类",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "四生全",
+  "cat": "四柱奇全类",
+  "sources": [
+   "三命通会"
+  ],
+  "era_span": "明·集大成 ~ 明·集大成",
+  "ancient_lineage": true,
+  "snips_n": 1
+ },
+ {
+  "name": "四正",
+  "cat": "四柱奇全类",
+  "sources": [
+   "滴天髓阐微",
+   "三命通会",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 6
+ },
+ {
+  "name": "四生",
+  "cat": "四柱奇全类",
+  "sources": [
+   "滴天髓阐微",
+   "三命通会",
+   "渊海子平",
+   "神峰通考"
+  ],
+  "era_span": "清·任氏体系 ~ 明·病药派",
+  "ancient_lineage": true,
+  "snips_n": 8
+ }
+]
