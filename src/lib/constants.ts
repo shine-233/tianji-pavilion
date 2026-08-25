@@ -82,6 +82,27 @@ export const YUE: Record<string, string> = { 甲: '未', 乙: '申', 丙: '酉',
 export const PALACE_NAMES = ['命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄', '迁移', '交友', '官禄', '田宅', '福德', '父母'] as const
 export const SHENG_ORDER: Element[] = ['木', '火', '土', '金', '水']
 
+/** 六十甲子纳音：按甲子起顺序生成查表 */
+const NAYIN_SEQ = [
+  '海中金', '炉中火', '大林木', '路旁土', '剑锋金',
+  '山头火', '涧下水', '城头土', '白蜡金', '杨柳木',
+  '泉中水', '屋上土', '霹雳火', '松柏木', '长流水',
+  '沙中金', '山下火', '平地木', '壁上土', '金箔金',
+  '覆灯火', '天河水', '大驿土', '钗钏金', '桑柘木',
+  '大溪水', '沙中土', '天上火', '石榴木', '大海水',
+]
+export const NAYIN60: Record<string, string> = (() => {
+  const out: Record<string, string> = {}
+  for (let i = 0; i < 30; i++) {
+    out[`${GAN[i % 10]!}${ZHI[i % 12]!}`] = NAYIN_SEQ[i]!
+  }
+  return out
+})()
+
+export function nayinOf(gan: string, zhi: string): string {
+  return NAYIN60[`${gan}${zhi}`] ?? ''
+}
+
 export const ELEMENT_DESC: Record<Element, { keyword: string; body: string; season: string; color: string }> = {
   木: { keyword: '生发·条达', body: '肝胆·筋目', season: '春·东方', color: '#7bc47f' },
   火: { keyword: '炎上·礼明', body: '心与小肠·血脉舌', season: '夏·南方', color: '#ef7d57' },

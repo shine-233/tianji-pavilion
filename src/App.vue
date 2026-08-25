@@ -2,8 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
+import Palette from './components/Palette.vue'
+import TransitionVeil from './components/TransitionVeil.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme } from './data/themes'
+import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
 
 const soundOn = ref(isSoundOn())
 
@@ -64,8 +67,68 @@ function pickTheme(id: string): void {
 let lastTrail = 0
 let trailCount = 0
 
+/* 一炷香：滚动进度 */
+const incensePct = ref(0)
+function onScroll(): void {
+  const h = document.documentElement
+  const max = h.scrollHeight - h.clientHeight
+  incensePct.value = max > 4 ? Math.min(100, Math.max(0, (h.scrollTop / max) * 100)) : 0
+}
+
+/* 光标伴飞环 */
+const ringX = ref(-80)
+const ringY = ref(-80)
+const ringHot = ref(false)
+let rx = -80
+let ry = -80
+let tx = -80
+let ty = -80
+let rafId = 0
+function ringLoop(): void {
+  rx += (tx - rx) * 0.16
+  ry += (ty - ry) * 0.16
+  ringX.value = rx
+  ringY.value = ry
+  rafId = requestAnimationFrame(ringLoop)
+}
+
+/* 连点 logo：道长巡游 */
+const brandClicks = ref(0)
+const paraders = ref<Array<{ key: number; char: string; dur: number; delay: number; bobDur: number }>>([])
+let paradeTimer: number | null = null
+let clickReset: number | null = null
+
+function onBrandClick(): void {
+  sfx.blip()
+  brandClicks.value++
+  if (clickReset !== null) window.clearTimeout(clickReset)
+  clickReset = window.setTimeout(() => (brandClicks.value = 0), 2400)
+  if (brandClicks.value >= 7) {
+    brandClicks.value = 0
+    startParade()
+  }
+}
+
+function startParade(): void {
+  sfx.gong()
+  const base = Date.now()
+  paraders.value = TAOESS_IDS.map((c, i) => ({
+    key: base + i,
+    char: c,
+    dur: 12 + Math.random() * 5,
+    delay: i * 1.05,
+    bobDur: 0.5 + Math.random() * 0.35,
+  }))
+  if (paradeTimer !== null) window.clearTimeout(paradeTimer)
+  paradeTimer = window.setTimeout(() => (paraders.value = []), 20000)
+}
+
 function onMouseMove(e: MouseEvent): void {
   const now = performance.now()
+  tx = e.clientX
+  ty = e.clientY
+  const t = e.target as HTMLElement | null
+  ringHot.value = !!t?.closest('a, button, input, select, .tag, .lib-card')
   if (now - lastTrail < 55 || trailCount > 26) return
   lastTrail = now
   const glyphs = trailGlyphs.value
@@ -109,20 +172,27 @@ function onDocClick(e: MouseEvent): void {
 onMounted(() => {
   activeTheme.value = initTheme()
   window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('click', onDocClick)
+  onScroll()
+  rafId = requestAnimationFrame(ringLoop)
   scheduleShootingStar()
 })
 onBeforeUnmount(() => {
   window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('scroll', onScroll)
   window.removeEventListener('click', onDocClick)
+  cancelAnimationFrame(rafId)
   if (starTimer !== null) window.clearTimeout(starTimer)
+  if (paradeTimer !== null) window.clearTimeout(paradeTimer)
+  if (clickReset !== null) window.clearTimeout(clickReset)
 })
 </script>
 
 <template>
   <header class="topbar">
-    <RouterLink to="/" class="brand" @click="sfx.blip()">
-      <span class="logo">☯</span>
+    <RouterLink to="/" class="brand" @click="onBrandClick()">
+      <span class="logo" :class="{ wiggle: brandClicks > 0 }">☯</span>
       <span class="name">命理天工<small>八字量化研究</small></span>
     </RouterLink>
     <nav class="nav">
@@ -131,6 +201,7 @@ onBeforeUnmount(() => {
       </RouterLink>
     </nav>
     <div class="top-actions">
+    <Palette />
       <div class="theme-wrap">
         <button class="ghost theme-btn" title="换一套皮肤" @click.stop="showThemes = !showThemes; sfx.toggle()">🎨</button>
         <transition name="pop">
@@ -165,6 +236,38 @@ onBeforeUnmount(() => {
   <footer class="footer">
     开源研究项目 · 规则与权重全部公开 · 引擎与 Python 版自检对齐 · 内容仅供传统文化研究与娱乐，不构成人生建议
   </footer>
+
+  <TransitionVeil />
+
+  <!-- 一炷香：滚动进度 -->
+  <div class="incense" aria-hidden="true">
+    <div class="incense-ash"></div>
+    <div class="incense-stick" :style="{ height: `${incensePct}%` }">
+      <span class="incense-tip"><i></i></span>
+    </div>
+  </div>
+
+  <!-- 光标伴飞环 -->
+  <div
+    class="cursor-ring"
+    :class="{ hot: ringHot }"
+    :style="{ transform: `translate3d(${ringX - 14}px, ${ringY - 14}px, 0)` }"
+    aria-hidden="true"
+  ></div>
+
+  <!-- 道长巡游 -->
+  <div v-if="paraders.length" class="parade" aria-hidden="true">
+    <span
+      v-for="p in paraders" :key="p.key"
+      class="parader"
+      :style="{ '--dur': `${p.dur}s`, '--delay': `${p.delay}s`, '--bob': `${p.bobDur}s` }"
+    >
+      <svg viewBox="0 0 26 29" shape-rendering="crispEdges">
+        <rect v-for="(px, i) in buildTaoess(p.char)" :key="i" :x="px.x" :y="px.y" width="1" height="1" :fill="px.fill" />
+      </svg>
+      <i>{{ (TAOESS_IDS.indexOf(p.char) + 1) }}</i>
+    </span>
+  </div>
 
   <PixelSage :key="sageChar" :char="sageChar" />
 </template>
@@ -250,6 +353,137 @@ onBeforeUnmount(() => {
   color: var(--dim);
   font-size: 0.72rem;
   padding: 30px 16px 90px;
+}
+
+.logo.wiggle { animation: logo-wiggle 0.3s ease-in-out infinite; }
+@keyframes logo-wiggle {
+  0%, 100% { transform: rotate(-9deg) scale(1.06); }
+  50% { transform: rotate(9deg) scale(1.14); }
+}
+
+/* 一炷香 */
+.incense {
+  position: fixed;
+  right: 7px;
+  top: 50%;
+  height: 200px;
+  width: 5px;
+  transform: translateY(-50%);
+  z-index: 850;
+  border-radius: 3px;
+  background: rgba(127, 127, 127, 0.12);
+  overflow: visible;
+}
+.incense-stick {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #8a5a3b, #6e4428);
+  transition: height 0.28s ease;
+}
+.incense-tip {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+}
+.incense-tip i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd76e 20%, #ff7a3c 55%, transparent 75%);
+  box-shadow: 0 0 10px 2px rgba(255, 150, 60, 0.75);
+  animation: ember-pulse 1.5s ease-in-out infinite;
+}
+.incense-tip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 2px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(180, 180, 190, 0.35));
+  filter: blur(1.5px);
+  animation: smoke-rise 2.8s linear infinite;
+}
+@keyframes ember-pulse {
+  50% { box-shadow: 0 0 16px 4px rgba(255, 150, 60, 0.95); }
+}
+@keyframes smoke-rise {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  25% { opacity: 1; }
+  to { opacity: 0; transform: translateX(-70%) translateY(-18px); }
+}
+@media (max-width: 900px) { .incense { display: none; } }
+
+/* 光标伴飞环 */
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--acc-rgb), 0.65);
+  box-shadow: 0 0 12px rgba(var(--acc-rgb), 0.25), inset 0 0 8px rgba(var(--acc-rgb), 0.12);
+  pointer-events: none;
+  z-index: 2050;
+  transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease;
+}
+.cursor-ring.hot {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(var(--acc2-rgb), 0.85);
+}
+@media (pointer: coarse) { .cursor-ring { display: none; } }
+
+/* 道长巡游 */
+.parade {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 120px;
+  z-index: 1400;
+  pointer-events: none;
+  overflow: hidden;
+}
+.parader {
+  position: absolute;
+  bottom: -6px;
+  left: -90px;
+  animation: parade-march var(--dur) linear var(--delay) both;
+}
+.parader svg {
+  width: 64px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+  animation: parade-bob var(--bob) ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+.parader i {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-style: normal;
+  font-family: var(--cute);
+  font-size: 0.62rem;
+  color: var(--gold-bright);
+  text-shadow: 0 0 8px rgba(var(--acc-rgb), 0.8);
+}
+@keyframes parade-march {
+  from { left: -90px; }
+  to { left: calc(100vw + 40px); }
+}
+@keyframes parade-bob {
+  from { transform: rotate(-4deg) scaleY(1); }
+  to { transform: rotate(4deg) scaleY(0.97); }
 }
 
 @media (max-width: 860px) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bitsFromCast, changedBits, install, TRIGRAMS, TRI_BITS, xunKong } from '../liuyao'
+import { bitsFromCast, changedBits, guaCatalog, GUA_TIP, install, TRIGRAMS, TRI_BITS, xunKong } from '../liuyao'
 
 describe('liuyao engine', () => {
   it('八卦阴阳位自洽', () => {
@@ -64,5 +64,16 @@ describe('liuyao engine', () => {
     expect(xunKong('甲戌')).toBe('申酉')
     expect(xunKong('壬申')).toBe('戌亥')
     expect(xunKong('庚辰')).toBe('申酉')
+  })
+
+  it('卦库目录与白话点睛一一对应', () => {
+    const catalog = guaCatalog()
+    expect(catalog).toHaveLength(64)
+    for (const g of catalog) {
+      expect(GUA_TIP[g.name], `${g.name} 缺少点睛`).toBeTruthy()
+      expect(g.bits).toMatch(/^[01]{6}$/)
+    }
+    const names = new Set(catalog.map((g) => g.name))
+    expect(names.size).toBe(64)
   })
 })

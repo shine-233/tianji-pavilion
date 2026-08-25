@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import {
-  assembleReading, bitsFromCast, changedBits, COIN_LABEL, install, tossCoins, yongshenLiuqin,
+  assembleReading, bitsFromCast, changedBits, COIN_LABEL, guaCatalog, GUA_TIP, install, tossCoins,
+  TRI_NATURE, yongshenLiuqin,
 } from '../lib/liuyao'
 import type { InstalledGua, LiuyaoResult } from '../lib/liuyao'
 import { ELE_B } from '../lib/constants'
@@ -206,6 +207,30 @@ const benRows = computed(() => (result.value ? toRows(result.value.ben) : []))
 const bianRows = computed(() => (result.value?.bian ? toRows(result.value.bian) : []))
 const ysLabel = computed(() => yongshenLiuqin(category.value))
 
+const CATALOG = guaCatalog()
+const libOpen = ref(false)
+const libSel = ref<string | null>(null)
+const libEntry = computed(() => (libSel.value ? CATALOG.find((g) => g.bits === libSel.value) ?? null : null))
+
+function pickLib(bits: string): void {
+  libSel.value = libSel.value === bits ? null : bits
+  sfx.blip()
+}
+
+const libRows = computed(() => {
+  if (!libEntry.value) return []
+  const g = install(libEntry.value.bits, '甲')
+  return g.yaos
+    .slice()
+    .reverse()
+    .map((y) => ({
+      label: `${y.liuqin}·${y.najia}`,
+      wx: ELE_B[y.najia[1]!]!,
+      mark: y.shi ? '世' : y.ying ? '应' : '',
+      yang: y.yang,
+    }))
+})
+
 function lineClass(yang: boolean, moving: boolean): string {
   if (yang && moving) return 'yao lao-yang'
   if (!yang && moving) return 'yao lao-yin'
@@ -352,6 +377,42 @@ function lineClass(yang: boolean, moving: boolean): string {
         </tbody>
       </table>
     </div>
+
+    <div class="card">
+      <div class="board-head2">
+        <h2 style="margin-bottom: 0">六十四卦卦库 · 不摇卦也能预习</h2>
+        <button class="ghost sm" @click="libOpen = !libOpen; sfx.toggle()">{{ libOpen ? '收起卦库 ▴' : '展开卦库 ▾' }}</button>
+      </div>
+      <p class="sub">按京房八宫次序排列。点任意一卦，立刻看它的纳甲、六亲、世应与白话点睛。</p>
+      <transition name="pop">
+        <div v-if="libOpen" class="lib-grid">
+          <button
+            v-for="(g, gi) in CATALOG" :key="g.bits"
+            v-reveal="(gi % 8) * 25"
+            class="lib-card"
+            :class="{ on: libSel === g.bits }"
+            @click="pickLib(g.bits)"
+          >
+            <span class="lib-lines"><i v-for="k in 6" :key="k" :class="{ yang: g.bits[6 - k] === '1' }"></i></span>
+            <span class="lib-name">{{ g.name }}</span>
+          </button>
+        </div>
+      </transition>
+      <transition name="pop">
+        <div v-if="libEntry" class="lib-detail">
+          <h3>{{ libEntry.name }}<small>（{{ TRI_NATURE[libEntry.upper] }}上{{ TRI_NATURE[libEntry.lower] }}下 · {{ libEntry.gong }}宫）</small></h3>
+          <p class="lib-tip">「{{ GUA_TIP[libEntry.name] ?? '卦象自明，细品则悟' }}」</p>
+          <div class="lib-yaos">
+            <span v-for="(r, i) in libRows" :key="i" class="lib-yao">
+              <em class="lib-mark">{{ r.mark }}</em>
+              <b :class="`ele-${r.wx}`">{{ r.label }}</b>
+              <span class="lib-glyphs"><i :class="{ yang: r.yang }"></i><i v-if="!r.yang"></i></span>
+            </span>
+          </div>
+          <p class="note">速览以甲日装卦示意；实际问卦时六兽随日干而定，动爻另有说法。</p>
+        </div>
+      </transition>
+    </div>
   </main>
 </template>
 
@@ -452,6 +513,60 @@ button.sm { padding: 7px 13px; font-size: 0.85rem; }
 .his-name { font-family: var(--cute); white-space: nowrap; }
 .his-ts { white-space: nowrap; }
 .pointer { cursor: pointer; }
+
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: linear-gradient(160deg, var(--card-2), transparent);
+  color: var(--fg);
+  font-family: inherit;
+  font-weight: normal;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.22s ease;
+}
+.lib-card:hover { transform: translateY(-4px); border-color: rgba(var(--acc-rgb), 0.5); }
+.lib-card.on { border-color: var(--gold); box-shadow: 0 0 14px rgba(var(--acc-rgb), 0.25); }
+.lib-lines { display: flex; flex-direction: column-reverse; gap: 3px; width: 46px; }
+.lib-lines i { display: block; height: 4px; border-radius: 2px; background: var(--dim); opacity: 0.55; }
+.lib-lines i.yang { background: var(--gold-bright); opacity: 1; box-shadow: 0 0 6px rgba(var(--acc-rgb), 0.5); }
+.lib-lines i:not(.yang) { max-width: 60%; }
+.lib-lines i:nth-child(2):not(:only-child) { margin-left: auto; }
+.lib-name { font-size: 0.72rem; color: var(--dim); }
+.lib-card.on .lib-name { color: var(--gold-bright); }
+
+.lib-detail {
+  margin-top: 16px;
+  border: 1px dashed rgba(var(--acc-rgb), 0.4);
+  border-radius: 12px;
+  padding: 14px 16px;
+  animation: yao-in 0.4s ease both;
+}
+.lib-detail h3 { color: var(--fg); }
+.lib-detail h3 small { font-size: 0.72rem; color: var(--dim); margin-left: 6px; font-weight: normal; }
+.lib-tip { font-family: var(--cute); color: var(--gold-bright); margin: 6px 0 12px; letter-spacing: 0.08em; }
+.lib-yaos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px 18px; margin-bottom: 10px; }
+.lib-yao { display: inline-flex; align-items: center; gap: 8px; font-size: 0.84rem; }
+.lib-mark {
+  font-style: normal;
+  width: 18px;
+  text-align: center;
+  color: var(--gold-bright);
+  font-family: var(--cute);
+}
+.lib-glyphs { display: inline-flex; gap: 4px; margin-left: auto; }
+.lib-glyphs i { width: 20px; height: 5px; border-radius: 2px; background: var(--teal); opacity: 0.85; }
+.lib-glyphs i + i { max-width: 17px; }
 
 @media (max-width: 800px) {
   .ask-row { grid-template-columns: 1fr; }

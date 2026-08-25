@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ELE_B, ELE_S, Element } from '../lib/constants'
+import { ELE_B, ELE_S, Element, nayinOf } from '../lib/constants'
 import { THEME_SPRITE_PALS, themeId } from '../data/themes'
 import { Pillar, shiShen } from '../lib/engine'
 import { cardBackPixels } from '../data/sageSprite'
@@ -81,6 +81,7 @@ function toggle(i: number): void {
             <span class="big-zhi" :class="zhiEle(p[1]) ? `ele-${zhiEle(p[1])}` : ''">{{ p[1] }}</span>
           </div>
           <div class="ten-god dim">{{ animalOf(p[1]) }} · {{ zhiEle(p[1]) }}</div>
+          <div class="nayin" :title="'纳音五行：' + nayinOf(p[0], p[1])">纳音·{{ nayinOf(p[0], p[1]) }}</div>
         </div>
         <!-- 背面：道长小像纹样 -->
         <div class="face back-face">
@@ -189,6 +190,15 @@ function toggle(i: number): void {
 .mini-sprite { width: 26px; height: 39px; }
 .mini-sprite.wide { width: 34px; height: 31px; }
 .ten-god { font-size: 0.72rem; color: var(--gold); min-height: 1.1em; }
+.nayin {
+  font-size: 0.62rem;
+  color: var(--dim);
+  border-top: 1px dashed var(--line);
+  margin-top: 6px;
+  padding-top: 5px;
+  letter-spacing: 0.08em;
+  cursor: help;
+}
 .divider { height: 1px; background: var(--line); margin: 7px 12px; }
 .dim { color: var(--dim); }
 

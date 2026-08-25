@@ -7,6 +7,7 @@ import { buildTaoess } from '../data/sageSprite'
 import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
+import YiJiCard from '../components/YiJiCard.vue'
 import { sfx } from '../lib/sfx'
 
 const router = useRouter()
@@ -136,6 +137,7 @@ function arcPath(i: number, j: number, off: number): string {
       </div>
       <div class="card quote-card">
         <JieqiCard class="jq-pos" />
+        <YiJiCard />
         <h2>今日一签</h2>
         <p class="q-text">「{{ today.text }}」</p>
         <p class="note q-src">—— {{ today.src }}</p>
