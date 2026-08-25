@@ -18,6 +18,7 @@ const router = createRouter({
     { path: '/cases', name: 'cases', component: () => import('../views/CasesView.vue') },
     { path: '/oracle', name: 'oracle', component: () => import('../views/OracleView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
+    { path: '/yanyi', name: 'yanyi', component: () => import('../views/YanYiView.vue') },
     { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

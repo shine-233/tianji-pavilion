@@ -7,6 +7,7 @@ import { buildTaoess } from '../data/sageSprite'
 import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
+import InkFluid from '../components/InkFluid.vue'
 import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
 
@@ -57,6 +58,7 @@ const STATS = [
 
 const MODULES = [
   { to: '/chart', glyph: '🀄', title: '排盘评分', desc: '四柱翻牌、评分环、七维雷达、大运时间轴，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
+  { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
   { to: '/ziwei', glyph: '✷', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正的连线自己会画出来。', tags: ['三方四正', '生年四化'] },
   { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克。', tags: ['Three.js', '辉光后处理'] },
   { to: '/liuyao', glyph: '⚱', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦自动排好，附白话提示。也可以手动报卦。', tags: ['火珠林法', '京房八宫'] },
@@ -97,6 +99,7 @@ function arcPath(i: number, j: number, off: number): string {
 
 <template>
   <main class="page">
+    <InkFluid />
     <section class="hero card hoverable">
       <ParticleAltar />
       <div class="hero-left">

@@ -8,6 +8,7 @@ import DayunTimeline from '../components/DayunTimeline.vue'
 import DayunRiver from '../components/DayunRiver.vue'
 import ShareButton from '../components/ShareButton.vue'
 import RichText from '../components/RichText.vue'
+import BranchWheel from '../components/BranchWheel.vue'
 import { ELE_S } from '../lib/constants'
 import type { ChartResult } from '../lib/engine'
 import { interpret } from '../lib/interpret'
@@ -236,8 +237,13 @@ function lunarInfo(): string {
       </div>
 
       <div class="card">
-        <h2>大运时间轴 · 2026–2051 评估窗口</h2>
+        <h2>大运时间轴 · 未来 25 年评估窗口</h2>
         <DayunTimeline :items="result.dlist" />
+      </div>
+
+      <div class="card" v-reveal>
+        <h2>地支关系盘 · 刑冲合害一图看全</h2>
+        <BranchWheel :present="result.ps.map((p) => p[1]!)" />
       </div>
 
       <div v-if="result.dlist.length" class="card" v-reveal>
