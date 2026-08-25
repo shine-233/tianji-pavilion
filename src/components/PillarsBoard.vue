@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ELE_B, ELE_S, Element } from '../lib/constants'
-import { THEME_SPRITE_PALS, themeId } from '../data/themes'
+import { THEME_SPRITE_PALS } from '../data/themes'
+import { currentThemeId } from '../lib/themes'
 import { Pillar, shiShen } from '../lib/engine'
 import { cardBackPixels } from '../data/sageSprite'
 import { ELEMENT_SPIRITS, spritePixels, ZODIAC_SPRITES } from '../data/pillarSprites'
@@ -12,15 +13,34 @@ const flipped = ref(false)
 const backs = ref<boolean[]>([true, true, true, true])
 onMounted(() => window.setTimeout(() => (flipped.value = true), 80))
 
+/** 新主题 id → 牌背小像调色板 key */
+const THEME_PAL_MAP: Record<string, string> = {
+  zixiao: 'xuan',
+  shuimo: 'shui',
+  zhusha: 'zhu',
+  qingci: 'qing',
+  xinghan: 'zi',
+  yanzhi: 'zhu',
+  liujin: 'xuan',
+}
+
+/** 皮肤联动：牌背道长小像随主题换色（监听 html[data-theme] 变化保持响应） */
+const liveTheme = ref(currentThemeId())
+let themeObs: MutationObserver | null = null
+onMounted(() => {
+  themeObs = new MutationObserver(() => (liveTheme.value = currentThemeId()))
+  themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+})
+onBeforeUnmount(() => themeObs?.disconnect())
+
+const backPixels = computed(() => {
+  const pal = THEME_SPRITE_PALS[THEME_PAL_MAP[liveTheme.value] ?? liveTheme.value] ?? THEME_SPRITE_PALS.xuan!
+  return cardBackPixels({ R: pal.R, D: pal.D, Y: pal.Y })
+})
+
 const HEADS = ['年柱', '月柱', '日柱', '时柱']
 const BRANCH_ANIMAL = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪']
 const ZHI_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
-
-/** 皮肤联动：牌背道长小像随主题换色 */
-const backPixels = computed(() => {
-  const pal = THEME_SPRITE_PALS[themeId.value] ?? THEME_SPRITE_PALS.xuan!
-  return cardBackPixels({ R: pal.R, D: pal.D, Y: pal.Y })
-})
 
 function spiritOf(gan: string) {
   const ele = ELE_S[gan]

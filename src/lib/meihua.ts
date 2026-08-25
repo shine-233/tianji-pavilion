@@ -38,21 +38,23 @@ export interface MeihuaChart {
   verdict: { level: '吉' | '小凶' | '凶' | '平'; text: string }
 }
 
+/** 三爻自下而上（初爻在前）：乾[1,1,1] 兑[1,1,0] … 坤[0,0,0] */
 function bits(name: string): number[] {
   const table: Record<string, number[]> = {
-    乾: [1, 1, 1], 兑: [0, 1, 1], 离: [1, 0, 1], 震: [0, 0, 1],
-    巽: [1, 1, 0], 坎: [0, 1, 0], 艮: [1, 0, 0], 坤: [0, 0, 0],
+    乾: [1, 1, 1], 兑: [1, 1, 0], 离: [1, 0, 1], 震: [1, 0, 0],
+    巽: [0, 1, 1], 坎: [0, 1, 0], 艮: [0, 0, 1], 坤: [0, 0, 0],
   }
   return table[name]
 }
-/** 自下而上取爻后翻转 */
+
+/** 六爻自下而上排布，翻转动爻后拆回上下卦名 */
 function flipAt(lines: number[], pos: number): string[] {
   const b = [...lines]
   b[pos - 1] = b[pos - 1] === 1 ? 0 : 1
   const lower = b.slice(0, 3)
   const upper = b.slice(3)
   const keyOf = (a: number[]): string => {
-    const v = a[0] + a[1] * 2 + a[2] * 4
+    const v = a[0] * 4 + a[1] * 2 + a[2]
     return NUM_TO_TRIG[v]
   }
   return [keyOf(lower), keyOf(upper)]
@@ -116,10 +118,10 @@ export function fromNumbers(upNum: number, lowNum: number, mv: number): MeihuaCh
   const yongName = inLower ? lowerName : upperName
   const verdict = judgeTiYong(tiName, yongName)
 
-  // 互卦：234爻为下，345爻为上
+  // 互卦：234爻为下，345爻为上（均按自下而上）
   const huLowerBits = [lines[1], lines[2], lines[3]]
   const huUpperBits = [lines[2], lines[3], lines[4]]
-  const keyOf = (a: number[]): string => NUM_TO_TRIG[a[0] + a[1] * 2 + a[2] * 4]
+  const keyOf = (a: number[]): string => NUM_TO_TRIG[a[0] * 4 + a[1] * 2 + a[2]]
 
   return {
     upperName,

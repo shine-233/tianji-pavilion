@@ -7,10 +7,17 @@ let POOL: number[] | null = null
 let POOL_N = 0
 
 export async function loadPool(): Promise<{ n: number }> {
-  const j = await fetch('./data/percentiles_2001_2005_male.json').then((r) => r.json())
-  POOL = j.totals
-  POOL_N = j.n
-  return { n: j.n }
+  try {
+    const r = await fetch('./data/percentiles_2001_2005_male.json')
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const j = await r.json()
+    POOL = j.totals
+    POOL_N = j.n
+    return { n: j.n }
+  } catch (e) {
+    console.warn('百分位池装载失败:', e)
+    throw e
+  }
 }
 
 export function poolReady(): boolean {

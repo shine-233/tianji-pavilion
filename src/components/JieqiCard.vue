@@ -25,10 +25,17 @@ onMounted(() => {
   const lunar = Solar.fromDate(new Date()).getLunar()
   const jqTable = lunar.getJieQiTable()
   const now = Date.now()
+  // lunar-javascript 的节气表值是 Solar 对象，需 toDate() 转换
+  const toMs = (v: unknown): number => {
+    const d = v as { toDate?: () => Date; getTime?: () => number }
+    if (d && typeof d.toDate === 'function') return d.toDate().getTime()
+    if (d && typeof d.getTime === 'function') return d.getTime()
+    return 0
+  }
   let prev = ''
   let prevTime = 0
   for (const [name, t] of Object.entries(jqTable)) {
-    const ms = (t as Date).getTime()
+    const ms = toMs(t)
     if (ms <= now && ms > prevTime) {
       prev = name
       prevTime = ms
@@ -36,10 +43,12 @@ onMounted(() => {
   }
   if (!prev) {
     // 年初还没到第一个节气：取表里最早的
-    const entries = Object.entries(jqTable).sort((a, b) => (a[1] as Date).getTime() - (b[1] as Date).getTime())
+    const entries = Object.entries(jqTable)
+      .map(([name, t]) => [name, toMs(t)] as const)
+      .sort((a, b) => a[1] - b[1])
     if (entries.length) {
       prev = entries[0]![0]
-      prevTime = (entries[0]![1] as Date).getTime()
+      prevTime = entries[0]![1]
     }
   }
   jieqi.value = prev

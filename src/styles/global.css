@@ -409,3 +409,16 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
   from { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
   to { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.3); }
 }
+
+
+/* 无障碍：用户偏好减少动效时，全局关掉循环/过渡动画（保留布局与信息） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

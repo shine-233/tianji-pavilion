@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { analyzeYongshen, buildChart, summarize, tossText, YONGSHEN_MAP, type LiuYaoChart } from '../lib/liuyao'
 import { Lunar } from 'lunar-javascript'
 import { addRecord } from '../lib/records'
@@ -25,8 +25,9 @@ const chart = computed<LiuYaoChart | null>(() => {
 })
 const verdict = computed(() => {
   if (!chart.value) return null
+  const l = Lunar.fromDate(new Date())
   const y = YONGSHEN_MAP.find((x) => x.key === question.value)!
-  const v = analyzeYongshen(chart.value, y.liuqin, Lunar.fromDate(new Date()).getMonthInGanZhi()[1], Lunar.fromDate(new Date()).getDayInGanZhi()[1])
+  const v = analyzeYongshen(chart.value, y.liuqin, l.getMonthInGanZhi()[1], l.getDayInGanZhi()[1])
   return { label: y.label, v, text: summarize(v, chart.value, y.label) }
 })
 
@@ -87,6 +88,11 @@ function reset(): void {
   tosses.value = []
   currentToss.value = -1
 }
+
+onBeforeUnmount(() => {
+  if (timer !== null) window.clearInterval(timer)
+  timer = null
+})
 </script>
 
 <template>

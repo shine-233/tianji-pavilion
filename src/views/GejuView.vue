@@ -26,17 +26,25 @@ const query = ref('')
 const openName = ref<string | null>(null)
 const expandSnip = ref<number | null>(null)
 
+const loadErr = ref(false)
+
 onMounted(async () => {
-  const [l, c, d] = await Promise.all([
-    fetch('./data/geju_lineage.json').then((r) => r.json()),
-    fetch('./data/geju_catalog.json').then((r) => r.json()),
-    fetch('./data/geju_definitions.json').then((r) => r.json()),
-  ])
-  lineage.value = l
-  catalog.value = c
-  defs.value = d
-  loading.value = false
-  requestAnimationFrame(() => (entered.value = true))
+  try {
+    const [l, c, d] = await Promise.all([
+      fetch('./data/geju_lineage.json').then((r) => r.json()),
+      fetch('./data/geju_catalog.json').then((r) => r.json()),
+      fetch('./data/geju_definitions.json').then((r) => r.json()),
+    ])
+    lineage.value = l
+    catalog.value = c
+    defs.value = d
+  } catch (e) {
+    console.warn('格局数据装载失败:', e)
+    loadErr.value = true
+  } finally {
+    loading.value = false
+    requestAnimationFrame(() => (entered.value = true))
+  }
 })
 
 function lookupDef(name: string): Definition | null {
@@ -117,8 +125,9 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
     </div>
 
     <div v-if="loading" class="card"><p class="sub">⚔ 格局谱系装载中…</p></div>
+    <div v-else-if="loadErr" class="card"><p class="sub">⚠️ 格局谱系装载失败，请检查网络后刷新重试。</p></div>
 
-    <template v-if="!loading">
+    <template v-if="!loading && !loadErr">
       <div class="card">
         <div class="filter-row">
           <span

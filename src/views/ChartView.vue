@@ -27,8 +27,12 @@ const selftestOut = ref<string>('')
 const historyList = ref<HistoryItem[]>(loadHistory())
 
 onMounted(async () => {
-  const j = await loadPool()
-  poolN.value = j.n
+  try {
+    const j = await loadPool()
+    poolN.value = j.n
+  } catch {
+    poolN.value = -1 // 装载失败：评分仍可算，只是百分位对比不可用
+  }
 })
 
 function calc(): void {
@@ -113,7 +117,7 @@ const radarItems = computed(() =>
 const pctlText = computed(() => {
   if (!result.value) return ''
   const p = percentile(result.value.tot)
-  return isFinite(p) ? `超过 ${(100 - p).toFixed(1)}% 的同龄男命（第 ${p.toFixed(1)} 百分位 / ${poolN.value.toLocaleString()} 盘）` : '百分位池加载中…'
+  return isFinite(p) ? `超过 ${(100 - p).toFixed(1)}% 的同龄男命（第 ${p.toFixed(1)} 百分位 / ${poolN.value.toLocaleString()} 盘）` : poolN.value === -1 ? '百分位池暂时不可用，评分本身不受影响' : '百分位池加载中…'
 })
 
 const interpretations = computed(() => (result.value ? interpret(result.value) : []))

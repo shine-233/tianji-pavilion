@@ -30,6 +30,8 @@ const NAV = [
   { to: '/geju', label: '格局辞典', glyph: '⚔' },
   { to: '/rules', label: '规则库', glyph: '⚖' },
   { to: '/cases', label: '案例库', glyph: '🗂' },
+  { to: '/oracle', label: '轻卜抽签', glyph: '❀' },
+  { to: '/sages', label: '道长图鉴', glyph: '⛩' },
   { to: '/settings', label: '设置', glyph: '👘' },
 ]
 
@@ -47,8 +49,12 @@ const MAIDEN_TIPS = [
 
 let lastTrail = 0
 let trailCount = 0
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 function onMouseMove(e: MouseEvent): void {
+  document.documentElement.style.setProperty('--par-x', ((e.clientX / window.innerWidth) - 0.5).toFixed(3))
+  document.documentElement.style.setProperty('--par-y', ((e.clientY / window.innerHeight) - 0.5).toFixed(3))
+  if (prefersReduced.matches) return
   const now = performance.now()
   if (now - lastTrail < 55 || trailCount > 26) return
   lastTrail = now
@@ -63,9 +69,6 @@ function onMouseMove(e: MouseEvent): void {
     el.remove()
     trailCount--
   }, 620)
-
-  document.documentElement.style.setProperty('--par-x', ((e.clientX / window.innerWidth) - 0.5).toFixed(3))
-  document.documentElement.style.setProperty('--par-y', ((e.clientY / window.innerHeight) - 0.5).toFixed(3))
 }
 
 let starTimer: number | null = null
@@ -76,6 +79,7 @@ function scheduleShootingStar(): void {
   }, 7000 + Math.random() * 8000)
 }
 function spawnShootingStar(): void {
+  if (prefersReduced.matches) return
   const el = document.createElement('span')
   el.className = 'shooting-star'
   el.style.left = `${-60 + Math.random() * 40}vw`

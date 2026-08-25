@@ -48,15 +48,23 @@ const openChapter = ref<number | null>(null)
 const entered = ref(false)
 const hovCol = ref<number | null>(null)
 
+const loadErr = ref(false)
+
 onMounted(async () => {
-  const [m, ch] = await Promise.all([
-    fetch('./data/corpus_map.json').then((r) => r.json()),
-    fetch('./data/corpus_chapters.json').then((r) => r.json()),
-  ])
-  map.value = m
-  chapters.value = ch
-  loading.value = false
-  requestAnimationFrame(() => (entered.value = true))
+  try {
+    const [m, ch] = await Promise.all([
+      fetch('./data/corpus_map.json').then((r) => r.json()),
+      fetch('./data/corpus_chapters.json').then((r) => r.json()),
+    ])
+    map.value = m
+    chapters.value = ch
+  } catch (e) {
+    console.warn('语料数据装载失败:', e)
+    loadErr.value = true
+  } finally {
+    loading.value = false
+    requestAnimationFrame(() => (entered.value = true))
+  }
 })
 
 const books = computed(() => (map.value ? Object.keys(map.value.density_per_wanzi) : []))
@@ -126,8 +134,9 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
     </div>
 
     <div v-if="loading" class="card"><p class="sub">📜 语料装载中…</p></div>
+    <div v-else-if="loadErr" class="card"><p class="sub">⚠️ 语料装载失败，请检查网络后刷新重试。</p></div>
 
-    <template v-if="map && !loading">
+    <template v-if="map && !loading && !loadErr">
       <!-- 八大主题 × 七书 密度矩阵 -->
       <div class="card hoverable">
         <h2>八大主题密度矩阵 <small class="sub">单位：每万字命中次数 · 点击书名筛选下方章节</small></h2>
