@@ -4,6 +4,7 @@ import PillarsBoard from '../components/PillarsBoard.vue'
 import RadarChart from '../components/RadarChart.vue'
 import ScoreRing from '../components/ScoreRing.vue'
 import DayunTimeline from '../components/DayunTimeline.vue'
+import RichText from '../components/RichText.vue'
 import { ELE_S } from '../lib/constants'
 import type { ChartResult } from '../lib/engine'
 import { interpret } from '../lib/interpret'
@@ -218,10 +219,10 @@ function lunarInfo(): string {
       </div>
 
       <div class="card">
-        <h2>白话解读 · 离线生成</h2>
+        <h2>白话解读 · 悬浮金色词条可看术语通典</h2>
         <div v-for="sec in interpretations" :key="sec.title" class="interp">
           <div class="i-title">◆ {{ sec.title }}</div>
-          <p class="i-text">{{ sec.text }}</p>
+          <p class="i-text"><RichText :text="sec.text" /></p>
         </div>
       </div>
 

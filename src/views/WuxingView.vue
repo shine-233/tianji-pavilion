@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VoxelWuxing from '../components/VoxelWuxing.vue'
+import RichText from '../components/RichText.vue'
 import { Element, ELE_S, ELE_B, ELEMENT_DESC, SHENG_ORDER } from '../lib/constants'
 import { elementAdvice } from '../lib/interpret'
 import type { ChartResult } from '../lib/engine'
@@ -71,7 +72,7 @@ function clearChart(): void {
             <tr><th>克我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5] }}</b>（官杀·压力约束）</td></tr>
             <tr><th>生我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5] }}</b>（印星·资源庇护）</td></tr>
           </table>
-          <p v-if="chart" class="sub advice">{{ elementAdvice(selected, chart.cnt) }}（本盘日主：{{ chart.dmg }}）</p>
+          <p v-if="chart" class="sub advice"><RichText :text="elementAdvice(selected, chart.cnt) + '（本盘日主：' + chart.dmg + '）'" /></p>
         </div>
       </div>
 

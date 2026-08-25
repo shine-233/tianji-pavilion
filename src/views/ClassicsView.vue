@@ -45,6 +45,7 @@ const selBook = ref<string | null>(null)
 const query = ref('')
 const openChapter = ref<number | null>(null)
 const entered = ref(false)
+const hovCol = ref<number | null>(null)
 
 onMounted(async () => {
   const [m, ch] = await Promise.all([
@@ -129,11 +130,11 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
       <!-- 八大主题 × 七书 密度矩阵 -->
       <div class="card hoverable">
         <h2>八大主题密度矩阵 <small class="sub">单位：每万字命中次数 · 点击书名筛选下方章节</small></h2>
-        <table class="matrix">
+        <table class="matrix" @mouseleave="hovCol = null">
           <thead>
             <tr>
               <th>典籍 \ 主题</th>
-              <th v-for="t in map.topics" :key="t">
+              <th v-for="(t, ti) in map.topics" :key="t" :class="{ 'col-on': hovCol === ti }">
                 <span :style="{ color: topicColor(t) }">{{ t.replace(/强弱|成败|寒暖/, '') }}</span>
               </th>
             </tr>
@@ -145,7 +146,11 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
               @click="pickBook(b)"
             >
               <th>{{ b }}</th>
-              <td v-for="(t, ti) in map.topics" :key="t">
+              <td
+                v-for="(t, ti) in map.topics" :key="t"
+                :class="{ 'col-on': hovCol === ti }"
+                @mouseenter="hovCol = ti"
+              >
                 <div class="cellbar" :title="`${b} · ${t}：${density(b, ti).toFixed(1)}/万字`">
                   <i
                     :style="{
@@ -215,10 +220,11 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .stat { display: flex; align-items: baseline; gap: 7px; }
 .stat .big-num { font-size: 1.9rem; }
 
-.matrix th, .matrix td { padding: 7px 8px; }
+.matrix th, .matrix td { padding: 7px 8px; transition: background 0.2s ease; }
 .matrix tbody tr { cursor: pointer; transition: background 0.2s ease; }
 .matrix tbody tr:hover { background: rgba(232, 196, 115, 0.05); }
 .matrix tbody tr.on { background: rgba(232, 196, 115, 0.09); outline: 1px solid rgba(232, 196, 115, 0.35); }
+.matrix .col-on { background: rgba(94, 234, 212, 0.06); }
 .cellbar { position: relative; height: 14px; min-width: 74px; background: #1b2030; border-radius: 4px; overflow: hidden; }
 .cellbar i { display: block; height: 100%; border-radius: 4px; opacity: 0.85; transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
 .cellbar em { position: absolute; right: 4px; top: -1px; font-style: normal; font-size: 0.62rem; color: #10131c; font-weight: bold; line-height: 15px; }

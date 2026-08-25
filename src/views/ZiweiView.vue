@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
 import { sfx } from '../lib/sfx'
@@ -47,6 +47,45 @@ function pick(i: number): void {
   sfx.blip()
 }
 
+/** 十二宫在 4×4 盘面上的行列位置 */
+const RC: Array<[number, number]> = [
+  [0, 0], [0, 1], [0, 2], [0, 3],
+  [1, 3], [2, 3], [3, 3],
+  [3, 2], [3, 1], [3, 0],
+  [2, 0], [1, 0],
+]
+
+const fangSet = ref<Set<number>>(new Set())
+
+function pickPalace(i: number): void {
+  pick(i)
+  if (sel.value === null) {
+    fangSet.value = new Set()
+  } else {
+    fangSet.value = new Set([sel.value, (sel.value + 4) % 12, (sel.value + 8) % 12, (sel.value + 6) % 12])
+    sfx.pop()
+  }
+}
+
+function isFang(i: number): boolean {
+  return fangSet.value.has(i)
+}
+/** 三方四正四宫中心的连线（百分比坐标） */
+const fangLines = computed(() => {
+  if (sel.value === null) return []
+  const pts = [...fangSet.value].map((i) => {
+    const [r, c] = RC[i]!
+    return [(c * 25 + 12.5) as number, (r * 25 + 12.5) as number] as [number, number]
+  })
+  const lines: Array<[number, number, number, number]> = []
+  for (let a = 0; a < pts.length; a++) {
+    for (let b = a + 1; b < pts.length; b++) {
+      lines.push([pts[a]![0]!, pts[a]![1]!, pts[b]![0]!, pts[b]![1]!])
+    }
+  }
+  return lines
+})
+
 function starClass(s: string): string {
   if (s.endsWith('禄') || s.endsWith('权')) return 'tag teal'
   if (s.endsWith('科')) return 'tag gold'
@@ -82,17 +121,25 @@ function starClass(s: string): string {
             v-for="(p, i) in zc.palaces"
             :key="i"
             class="palace"
-            :class="{ ming: p.index === zc.mingIndex, sel: sel === i }"
-            @click="pick(i)"
+            :class="{ ming: p.index === zc.mingIndex, sel: sel === i, fang: isFang(i) && sel !== i }"
+            @click="pickPalace(i)"
           >
             <span class="p-name">{{ p.name }}<i v-if="p.index === zc.mingIndex" class="ming-dot">命</i></span>
             <span class="p-gz">{{ p.ganzhi }}</span>
-            <span class="p-mains">{{ p.mains || '空宫' }}</span>
+            <span class="p-mains twinkle">{{ p.mains || '空宫' }}</span>
             <span class="p-extras">
               <em v-for="x in p.extras.slice(0, 4)" :key="x" :class="starClass(x).replace('tag ', 'st-')">{{ x }}</em>
               <em v-if="p.extras.length > 4" class="more">+{{ p.extras.length - 4 }}</em>
             </span>
           </button>
+          <svg v-if="sel !== null" class="fang-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <line
+              v-for="(l, li) in fangLines" :key="li"
+              :x1="l[0]" :y1="l[1]" :x2="l[2]" :y2="l[3]"
+              stroke="rgba(232,196,115,0.75)" stroke-width="0.45" stroke-dasharray="2 1.6"
+              :style="{ animationDelay: `${li * 0.12}s` }"
+            />
+          </svg>
           <div class="center-info">
             <div class="ci-bazi">
               <div v-for="(pz, k) in pillars" :key="k">{{ pz }}</div>
@@ -148,6 +195,17 @@ function starClass(s: string): string {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+  position: relative;
+}
+.fang-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+.fang-lines line { animation: line-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) both, dash-flow 1.2s linear infinite; stroke-dashoffset: 0; }
+@keyframes line-draw { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dash-flow { to { stroke-dashoffset: -7.2; } }
+.palace.fang { border-color: rgba(232, 196, 115, 0.65); box-shadow: inset 0 0 18px rgba(232, 196, 115, 0.08); }
+.twinkle { animation: star-tw 3.4s ease-in-out infinite; text-shadow: 0 0 16px rgba(232,196,115,0.45); }
+@keyframes star-tw {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
 }
 .palace {
   position: relative;

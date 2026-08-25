@@ -293,11 +293,67 @@ function wake(): void {
 
 const clock = new THREE.Clock()
 
+/** 爆裂粒子：小方块从元素位置向外飞散，受重力下坠后消散 */
+interface Burst { meshes: THREE.Mesh[]; vels: THREE.Vector3[]; born: number }
+const BURSTS: Burst[] = []
+const burstGeo = new THREE.BoxGeometry(0.14, 0.14, 0.14)
+
+function triggerBurst(e: Element): void {
+  const grp = GROUPS[e]
+  if (!grp || !scene) return
+  const origin = new THREE.Vector3()
+  grp.getWorldPosition(origin)
+  origin.y += 0.6
+  const color = new THREE.Color(elementGlow(e))
+  const meshes: THREE.Mesh[] = []
+  const vels: THREE.Vector3[] = []
+  for (let i = 0; i < 42; i++) {
+    const m = new THREE.Mesh(burstGeo, new THREE.MeshBasicMaterial({ color, transparent: true }))
+    m.position.copy(origin)
+    const a = Math.random() * Math.PI * 2
+    const speed = 2.2 + Math.random() * 4.2
+    vels.push(new THREE.Vector3(Math.cos(a) * speed, 2.5 + Math.random() * 4.5, Math.sin(a) * speed))
+    m.scale.setScalar(0.7 + Math.random() * 1.1)
+    scene.add(m)
+    meshes.push(m)
+  }
+  BURSTS.push({ meshes, vels, born: performance.now() })
+  sfx.pop()
+  wake()
+}
+
+function stepBursts(dtRaw: number): void {
+  const now = performance.now()
+  for (let bi = BURSTS.length - 1; bi >= 0; bi--) {
+    const b = BURSTS[bi]!
+    const age = (now - b.born) / 1400
+    if (age >= 1) {
+      b.meshes.forEach((m) => {
+        scene?.remove(m)
+        ;(m.material as THREE.Material).dispose()
+      })
+      BURSTS.splice(bi, 1)
+      continue
+    }
+    const dt = Math.min(dtRaw, 0.05) + 0.0001
+    b.meshes.forEach((m, mi) => {
+      const v = b.vels[mi]!
+      v.y -= 7.5 * dt * 8
+      m.position.addScaledVector(v, dt)
+      ;(m.material as THREE.MeshBasicMaterial).opacity = 1 - age
+      m.rotation.x += dt * 5
+      m.rotation.z += dt * 4
+    })
+  }
+}
+
 function tick(): void {
   if (disposed) return
   raf = requestAnimationFrame(tick)
   const dt = clock.getDelta()
   const t = clock.elapsedTime
+
+  stepBursts(dt)
 
   if (!dragging && idleTimer === null && rootGroup) targetRotY += dt * 0.12
   if (rootGroup) {
@@ -350,7 +406,15 @@ onBeforeUnmount(() => {
   renderer?.domElement.remove()
 })
 
-defineExpose({ clearSelect: () => (selected = null) })
+defineExpose({
+  clearSelect: () => (selected = null),
+  triggerBurst,
+  selectExternal: (e: Element) => {
+    selected = e
+    hint.value = false
+    wake()
+  },
+})
 </script>
 
 <template>

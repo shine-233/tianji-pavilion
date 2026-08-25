@@ -1,12 +1,39 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import BaguaCompass from '../components/BaguaCompass.vue'
 import { SHENG_CYCLE, KE_CYCLE } from '../data/wuxingData'
 import { Element, SHENG_ORDER } from '../lib/constants'
 import { sfx } from '../lib/sfx'
 
 const router = useRouter()
 const hoverEle = ref<Element | null>(null)
+
+/** 每日一签：按日期固定抽取，全天不变 */
+const QUOTES = [
+  { text: '命贵中和，偏枯终于有损；理求平正，奇异不足为凭。', src: '滴天髓阐微 · 知命' },
+  { text: '天战犹自可，地战急如火。', src: '滴天髓阐微 · 天干' },
+  { text: '用之财不可劫，用之官不可伤，用之印绶不可坏。', src: '滴天髓阐微 · 用神' },
+  { text: '得时俱为旺论，失令便作衰看，虽是至理，亦活法也。', src: '滴天髓阐微 · 旺衰' },
+  { text: '病药两停，贵不可言。', src: '神峰通考 · 病药说' },
+  { text: '有病方为贵，无伤不是奇。格中如去病，财禄喜相随。', src: '神峰通考 · 病药说' },
+  { text: '论命者，先观日主之强弱，次察用神之向背。', src: '子平真诠评注 · 自序' },
+  { text: '春木炎炎，本宜水润，夏金铄铄，最喜湿土。', src: '穷通宝鉴 · 总纲' },
+  { text: '凡观女命，关系非小，不可轻断淫邪，以渎神怒。', src: '滴天髓阐微 · 女命章' },
+  { text: '官星带禄，贵而且秀。', src: '三命通会 · 论正官' },
+  { text: '财乃养命之源，人人之所欲。', src: '渊海子平 · 论财' },
+  { text: '杀不离印，印不离杀，杀印相生，功名显达。', src: '渊海子平 · 继善篇' },
+  { text: '太岁乃年中之天子，故不可犯，犯之则凶。', src: '渊海子平 · 论太岁' },
+  { text: '一命二运三风水，四积阴德五读书。', src: '民间命谚' },
+  { text: '福祸无门，惟人自召。命自我立，福自己求。', src: '了凡四训' },
+  { text: '乐天知命，故不忧。', src: '周易 · 系辞' },
+]
+
+function daySeed(): number {
+  const d = new Date()
+  return d.getFullYear() * 372 + (d.getMonth() + 1) * 31 + d.getDate()
+}
+const today = QUOTES[daySeed() % QUOTES.length]!
 
 const STATS = [
   { num: '21,912', label: '同龄男命全量百分位池', sub: '2001–2005 出生 · 逐盘复算' },
@@ -52,13 +79,24 @@ function arcPath(i: number, j: number, off: number): string {
   const my = (y1 + y2) / 2 + off * Math.sin(((i + j) / 2) * ((Math.PI * 2) / 5) - Math.PI / 2)
   return `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`
 }
+
+const heroTitle = computed(() => '把命理变成'.split(''))
+const heroTitle2 = computed(() => '可审计的科学'.split(''))
+
+function copyQuote(): void {
+  void navigator.clipboard?.writeText(`「${today.text}」——${today.src}`)
+  sfx.ding()
+}
 </script>
 
 <template>
   <main class="page">
     <section class="hero card hoverable">
       <div class="hero-left">
-        <h1>把命理变成<br />一门<b class="gold-t">可审计的科学</b></h1>
+        <h1>
+          <span v-for="(ch, i) in heroTitle" :key="'a' + i" class="h-ch" :style="{ '--d': `${i * 0.07}s` }">{{ ch }}</span><br />
+          <span v-for="(ch, i) in heroTitle2" :key="'b' + i" class="h-ch gold-t" :style="{ '--d': `${0.5 + i * 0.07}s` }">{{ ch }}</span>
+        </h1>
         <p class="sub hero-sub">
           传统子平命理 × 紫微斗数的完整量化研究工程：公开规则引擎、两万余盘百分位池、
           七本典籍数字化语料、格局谱系与一致性测量。每一分都可回归、可证伪。
@@ -86,6 +124,19 @@ function arcPath(i: number, j: number, off: number): string {
       </div>
     </section>
 
+    <section class="play-grid">
+      <div class="card compass-card">
+        <h2>八卦罗盘 · 转一签</h2>
+        <BaguaCompass />
+      </div>
+      <div class="card quote-card">
+        <h2>今日一签</h2>
+        <p class="q-text">「{{ today.text }}」</p>
+        <p class="note q-src">—— {{ today.src }}</p>
+        <button class="ghost q-copy" @click="copyQuote()">✍ 复制这句话</button>
+      </div>
+    </section>
+
     <section class="stats">
       <div v-for="s in STATS" :key="s.label" class="card stat-card hoverable">
         <div class="big-num">{{ s.num }}</div>
@@ -94,7 +145,7 @@ function arcPath(i: number, j: number, off: number): string {
       </div>
     </section>
 
-    <h2>模块导览 · 七大功能全覆盖</h2>
+    <h2>七间殿 · 各司其职</h2>
     <section class="modules">
       <a v-for="m in MODULES" :key="m.to" class="card module-card hoverable" @click.prevent="go(m.to)">
         <div class="m-glyph">{{ m.glyph }}</div>
@@ -128,7 +179,17 @@ function arcPath(i: number, j: number, off: number): string {
 <style scoped>
 .hero { display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
 .hero-left { flex: 1; min-width: 260px; }
+.h-ch { display: inline-block; opacity: 0; animation: hero-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; animation-delay: var(--d); }
+@keyframes hero-in { from { opacity: 0; transform: translateY(16px) rotate(4deg); filter: blur(5px); } to { opacity: 1; transform: none; filter: none; } }
 .hero h1 { font-size: 2.15rem; line-height: 1.35; margin-bottom: 14px; }
+
+.play-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-bottom: 26px; align-items: start; }
+.compass-card :deep(.compass-wrap) { margin-top: 6px; }
+.quote-card { display: flex; flex-direction: column; align-items: flex-start; padding-top: 24px; }
+.q-text { font-size: 1.18rem; font-family: var(--cute); color: var(--gold-bright); line-height: 2.1; margin: 10px 0 8px; text-shadow: 0 0 20px rgba(232,196,115,0.25); }
+.q-src { align-self: flex-end; }
+.q-copy { margin-top: auto; }
+
 .gold-t { color: var(--gold-bright); text-shadow: 0 0 26px rgba(232, 196, 115, 0.45); }
 .hero-sub { max-width: 460px; margin-bottom: 20px; }
 .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -184,5 +245,6 @@ function arcPath(i: number, j: number, off: number): string {
 @media (max-width: 800px) {
   .hero { flex-direction: column; }
   .hero-wheel { transform: scale(0.82); }
+  .play-grid { grid-template-columns: 1fr; }
 }
 </style>
