@@ -25,16 +25,19 @@ onMounted(() => {
   const lunar = Solar.fromDate(new Date()).getLunar()
   const jqTable = lunar.getJieQiTable()
   const now = Date.now()
-  // lunar-javascript 的节气表值是 Solar 对象，需 toDate() 转换
+  // lunar-javascript 节气表值兼容三种形态：Date / Solar / 'YYYY-MM-DD' 串；键含拼音别名（DA_XUE=大雪）
+  const ALIAS: Record<string, string> = { DA_XUE: '大雪' }
   const toMs = (v: unknown): number => {
-    const d = v as { toDate?: () => Date; getTime?: () => number }
-    if (d && typeof d.toDate === 'function') return d.toDate().getTime()
-    if (d && typeof d.getTime === 'function') return d.getTime()
-    return 0
+    const o = v as { toDate?: () => Date; getTime?: () => number }
+    if (o && typeof o.toDate === 'function') return o.toDate().getTime()
+    if (o && typeof o.getTime === 'function') return o.getTime()
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v))
+    return m ? Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : 0
   }
   let prev = ''
   let prevTime = 0
-  for (const [name, t] of Object.entries(jqTable)) {
+  for (const [rawName, t] of Object.entries(jqTable)) {
+    const name = ALIAS[rawName] ?? rawName
     const ms = toMs(t)
     if (ms <= now && ms > prevTime) {
       prev = name
@@ -44,7 +47,7 @@ onMounted(() => {
   if (!prev) {
     // 年初还没到第一个节气：取表里最早的
     const entries = Object.entries(jqTable)
-      .map(([name, t]) => [name, toMs(t)] as const)
+      .map(([k, t]) => [ALIAS[k] ?? k, toMs(t)] as const)
       .sort((a, b) => a[1] - b[1])
     if (entries.length) {
       prev = entries[0]![0]

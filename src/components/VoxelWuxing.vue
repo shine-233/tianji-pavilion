@@ -231,7 +231,23 @@ function addKe(a: Element, b: Element): void {
 
 function bindEvents(): void {
   const dom = renderer!.domElement
+  // 双指捏合缩放
+  const activePtrs = new Map<number, { x: number; y: number }>()
+  let pinchStartDist = 0
+  let pinchStartZ = 0
+  const ptrDist = (): number => {
+    const [a, b] = [...activePtrs.values()]
+    return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0
+  }
   const onDown = (ev: PointerEvent): void => {
+    activePtrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+    if (activePtrs.size === 2) {
+      dragging = false
+      pinchStartDist = ptrDist()
+      pinchStartZ = camZ
+      wake()
+      return
+    }
     dragging = true
     moved = 0
     lastX = ev.clientX
@@ -240,6 +256,15 @@ function bindEvents(): void {
     wake()
   }
   const onMove = (ev: PointerEvent): void => {
+    if (activePtrs.has(ev.pointerId)) activePtrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+    if (activePtrs.size >= 2) {
+      const d = ptrDist()
+      if (pinchStartDist > 0 && d > 0) {
+        camZ = Math.max(9, Math.min(27, (pinchStartZ * pinchStartDist) / d))
+        wake()
+      }
+      return
+    }
     if (!dragging) return
     const dx = ev.clientX - lastX
     const dy = ev.clientY - lastY
@@ -251,6 +276,18 @@ function bindEvents(): void {
     wake()
   }
   const onUp = (ev: PointerEvent): void => {
+    activePtrs.delete(ev.pointerId)
+    if (activePtrs.size === 1) {
+      const [rest] = [...activePtrs.values()]
+      if (rest) {
+        lastX = rest.x
+        lastY = rest.y
+      }
+      dragging = true
+      moved = 99 // 捏合结束不触发拾取
+      return
+    }
+    if (activePtrs.size > 0) return
     dragging = false
     try { dom.releasePointerCapture(ev.pointerId) } catch { /* noop */ }
     if (moved < 6) pick(ev)

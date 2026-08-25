@@ -25,11 +25,16 @@ const GUAS: Gua[] = [
 const angle = ref(-90)
 const dragging = ref(false)
 const settled = ref<number | null>(null)
+const pulsed = ref(false)
 
 let lastX = 0
-let vel = 0
+let lastT = 0
+let vel = 0 // deg per frame（惯性滑行用）
 let raf = 0
 let idleRaf = 0
+
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function norm(a: number): number {
   return ((a % 360) + 360) % 360
@@ -56,13 +61,30 @@ function settle(): void {
     else {
       settled.value = idx.value
       sfx.ding()
+      // 定格金光脉冲：外环泛开一圈
+      pulsed.value = false
+      requestAnimationFrame(() => (pulsed.value = true))
+    }
+  }
+  raf = requestAnimationFrame(step)
+}
+
+/** 松手后带角速度惯性滑行，摩擦衰减到阈值再吸附卦位 */
+function glide(): void {
+  const step = (): void => {
+    angle.value += vel
+    vel *= 0.955
+    if (Math.abs(vel) > 0.25) {
+      raf = requestAnimationFrame(step)
+    } else {
+      settle()
     }
   }
   raf = requestAnimationFrame(step)
 }
 
 function idleSpin(t: number): void {
-  if (!dragging.value && settled.value === null) {
+  if (!dragging.value && settled.value === null && !reducedMotion) {
     angle.value += 0.02 + Math.sin(t / 2400) * 0.015
   }
   idleRaf = requestAnimationFrame(idleSpin)
@@ -71,23 +93,34 @@ function idleSpin(t: number): void {
 function down(e: PointerEvent): void {
   dragging.value = true
   settled.value = null
+  pulsed.value = false
   cancelAnimationFrame(raf)
   lastX = e.clientX
+  lastT = performance.now()
+  vel = 0
   ;(e.target as Element).setPointerCapture?.(e.pointerId)
 }
 function move(e: PointerEvent): void {
   if (!dragging.value) return
+  const now = performance.now()
   const dx = e.clientX - lastX
+  const dt = Math.max(1, now - lastT)
   lastX = e.clientX
-  vel = dx
+  lastT = now
+  // 用瞬时角速度代替末帧位移，甩得快时惯性更真实
+  const instV = (dx * 0.35 * 16.7) / dt
+  vel = vel * 0.6 + instV * 0.4
   angle.value += dx * 0.35
   if (Math.random() < 0.12) sfx.tick()
 }
 function up(): void {
   if (!dragging.value) return
   dragging.value = false
-  angle.value += vel * 9
-  window.setTimeout(settle, 30)
+  if (reducedMotion || Math.abs(vel) < 0.8) {
+    settle()
+  } else {
+    glide()
+  }
 }
 
 onMounted(() => {
@@ -102,7 +135,8 @@ onBeforeUnmount(() => {
 <template>
   <div class="compass-wrap">
     <div class="hint note">按住拖转 · 松手听签</div>
-    <div class="ring-outer" :class="{ grabbing: dragging }">
+    <div class="ring-outer" :class="{ grabbing: dragging, pulsed }">
+      <div class="pulse-ring" aria-hidden="true"></div>
       <svg viewBox="0 0 320 320" class="dial">
         <circle cx="160" cy="160" r="152" fill="none" stroke="rgba(232,196,115,0.16)" />
         <circle cx="160" cy="160" r="128" fill="none" stroke="rgba(232,196,115,0.28)" stroke-dasharray="3 6" />
@@ -147,7 +181,22 @@ onBeforeUnmount(() => {
 
 .ring-outer { position: relative; width: 300px; height: 300px; cursor: grab; touch-action: pan-y; }
 .ring-outer.grabbing { cursor: grabbing; }
-.dial { position: absolute; inset: 0; pointer-events: none; }
+.dial { position: absolute; inset: 0; pointer-events: none; animation: dial-drift 80s linear infinite reverse; }
+@keyframes dial-drift { to { transform: rotate(360deg); } }
+
+/* 定格金光：吸附成功时外环泛开一圈 */
+.pulse-ring {
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(232, 196, 115, 0.85);
+  opacity: 0;
+  pointer-events: none;
+}
+.ring-outer.pulsed .pulse-ring { animation: gold-pulse 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes gold-pulse {
+  0% { opacity: 0.9; transform: scale(0.96); box-shadow: 0 0 0 rgba(232, 196, 115, 0); }
+  100% { opacity: 0; transform: scale(1.14); box-shadow: 0 0 42px rgba(232, 196, 115, 0.35); }
+}
 
 .gua-ring { position: absolute; inset: 0; transition: none; }
 .ring-outer:not(.grabbing) .gua-ring { transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1); }

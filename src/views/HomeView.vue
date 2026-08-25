@@ -7,6 +7,7 @@ import { buildTaoess } from '../data/sageSprite'
 import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
+import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
 
 const router = useRouter()
@@ -97,6 +98,7 @@ function arcPath(i: number, j: number, off: number): string {
 <template>
   <main class="page">
     <section class="hero card hoverable">
+      <ParticleAltar />
       <div class="hero-left">
         <h1>把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
         <p class="sub hero-sub">
@@ -189,14 +191,14 @@ function arcPath(i: number, j: number, off: number): string {
 </template>
 
 <style scoped>
-.hero { display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
-.hero-left { flex: 1; min-width: 260px; }
+.hero { position: relative; display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
+.hero-left { flex: 1; min-width: 260px; position: relative; z-index: 1; }
 .hero h1 { font-size: 2.15rem; line-height: 1.35; margin-bottom: 14px; }
 .gold-t { color: var(--gold-bright); text-shadow: 0 0 26px rgba(var(--acc-rgb), 0.45); }
 .hero-sub { max-width: 470px; margin-bottom: 20px; }
 .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.hero-wheel { position: relative; width: 300px; height: 320px; flex-shrink: 0; }
+.hero-wheel { position: relative; width: 300px; height: 320px; flex-shrink: 0; z-index: 1; }
 .wheel-ring {
   position: absolute;
   left: 0;
