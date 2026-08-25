@@ -32,7 +32,7 @@ watch(() => props.value, (v) => animate(v))
 <template>
   <div class="ring-wrap" :style="{ width: `${size ?? 150}px` }">
     <svg :width="size ?? 150" :height="size ?? 150" viewBox="0 0 130 130">
-      <circle cx="65" cy="65" :r="R" fill="none" stroke="#232a3a" stroke-width="10" />
+      <circle cx="65" cy="65" :r="R" fill="none" stroke="var(--bar)" stroke-width="10" />
       <circle
         cx="65" cy="65" :r="R" fill="none"
         stroke="url(#ringGrad)" stroke-width="10" stroke-linecap="round"

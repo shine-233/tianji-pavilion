@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { ELE_B, ELE_S } from '../lib/constants'
 import { sfx } from '../lib/sfx'
@@ -134,7 +135,7 @@ function fmtCtx(ctx: string): string {
 <template>
   <main class="page">
     <div class="card hoverable">
-      <h2>案例库 · 古籍命例数字化</h2>
+      <h2><DecryptTitle text="案例库 · 古籍命例数字化" /></h2>
       <p class="sub">
         从典籍原文中自动抽取四柱命例，人工复核标注吉凶层级，并对多书重复记载做交叉互证。
         点击案例卡展开古籍原文语境。所有抽取与标注脚本公开可复算。
@@ -273,7 +274,7 @@ function fmtCtx(ctx: string): string {
 .c-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
 .c-card {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  background: linear-gradient(165deg, #1b2030, #141824);
+  background: linear-gradient(165deg, var(--card-2), var(--panel));
   border: 1px solid var(--line); border-radius: 12px;
   padding: 13px 10px; cursor: pointer; color: var(--fg);
   opacity: 0; transform: translateY(14px);
@@ -297,7 +298,7 @@ function fmtCtx(ctx: string): string {
 .ql-list { display: flex; flex-direction: column; gap: 7px; }
 .ql-list .r-item {
   display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px 14px;
-  background: linear-gradient(165deg, #171c29, #131722);
+  background: linear-gradient(165deg, var(--panel-3), var(--panel));
   border: 1px solid var(--line); border-radius: 11px;
   cursor: pointer; color: var(--fg); font-family: inherit; font-size: 0.86rem;
   opacity: 0; transform: translateY(12px);
@@ -314,7 +315,7 @@ function fmtCtx(ctx: string): string {
 .ctx {
   white-space: pre-line;
   max-height: 320px; overflow-y: auto;
-  background: #10131c; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
   padding: 12px 15px; line-height: 2.05; font-size: 0.84rem; color: var(--fg);
 }
 

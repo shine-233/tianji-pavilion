@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import PillarsBoard from '../components/PillarsBoard.vue'
+import DecryptTitle from '../components/DecryptTitle.vue'
 import RadarChart from '../components/RadarChart.vue'
 import ScoreRing from '../components/ScoreRing.vue'
 import DayunTimeline from '../components/DayunTimeline.vue'
+import DayunRiver from '../components/DayunRiver.vue'
+import ShareButton from '../components/ShareButton.vue'
 import RichText from '../components/RichText.vue'
 import { ELE_S } from '../lib/constants'
 import type { ChartResult } from '../lib/engine'
@@ -37,6 +40,7 @@ function calc(): void {
   sfx.gong()
   result.value = runChart(dtp[0]!, dtp[1]!, dtp[2]!, tmp[0]!, tmp[1]!, gender.value)
   openBlock.value = 0
+  window.dispatchEvent(new CustomEvent('sage-say', { detail: `盘面出来了。日主${result.value.dmg}，先看七维雷达再听我细说。` }))
 
   const p = percentile(result.value.tot)
   saveHistory({
@@ -81,7 +85,7 @@ async function selftest(): Promise<void> {
       )
     }
     selftestOut.value = `自检结果 ${pass}/${V.length}\n` + lines.join('\n') + '\n\n容差：tot ±1.5 · 大运 ±1.8 · 紫微 ±0.15（JS 与 Python 历法库起运漂移，natal/yinshi 实际全对齐）'
-    if (pass === V.length) sfx.ding()
+    if (pass === V.length) { sfx.ding(); window.dispatchEvent(new CustomEvent('sage-say', { detail: `自检 ${pass}/${V.length} 全过，引擎没偷懒。` })) }
   } catch (e) {
     selftestOut.value = '自检失败：' + String(e)
   }
@@ -114,6 +118,19 @@ const pctlText = computed(() => {
 
 const interpretations = computed(() => (result.value ? interpret(result.value) : []))
 
+const shareSpec = computed(() => {
+  const r = result.value
+  if (!r) return null
+  return {
+    title: `${r.ps.join(' ')} 命盘`,
+    subtitle: `日主 ${r.dmg} · 综合评分与七维明细 · 天机阁量化引擎 v5`,
+    pillars: [...r.ps],
+    total: r.tot.toFixed(1) + ' 分',
+    scores: blocks.value.map((b) => [b.name, Math.max(0, b.score)] as [string, number]),
+    notes: [pctlText.value || '', '规则全公开可审计 · 仅供传统文化研究与娱乐参考'],
+  }
+})
+
 function ganEle(p: string): string {
   return ELE_S[p[0]]!
 }
@@ -137,7 +154,7 @@ function lunarInfo(): string {
 <template>
   <main class="page">
     <div class="card">
-      <h2>四柱排盘 · v5 公开规则引擎</h2>
+      <h2><DecryptTitle text="四柱排盘 · v5 公开规则引擎" /></h2>
       <p class="sub" style="margin-bottom: 6px">
         权重：结构22 / 格局20 / 层次10 / 调候16 / 大运联动14 / 紫微10 / 神煞8 —— 全部公开可审计
       </p>
@@ -179,7 +196,7 @@ function lunarInfo(): string {
           <ScoreRing :value="result.tot" :max="100" label="综合评分" />
           <p class="pctl-line">{{ pctlText }}</p>
           <svg width="240" height="130" viewBox="0 0 240 130" class="gauge">
-            <path d="M 20 120 A 100 100 0 0 1 220 120" fill="none" stroke="#232a3a" stroke-width="13" stroke-linecap="round" />
+            <path d="M 20 120 A 100 100 0 0 1 220 120" fill="none" stroke="var(--bar)" stroke-width="13" stroke-linecap="round" />
             <path
               d="M 20 120 A 100 100 0 0 1 220 120" fill="none"
               stroke="url(#gaugeGrad)" stroke-width="13" stroke-linecap="round"
@@ -193,6 +210,7 @@ function lunarInfo(): string {
             <text x="120" y="112" text-anchor="middle" class="gauge-txt">百分位 {{ isFinite(percentile(result.tot)) ? percentile(result.tot).toFixed(1) + '%' : '…' }}</text>
           </svg>
           <div class="note">弧线越长 = 排名越靠前（左低右高）</div>
+          <ShareButton v-if="shareSpec" :spec="shareSpec" filename="tianji-chart.png" style="margin-top: 12px" />
         </div>
         <div class="card center-card">
           <h2>七维能力雷达</h2>
@@ -216,6 +234,11 @@ function lunarInfo(): string {
       <div class="card">
         <h2>大运时间轴 · 2026–2051 评估窗口</h2>
         <DayunTimeline :items="result.dlist" />
+      </div>
+
+      <div v-if="result.dlist.length" class="card" v-reveal>
+        <h2>命运长河 · 顺逆一望便知</h2>
+        <DayunRiver :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))" />
       </div>
 
       <div class="card">
@@ -254,7 +277,7 @@ function lunarInfo(): string {
 
 .selftest {
   margin-top: 14px;
-  background: #0d1017;
+  background: var(--inset);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 14px 16px;

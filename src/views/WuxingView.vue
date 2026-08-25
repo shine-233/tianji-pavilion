@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DecryptTitle from '../components/DecryptTitle.vue'
 import { ref } from 'vue'
 import VoxelWuxing from '../components/VoxelWuxing.vue'
 import RichText from '../components/RichText.vue'
@@ -38,7 +39,7 @@ function clearChart(): void {
 <template>
   <main class="page">
     <div class="card" style="padding-bottom: 8px">
-      <h2>五行天穹 · 体素建模</h2>
+      <h2><DecryptTitle text="五行天穹 · 体素建模" /></h2>
       <p class="sub">
         木火土金水五个体素模型环绕太极台徐徐公转，金色弧线为相生循环，赤色虚线为相克对角。
         点击任意元素聚焦查看它的生克关系；排盘后各元素会按命局字数改变体量。
@@ -125,7 +126,7 @@ function clearChart(): void {
 .cnt-row { display: flex; gap: 14px; justify-content: space-between; margin: 12px 0; }
 .cnt-item { text-align: center; flex: 1; }
 .cnt-num { font-family: var(--cute); font-size: 1.7rem; }
-.cnt-bar { height: 8px; background: #232a3a; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+.cnt-bar { height: 8px; background: var(--bar); border-radius: 4px; overflow: hidden; margin-top: 5px; }
 .cnt-bar > i { display: block; height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
 
 .gz-map { display: flex; flex-wrap: wrap; gap: 3px; }

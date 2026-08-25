@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
   width: 54px; height: 54px;
   border-radius: 50%;
   border: 1px solid rgba(232, 196, 115, 0.3);
-  background: radial-gradient(closest-side, #1d2333, #141824);
+  background: radial-gradient(closest-side, var(--card-2), var(--panel));
   color: var(--fg);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-family: inherit;

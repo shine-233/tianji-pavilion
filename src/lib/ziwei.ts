@@ -62,7 +62,8 @@ export function ziweiChart(lunar: {
 
   const palaces = Array.from({ length: 12 }, (_, i) => ({
     index: i,
-    name: PALACE_NAMES[i]!,
+    // 十二宫从命宫起逆布：兄弟居命宫之逆时针次位，其余依序
+    name: PALACE_NAMES[(((ming - i) % 12) + 12) % 12]!,
     ganzhi: GAN[(fyin + i) % 10]! + BR[i]!,
     mains: mains[i]!,
     extras: [...extras[i]],

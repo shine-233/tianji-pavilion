@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
@@ -14,19 +15,19 @@ const scored = ref<Scored | null>(null)
 const pillars = ref<string[]>([])
 const sel = ref<number | null>(null)
 
-const PALACE_MEANING: Record<number, string> = {
-  0: '自我禀赋、格局层次与一生总纲。',
-  1: '手足缘分、合作伙伴与竞争关系。',
-  2: '婚姻感情、亲密关系的样貌。',
-  3: '子女缘、创造力与下属学生。',
-  4: '财源形态与求财方式。',
-  5: '健康底子与情绪模式。',
-  6: '外出机遇、远行与社会舞台。',
-  7: '人际网络、众生缘与贵人类型。',
-  8: '事业形态、成就方向与社会位置。',
-  9: '家运根基、不动产与家庭氛围。',
-  10: '精神生活、兴趣享受与福报。',
-  11: '父母长辈、庇护来源与文书相貌。',
+const PALACE_MEANING: Record<string, string> = {
+  命宫: '自我禀赋、格局层次与一生总纲。',
+  兄弟: '手足缘分、合作伙伴与竞争关系。',
+  夫妻: '婚姻感情、亲密关系的样貌。',
+  子女: '子女缘、创造力与下属学生。',
+  财帛: '财源形态与求财方式。',
+  疾厄: '健康底子与情绪模式。',
+  迁移: '外出机遇、远行与社会舞台。',
+  交友: '人际网络、众生缘与贵人类型。',
+  官禄: '事业形态、成就方向与社会位置。',
+  田宅: '家运根基、不动产与家庭氛围。',
+  福德: '精神生活、兴趣享受与福报。',
+  父母: '父母长辈、庇护来源与文书相貌。',
 }
 
 // 十二宫按地支顺序排布；命宫高亮
@@ -98,7 +99,7 @@ function starClass(s: string): string {
 <template>
   <main class="page">
     <div class="card">
-      <h2>紫微十二宫 · 安星与三方四正</h2>
+      <h2><DecryptTitle text="紫微十二宫 · 安星与三方四正" /></h2>
       <p class="sub" style="margin-bottom: 8px">五行局、紫微定位、十四主星、辅煞诸星与生年四化，一次算齐。点击任意宫位查看详情。</p>
       <div class="form-row">
         <div><label>公历出生日期</label><input v-model="dt" type="date" /></div>
@@ -161,7 +162,7 @@ function starClass(s: string): string {
             <span v-if="!zc.palaces[sel]!.extras.length" class="sub">无</span>
           </div>
           <p class="sub">
-            宫位释义：{{ PALACE_MEANING[sel] }}
+            宫位释义：{{ PALACE_MEANING[zc.palaces[sel]!.name] }}
           </p>
         </div>
       </transition>
@@ -211,7 +212,7 @@ function starClass(s: string): string {
   position: relative;
   min-height: 108px;
   text-align: left;
-  background: linear-gradient(160deg, #1b2030, #141824);
+  background: linear-gradient(160deg, var(--card-2), var(--panel));
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 9px 11px;

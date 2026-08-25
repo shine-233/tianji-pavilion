@@ -25,6 +25,17 @@ describe('ziweiChart 基本结构', () => {
     const marks = zc.palaces.flatMap((p) => p.extras.filter((x) => /[禄权科忌]$/.test(x)))
     expect(marks.length).toBeGreaterThanOrEqual(4)
   })
+
+  it('宫名从命宫起逆布：命宫所在支必名「命宫」，十二宫名不重复', () => {
+    for (const [y, m, d, h] of [[2002, 10, 26, 10], [1997, 10, 22, 3], [2001, 2, 15, 23 - 1]] as const) {
+      const zc = chartFor(y, m, d, h)
+      expect(zc.palaces[zc.mingIndex]!.name).toBe('命宫')
+      const names = new Set(zc.palaces.map((p) => p.name))
+      expect(names.size).toBe(12)
+      // 兄弟宫应在命宫逆时针次位（mingIndex-1 的地支）
+      expect(zc.palaces[(zc.mingIndex + 11) % 12]!.name).toBe('兄弟')
+    }
+  })
 })
 
 describe('ziweiScore 分值边界', () => {

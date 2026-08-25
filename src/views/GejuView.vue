@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'
 
@@ -101,7 +102,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
 <template>
   <main class="page">
     <div class="card hoverable">
-      <h2>格局辞典 · 五书互证谱系</h2>
+      <h2><DecryptTitle text="格局辞典 · 五书互证谱系" /></h2>
       <p class="sub">
         49 个特殊与常用格局，逐个统计七书中的出现次数并摘录原文。凡两书以上独立记载且可追溯源流者，
         标记为「古典互证」。点击任意格局卡查看书证分布与原文节选。
@@ -209,7 +210,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
   position: relative;
   display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
   text-align: left;
-  background: linear-gradient(165deg, #1b2030, #141824);
+  background: linear-gradient(165deg, var(--card-2), var(--panel));
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 13px;
@@ -237,7 +238,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
 .src-n { width: 34px; text-align: right; font-family: var(--cute); color: var(--gold-bright); }
 
 .snips { display: flex; flex-direction: column; gap: 8px; }
-.snip { position: relative; border: 1px solid var(--line); border-radius: 10px; background: #141824; padding: 10px 13px; cursor: pointer; transition: border-color 0.2s ease; }
+.snip { position: relative; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 10px 13px; cursor: pointer; transition: border-color 0.2s ease; }
 .snip:hover { border-color: rgba(94, 234, 212, 0.4); }
 .snip-text { margin-top: 7px; color: var(--fg); font-size: 0.84rem; line-height: 2; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .snip.open .snip-text { display: block; -webkit-line-clamp: unset; }

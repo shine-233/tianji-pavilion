@@ -1,39 +1,40 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
-import { SAGE_PALETTE, SAGE_SPRITE } from '../data/sageSprite'
+import { buildTaoess, TAOESSES } from '../data/sageSprite'
 import { sfx } from '../lib/sfx'
 
-const PALETTE = SAGE_PALETTE
-const SPRITE = SAGE_SPRITE
+const props = withDefaults(defineProps<{
+  char?: string
+  greet?: boolean
+}>(), { char: 'qingxuan', greet: true })
 
-interface Pixel { x: number; y: number; fill: string }
+const def = computed(() => TAOESSES[props.char] ?? TAOESSES.qingxuan!)
+const pixels = computed(() => buildTaoess(def.value.id))
 
-const pixels: Pixel[] = []
-SPRITE.forEach((row, y) => {
-  row.split('').forEach((ch, x) => {
-    const fill = PALETTE[ch]
-    if (fill) pixels.push({ x, y, fill })
-  })
-})
+const CELL = 6
+const GRID_W = 25
+const GRID_H = 27
+const WIDTH = GRID_W * CELL
+const HEIGHT = GRID_H * CELL
 
-const CELL = 7
-const WIDTH = 20 * CELL
-const HEIGHT = SPRITE.length * CELL
+const eyePixels = computed(() => pixels.value.filter((p) => p.isEye))
 
 const TIPS = [
-  '阴阳互根，孤阳不生，独阴不长～',
-  '排盘前静心三息，时辰莫要记错哦。',
-  '子时不算，是老祖宗留给我们的温柔。',
-  '大运如四季，冬藏是为了春发。',
-  '《滴天髓》说：能知衰旺之真机，其于三命之奥，思过半矣！',
-  '五行不是五种材料，是五种趋势。',
-  '喜用神就像人生的顺风口，扬帆正当时。',
-  '百分位只是参照，命盘从不给人贴标签。',
-  '今天宜：读一页《穷通宝鉴》。',
-  '冲者动也，不动不冲；怕什么变动～',
-  '紫微与八字，一个看星宫，一个看禀气。',
-  '阿衡我呀，正在研读《三命通会》第 1024 遍。',
+  '心静了，卦才准。先坐直，再落子。',
+  '子时不排盘，不是迷信，是让熬夜的人早点睡。',
+  '五行不是五种材料，是五种走势，别把它们当积木。',
+  '喜用神就像顺风，帆不用换，换个方向就轻快。',
+  '大运如四季。冬天别硬开花，先扎根。',
+  '冲者动也。怕变动的人，往往正需要动一动。',
+  '《滴天髓》讲：能知衰旺之真机，三命之奥思过半矣。',
+  '百分位只是参照系，命盘从不给人贴标签。',
+  '紫微看星宫，八字看禀气，两盘互参，别偏听一边。',
+  '今天宜：翻一页《穷通宝鉴》，胜过刷十页短视频。',
+  '摇卦之前把问题想清楚，一卦只问一事。',
+  '格局无高下，会用的人自有分寸。',
+  '规则是死的，组合是活的——所以引擎才要公开让人挑错。',
+  '我师父说：算得再细，不如活得明白。',
 ]
 
 const visible = ref(false)
@@ -55,45 +56,64 @@ function say(text: string): void {
     if (i >= text.length && typeTimer !== null) {
       window.clearInterval(typeTimer)
       typeTimer = null
-      closeTimer = window.setTimeout(() => (bubbleOpen.value = false), 4200)
+      closeTimer = window.setTimeout(() => (bubbleOpen.value = false), 4600)
     }
-  }, 45)
+  }, 42)
 }
 
 function onClick(event: MouseEvent): void {
-  say(TIPS[Math.floor(Math.random() * TIPS.length)]!)
+  const t = Math.random() < 0.35 ? def.value.hello : TIPS[Math.floor(Math.random() * TIPS.length)]!
+  say(t)
   sparkle(event.clientX, event.clientY, 10)
   sfx.blip()
 }
 
+watch(() => props.char, () => {
+  if (!props.greet) return
+  window.setTimeout(() => say(def.value.hello), 500)
+})
+
+function onSageSay(e: Event): void {
+  const text = (e as CustomEvent<string>).detail
+  if (typeof text === 'string' && text) say(text)
+}
+
 onMounted(() => {
-  window.setTimeout(() => (visible.value = true), 600)
-  window.setTimeout(() => say('嗨！我是小道童阿衡，点我可以听命理小课堂～'), 1600)
+  window.setTimeout(() => (visible.value = true), 500)
+  if (props.greet) window.setTimeout(() => say(def.value.hello), 1500)
   chatterTimer = window.setInterval(() => {
-    if (!bubbleOpen.value) say(TIPS[Math.floor(Math.random() * TIPS.length)]!)
-  }, 42000)
+    if (!bubbleOpen.value && document.visibilityState === 'visible') say(TIPS[Math.floor(Math.random() * TIPS.length)]!)
+  }, 46000)
+  window.addEventListener('sage-say', onSageSay)
 })
 
 onBeforeUnmount(() => {
   if (typeTimer !== null) window.clearInterval(typeTimer)
   if (closeTimer !== null) window.clearTimeout(closeTimer)
   if (chatterTimer !== null) window.clearInterval(chatterTimer)
+  window.removeEventListener('sage-say', onSageSay)
 })
 </script>
 
 <template>
   <div class="sage-corner" :class="{ visible }">
     <transition name="bubble">
-      <div v-if="bubbleOpen" class="speech-bubble">{{ typedText }}<span class="caret">▌</span></div>
+      <div v-if="bubbleOpen" class="speech-bubble">
+        <span class="who">{{ def.nameCn }}<i>·</i>{{ def.title }}</span>
+        {{ typedText }}<span class="caret">▌</span>
+      </div>
     </transition>
-    <button class="sage-btn" aria-label="小道童阿衡" @click="onClick">
-      <span class="orbit-glyph g1">☯</span>
+    <button class="sage-btn" :aria-label="def.nameCn" @click="onClick">
+      <span class="orbit-glyph g1">{{ def.orbit }}</span>
       <span class="orbit-glyph g2">✦</span>
       <span class="orbit-glyph g3">✧</span>
       <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT" shape-rendering="crispEdges">
         <rect v-for="(p, i) in pixels" :key="i" :x="p.x * CELL" :y="p.y * CELL" :width="CELL" :height="CELL" :fill="p.fill" />
-        <rect class="eyelid" :x="7 * CELL" :y="11 * CELL" :width="CELL" :height="CELL" :fill="PALETTE.S" />
-        <rect class="eyelid" :x="12 * CELL" :y="11 * CELL" :width="CELL" :height="CELL" :fill="PALETTE.S" />
+        <rect
+          v-for="(e, i) in eyePixels" :key="'e' + i"
+          class="eyelid" :x="e.x * CELL" :y="e.y * CELL" :width="CELL" :height="CELL"
+          :fill="def.palette.H ?? '#34294a'"
+        />
       </svg>
     </button>
   </div>
@@ -117,6 +137,7 @@ onBeforeUnmount(() => {
 .sage-corner.visible { opacity: 1; transform: none; pointer-events: auto; }
 
 .sage-btn {
+  position: relative;
   background: none;
   border: none;
   cursor: pointer;
@@ -133,7 +154,7 @@ onBeforeUnmount(() => {
   50% { translate: 0 -7px; }
 }
 
-.eyelid { opacity: 0; animation: blink 4.8s infinite; }
+.eyelid { opacity: 0; animation: blink 5.2s infinite; }
 @keyframes blink {
   0%, 91%, 100% { opacity: 0; }
   93%, 97% { opacity: 1; }
@@ -156,18 +177,26 @@ onBeforeUnmount(() => {
 
 .speech-bubble {
   position: relative;
-  max-width: 240px;
+  max-width: 250px;
   background: #f6f1e3;
   color: #33404d;
   font-family: var(--cute);
   font-size: 0.92rem;
   line-height: 1.7;
-  padding: 12px 16px;
+  padding: 10px 15px 12px;
   border-radius: 16px 16px 4px 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   margin-right: 6px;
   min-height: 1.7em;
 }
+.speech-bubble .who {
+  display: block;
+  font-size: 0.7rem;
+  color: #a3543e;
+  letter-spacing: 0.12em;
+  margin-bottom: 3px;
+}
+.speech-bubble .who i { font-style: normal; opacity: 0.5; margin: 0 3px; }
 .speech-bubble::after {
   content: '';
   position: absolute;

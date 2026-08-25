@@ -65,11 +65,11 @@ function taijiTexture(): THREE.CanvasTexture {
   // 太极
   g.fillStyle = '#e9e4d5'
   g.beginPath(); g.arc(cx, cx, r, Math.PI / 2, Math.PI * 1.5); g.fill()
-  g.fillStyle = '#232a3a'
+  g.fillStyle = 'var(--bar)'
   g.beginPath(); g.arc(cx, cx, r, Math.PI / 2 * 3, Math.PI / 2); g.fill()
   g.fillStyle = '#e9e4d5'
   g.beginPath(); g.arc(cx, cx - r / 2, r / 2, 0, Math.PI * 2); g.fill()
-  g.fillStyle = '#232a3a'
+  g.fillStyle = 'var(--bar)'
   g.beginPath(); g.arc(cx, cx + r / 2, r / 2, 0, Math.PI * 2); g.fill()
   g.fillStyle = '#e8c473'
   g.beginPath(); g.arc(cx, cx - r / 2, 18, 0, Math.PI * 2); g.fill()

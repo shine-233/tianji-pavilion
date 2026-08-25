@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'
 
@@ -111,7 +112,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 <template>
   <main class="page">
     <div class="card hoverable">
-      <h2>典籍语料 · 七书数字化</h2>
+      <h2><DecryptTitle text="典籍语料 · 七书数字化" /></h2>
       <p class="sub">
         《滴天髓阐微》《三命通会》《穷通宝鉴》《子平真诠评注》《渊海子平》《神峰通考》《千里命稿》
         全文入库，按章节切分后以八个主题词族的密度刻画每部书的"性格"。数据全部可复算。
@@ -225,15 +226,15 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .matrix tbody tr:hover { background: rgba(232, 196, 115, 0.05); }
 .matrix tbody tr.on { background: rgba(232, 196, 115, 0.09); outline: 1px solid rgba(232, 196, 115, 0.35); }
 .matrix .col-on { background: rgba(94, 234, 212, 0.06); }
-.cellbar { position: relative; height: 14px; min-width: 74px; background: #1b2030; border-radius: 4px; overflow: hidden; }
+.cellbar { position: relative; height: 14px; min-width: 74px; background: var(--card-2); border-radius: 4px; overflow: hidden; }
 .cellbar i { display: block; height: 100%; border-radius: 4px; opacity: 0.85; transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
-.cellbar em { position: absolute; right: 4px; top: -1px; font-style: normal; font-size: 0.62rem; color: #10131c; font-weight: bold; line-height: 15px; }
+.cellbar em { position: absolute; right: 4px; top: -1px; font-style: normal; font-size: 0.62rem; color: var(--panel-2); font-weight: bold; line-height: 15px; }
 
 .search-row { display: flex; gap: 10px; margin-bottom: 12px; }
 .search-row input { flex: 1; }
 
 .ch-list { display: flex; flex-direction: column; gap: 6px; max-height: 560px; overflow-y: auto; padding-right: 4px; }
-.ch-item { border: 1px solid var(--line); border-radius: 10px; background: #141824; cursor: pointer; transition: border-color 0.2s ease, transform 0.2s ease; }
+.ch-item { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; transition: border-color 0.2s ease, transform 0.2s ease; }
 .ch-item:hover { transform: translateX(3px); border-color: rgba(94, 234, 212, 0.4); }
 .ch-item.open { border-color: var(--gold); }
 .ch-head { display: flex; align-items: center; gap: 10px; padding: 9px 12px; flex-wrap: wrap; }

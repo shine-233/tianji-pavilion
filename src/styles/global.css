@@ -16,10 +16,168 @@
   --earth: #c9a15f;
   --metal: #d8dde6;
   --water: #64a7e8;
+  --panel: #141824;
+  --panel-2: #10131c;
+  --panel-3: #171c29;
+  --inset: #0d1017;
+  --bar: #232a3a;
+  --acc-rgb: 232, 196, 115;
+  --acc2-rgb: 94, 234, 212;
+  --red-rgb: 248, 113, 113;
+  --on-accent: #201804;
+  --input-bg: var(--inset);
+  --bar-bg: var(--bar);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --topbar-bg: rgba(11, 13, 18, 0.82);
   --serif: 'Noto Serif SC', 'Songti SC', SimSun, serif;
   --cute: 'ZCOOL KuaiLe', var(--serif);
   --par-x: 0;
   --par-y: 0;
+}
+
+/* ---- 月白道袍：浅色 · 黛青主色 ---- */
+[data-theme='yue'] {
+  --panel: #ffffff;
+  --panel-2: #f2f5f8;
+  --panel-3: #eef2f6;
+  --inset: #ffffff;
+  --bar: #dbe3ea;
+  --bg: #e9edf2;
+  --bg-2: #f2f5f8;
+  --card: #ffffff;
+  --card-2: #f7fafc;
+  --line: #c9d4de;
+  --fg: #2a3644;
+  --dim: #64748b;
+  --gold: #3a6ea5;
+  --gold-bright: #2d5a8a;
+  --teal: #c25b4e;
+  --red: #c0392b;
+  --amber: #b7791f;
+  --acc-rgb: 58, 110, 165;
+  --acc2-rgb: 194, 91, 78;
+  --red-rgb: 192, 57, 43;
+  --on-accent: #ffffff;
+  --input-bg: #ffffff;
+  --bar-bg: #dbe3ea;
+  --shadow: 0 10px 26px rgba(42, 54, 68, 0.12);
+  --topbar-bg: rgba(238, 241, 244, 0.88);
+}
+
+/* ---- 朱砂符箓：深绛底 · 朱砂主色 ---- */
+[data-theme='zhu'] {
+  --panel: #241315;
+  --panel-2: #170e10;
+  --panel-3: #291719;
+  --inset: #1d0e10;
+  --bar: #40232a;
+  --bg: #180b0d;
+  --bg-2: #221013;
+  --card: #2a1518;
+  --card-2: #331a1d;
+  --line: #4a262b;
+  --fg: #f2e6cf;
+  --dim: #b89a8a;
+  --gold: #ff7a5c;
+  --gold-bright: #ffb08c;
+  --teal: #f2c94c;
+  --red: #ff5c5c;
+  --amber: #ffb84c;
+  --acc-rgb: 255, 122, 92;
+  --acc2-rgb: 242, 201, 76;
+  --red-rgb: 255, 92, 92;
+  --on-accent: #2a1008;
+  --input-bg: #1d0e10;
+  --bar-bg: #40232a;
+  --shadow: 0 10px 30px rgba(20, 6, 8, 0.5);
+  --topbar-bg: rgba(24, 11, 13, 0.85);
+}
+
+/* ---- 松烟水墨：宣纸浅色 · 墨色主调 ---- */
+[data-theme='shui'] {
+  --panel: #fbfaf5;
+  --panel-2: #f4f2ea;
+  --panel-3: #efede3;
+  --inset: #ffffff;
+  --bar: #dedbd0;
+  --bg: #eceae2;
+  --bg-2: #f4f2ea;
+  --card: #fbfaf5;
+  --card-2: #f3f1e8;
+  --line: #cfccc0;
+  --fg: #3a3a34;
+  --dim: #7c7a6d;
+  --gold: #4a5568;
+  --gold-bright: #333d4d;
+  --teal: #7a9e9f;
+  --red: #b04a3a;
+  --amber: #9a6b2f;
+  --acc-rgb: 74, 85, 104;
+  --acc2-rgb: 122, 158, 159;
+  --red-rgb: 176, 74, 58;
+  --on-accent: #f6f4ec;
+  --input-bg: #ffffff;
+  --bar-bg: #dedbd0;
+  --shadow: 0 10px 24px rgba(58, 58, 52, 0.14);
+  --topbar-bg: rgba(240, 238, 230, 0.9);
+}
+
+/* ---- 紫霄星穹：深紫底 · 霓虹辅色 ---- */
+[data-theme='zi'] {
+  --panel: #191330;
+  --panel-2: #120e22;
+  --panel-3: #201838;
+  --inset: #130f24;
+  --bar: #2c2350;
+  --bg: #0e0a1d;
+  --bg-2: #130f22;
+  --card: #1a1430;
+  --card-2: #211a3c;
+  --line: #352a5c;
+  --fg: #ece6ff;
+  --dim: #9a90c2;
+  --gold: #c9b0ff;
+  --gold-bright: #e4d6ff;
+  --teal: #7de8c3;
+  --red: #ff7a9e;
+  --amber: #ffd166;
+  --acc-rgb: 201, 176, 255;
+  --acc2-rgb: 125, 232, 195;
+  --red-rgb: 255, 122, 158;
+  --on-accent: #1c1233;
+  --input-bg: #120d24;
+  --bar-bg: #2c2350;
+  --shadow: 0 10px 30px rgba(8, 4, 20, 0.5);
+  --topbar-bg: rgba(14, 10, 29, 0.85);
+}
+
+/* ---- 青梅烟雨：墨绿底 · 梅黄点染 ---- */
+[data-theme='qing'] {
+  --panel: #122019;
+  --panel-2: #0d1712;
+  --panel-3: #17251b;
+  --inset: #0d1810;
+  --bar: #22382a;
+  --bg: #0b130e;
+  --bg-2: #0f1a13;
+  --card: #14241a;
+  --card-2: #1a2d21;
+  --line: #27402f;
+  --fg: #e9efe4;
+  --dim: #8fa895;
+  --gold: #ffd76e;
+  --gold-bright: #ffe9a8;
+  --teal: #9fd8bb;
+  --red: #ef8080;
+  --amber: #f2c94c;
+  --acc-rgb: 255, 215, 110;
+  --acc2-rgb: 159, 216, 187;
+  --red-rgb: 239, 128, 128;
+  --on-accent: #1d1608;
+  --input-bg: #0d1810;
+  --bar-bg: #22382a;
+  --shadow: 0 10px 30px rgba(4, 10, 6, 0.45);
+  --topbar-bg: rgba(11, 19, 14, 0.85);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,8 +186,8 @@ html { scroll-behavior: smooth; }
 
 body {
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(232, 196, 115, 0.07), transparent 60%),
-    radial-gradient(900px 600px at -10% 30%, rgba(94, 234, 212, 0.05), transparent 55%),
+    radial-gradient(1200px 700px at 85% -10%, rgba(var(--acc-rgb), 0.07), transparent 60%),
+    radial-gradient(900px 600px at -10% 30%, rgba(var(--acc2-rgb), 0.05), transparent 55%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   color: var(--fg);
   font-family: var(--serif);
@@ -49,21 +207,37 @@ body::after,
 }
 body::before {
   background-image:
-    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1px 1px at 70% 60%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255, 227, 168, 0.6), transparent),
-    radial-gradient(1px 1px at 90% 20%, rgba(255, 255, 255, 0.4), transparent);
+    radial-gradient(1px 1px at 20% 30%, rgba(127, 127, 127, 0.7), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(127, 127, 127, 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(var(--acc-rgb), 0.6), transparent),
+    radial-gradient(1px 1px at 90% 20%, rgba(127, 127, 127, 0.4), transparent);
   background-size: 520px 520px;
   transform: translate(calc(var(--par-x) * 14px), calc(var(--par-y) * 14px));
 }
+[data-theme='yue'] body::before,
+[data-theme='shui'] body::before {
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(var(--acc-rgb), 0.25), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(var(--acc-rgb), 0.18), transparent),
+    radial-gradient(2px 2px at 40% 80%, rgba(var(--acc2-rgb), 0.22), transparent),
+    radial-gradient(1px 1px at 90% 20%, rgba(var(--acc-rgb), 0.16), transparent);
+}
 body::after {
   background-image:
-    radial-gradient(1px 1px at 10% 70%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 10% 70%, rgba(127, 127, 127, 0.35), transparent),
     radial-gradient(1px 1px at 50% 10%, rgba(148, 200, 255, 0.5), transparent),
-    radial-gradient(1px 1px at 80% 85%, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(1px 1px at 33% 45%, rgba(232, 196, 115, 0.4), transparent);
+    radial-gradient(1px 1px at 80% 85%, rgba(127, 127, 127, 0.3), transparent),
+    radial-gradient(1px 1px at 33% 45%, rgba(var(--acc-rgb), 0.4), transparent);
   background-size: 340px 340px;
   transform: translate(calc(var(--par-x) * 28px), calc(var(--par-y) * 28px));
+}
+[data-theme='yue'] body::after,
+[data-theme='shui'] body::after {
+  background-image:
+    radial-gradient(1px 1px at 10% 70%, rgba(var(--acc-rgb), 0.15), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(var(--acc2-rgb), 0.2), transparent),
+    radial-gradient(1px 1px at 80% 85%, rgba(var(--acc-rgb), 0.12), transparent),
+    radial-gradient(1px 1px at 33% 45%, rgba(var(--acc2-rgb), 0.18), transparent);
 }
 
 #app { position: relative; z-index: 1; }
@@ -87,10 +261,10 @@ a:hover { text-decoration: underline; }
   border-radius: 14px;
   padding: 18px 20px;
   margin-bottom: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow);
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
-.card.hoverable:hover { transform: translateY(-3px); border-color: rgba(232, 196, 115, 0.35); }
+.card.hoverable:hover { transform: translateY(-3px); border-color: rgba(var(--acc-rgb), 0.35); }
 
 .sub { color: var(--dim); font-size: 0.82rem; line-height: 1.8; }
 
@@ -99,8 +273,8 @@ button, .btn {
   padding: 9px 18px;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: linear-gradient(140deg, var(--gold), #caa14f);
-  color: #201804;
+  background: linear-gradient(140deg, var(--gold), color-mix(in srgb, var(--gold) 72%, #000));
+  color: var(--on-accent);
   font-weight: bold;
   cursor: pointer;
   font-size: 0.95rem;
@@ -121,7 +295,7 @@ input, select {
   padding: 9px 11px;
   border-radius: 9px;
   border: 1px solid var(--line);
-  background: #0d1017;
+  background: var(--input-bg);
   color: var(--fg);
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -129,14 +303,15 @@ input, select {
 input:focus, select:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(232, 196, 115, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--acc-rgb), 0.15);
 }
+select option { background: var(--card); color: var(--fg); }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 td, th { padding: 6px 9px; text-align: left; border-bottom: 1px solid var(--line); }
 th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 
-.bar { height: 9px; background: #232a3a; border-radius: 5px; overflow: hidden; margin: 4px 0 8px; }
+.bar { height: 9px; background: var(--bar-bg); border-radius: 5px; overflow: hidden; margin: 4px 0 8px; }
 .bar > i {
   display: block; height: 100%; border-radius: 5px;
   background: linear-gradient(90deg, var(--teal), var(--gold));
@@ -150,11 +325,11 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
   display: inline-block; padding: 2px 10px; margin: 2px;
   border-radius: 999px; font-size: 0.75rem;
   border: 1px solid var(--line); color: var(--dim);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(127, 127, 127, 0.05);
 }
-.tag.gold { color: var(--gold-bright); border-color: rgba(232, 196, 115, 0.4); }
-.tag.red { color: var(--red); border-color: rgba(248, 113, 113, 0.4); }
-.tag.teal { color: var(--teal); border-color: rgba(94, 234, 212, 0.4); }
+.tag.gold { color: var(--gold-bright); border-color: rgba(var(--acc-rgb), 0.4); }
+.tag.red { color: var(--red); border-color: rgba(var(--red-rgb), 0.4); }
+.tag.teal { color: var(--teal); border-color: rgba(var(--acc2-rgb), 0.4); }
 
 .ele-木 { color: var(--wood); }
 .ele-火 { color: var(--fire); }
@@ -166,13 +341,24 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 .bg-土 { background: rgba(201, 161, 95, 0.14); }
 .bg-金 { background: rgba(216, 221, 230, 0.12); }
 .bg-水 { background: rgba(100, 167, 232, 0.14); }
+[data-theme='shui'] .ele-金,
+[data-theme='yue'] .ele-金 { color: #8a94a6; }
 
 .fade-enter-active { transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
 .fade-leave-active { transition: all 0.2s ease; position: absolute; opacity: 0; }
 .fade-enter-from { opacity: 0; transform: translateY(16px); }
 .fade-leave-to { opacity: 0; }
 
-/* 光标拖尾（阴阳鱼与星屑） */
+/* 滚动浮现 */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--rv-d, 0ms);
+}
+.reveal.in { opacity: 1; transform: none; }
+
+/* 光标拖尾 */
 .cursor-trail {
   position: fixed;
   z-index: 2000;
@@ -191,8 +377,8 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
   z-index: 3;
   width: 130px;
   height: 1.5px;
-  background: linear-gradient(90deg, transparent, rgba(255, 227, 168, 0.9));
-  filter: drop-shadow(0 0 6px rgba(255, 227, 168, 0.8));
+  background: linear-gradient(90deg, transparent, rgba(var(--acc-rgb), 0.9));
+  filter: drop-shadow(0 0 6px rgba(var(--acc-rgb), 0.8));
   pointer-events: none;
   transform: rotate(-32deg);
   animation: shoot 1.25s ease-in forwards;
@@ -203,8 +389,8 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 }
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 5px; }
-::-webkit-scrollbar-thumb:hover { background: #3a4258; }
+::-webkit-scrollbar-thumb { background: var(--bar-bg); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--line); }
 
 @media (max-width: 720px) {
   .page { padding: 18px 12px 110px; }
@@ -216,7 +402,7 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
   z-index: 2100;
   pointer-events: none;
   color: var(--gold-bright);
-  text-shadow: 0 0 6px rgba(255, 227, 168, 0.8);
+  text-shadow: 0 0 6px rgba(var(--acc-rgb), 0.8);
   animation: spark-fly 0.78s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
 }
 @keyframes spark-fly {
