@@ -54,8 +54,8 @@ export function runChart(y: number, m: number, d: number, hh: number, mm: number
   } as ChartResult
 }
 
-/** 仅紫微：由公历生日生成十二宫命盘与三方四正评分 */
-export function ziweiFromDate(y: number, m: number, d: number, hh: number, mm: number): {
+/** 仅紫微：由公历生日生成十二宫命盘（含大限）与三方四正评分 */
+export function ziweiFromDate(y: number, m: number, d: number, hh: number, mm: number, gender = 1): {
   zc: ReturnType<typeof ziweiChart>
   scored: ReturnType<typeof ziweiScore>
   pillars: Pillar
@@ -64,6 +64,6 @@ export function ziweiFromDate(y: number, m: number, d: number, hh: number, mm: n
   const lunar = solar.getLunar()
   const ec = lunar.getEightChar()
   const ps: Pillar = [ec.getYear(), ec.getMonth(), ec.getDay(), ec.getTime()]
-  const zc = ziweiChart(lunar)
+  const zc = ziweiChart(lunar, gender)
   return { zc, scored: ziweiScore(zc), pillars: ps }
 }

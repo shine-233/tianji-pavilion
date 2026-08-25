@@ -4,8 +4,16 @@ import { useRouter } from 'vue-router'
 import { buildTaoess, TAOESSES, TAOESS_IDS } from '../data/sageSprite'
 import type { TaoessDef } from '../data/sageSprite'
 import { sfx } from '../lib/sfx'
+import SageVoxel3D from '../components/SageVoxel3D.vue'
 
 const router = useRouter()
+
+const selected3d = ref('qingxuan')
+
+function pick3d(id: string): void {
+  selected3d.value = id
+  sfx.blip()
+}
 
 interface Entry {
   def: TaoessDef
@@ -84,6 +92,26 @@ function goPage(id: string): void {
       <button @click="randomPick()">🎲 随缘指派一位</button>
     </div>
 
+    <div class="card stage-card">
+      <div class="stage-left">
+        <SageVoxel3D :char="selected3d" />
+      </div>
+      <div class="stage-right">
+        <h3 class="gold-t2">立体道长 · 体素建模</h3>
+        <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
+        <div class="chip-row">
+          <button
+            v-for="id in TAOESS_IDS" :key="id"
+            class="chip" :class="{ on: selected3d === id }"
+            @click="pick3d(id)"
+          >{{ TAOESSES[id]!.nameCn }}</button>
+        </div>
+        <p v-if="TAOESSES[selected3d]" class="sub spot-line">
+          <b>{{ TAOESSES[selected3d]!.nameCn }} · {{ TAOESSES[selected3d]!.title }}</b><br />{{ TAOESSES[selected3d]!.hello }}
+        </p>
+      </div>
+    </div>
+
     <transition name="pop">
       <div v-if="spotDef" class="card spot-card">
         <div class="spot-inner">
@@ -121,6 +149,24 @@ function goPage(id: string): void {
 </template>
 
 <style scoped>
+.stage-card { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: stretch; }
+.stage-left { min-width: 0; }
+.stage-right { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--dim);
+  font-family: var(--cute);
+  font-size: 0.82rem;
+}
+.chip:hover { border-color: rgba(var(--acc-rgb), 0.5); color: var(--gold-bright); transform: none; filter: none; }
+.chip.on { background: rgba(var(--acc-rgb), 0.14); border-color: var(--gold); color: var(--gold-bright); }
+.spot-line { line-height: 1.9; }
+.spot-line b { color: var(--fg); }
+
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));

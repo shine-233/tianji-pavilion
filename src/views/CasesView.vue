@@ -3,6 +3,7 @@ import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { ELE_B, ELE_S } from '../lib/constants'
 import { sfx } from '../lib/sfx'
+import { vTilt } from '../lib/tilt'
 
 interface MasterCase {
   pillars: string
@@ -180,7 +181,7 @@ function fmtCtx(ctx: string): string {
       <div v-if="tab === 'master'" class="c-grid" :class="{ loaded: entered }">
         <button
           v-for="(c, i) in filteredMaster.slice(0, shown)" :key="i"
-          class="c-card" :class="{ on: openIdx === i }"
+          v-tilt="8" class="c-card" :class="{ on: openIdx === i }"
           :style="{ transitionDelay: entered ? `${Math.min((i % 24) * 24, 420)}ms` : '0ms' }"
           @click="toggle(i)"
         >

@@ -5,6 +5,10 @@ export interface ZiweiChart {
   mingIndex: number
   juName: string
   siHua: Record<string, string>
+  /** 大限：宫支索引 → 起讫年龄，如 { 3: '4-13' } */
+  limits: Record<number, string>
+  /** 大限走向：true=顺行（按地支序） */
+  forward: boolean
 }
 
 const MAINS_ORDER = [['紫微', '天机', '太阳', '武曲', '天同', '廉贞'], ['天府', '太阴', '贪狼', '巨门', '天相', '天梁', '七杀', '破军']]
@@ -15,7 +19,7 @@ export function ziweiChart(lunar: {
   getMonth(): number
   getDay(): number
   getTimeZhi(): string
-}): ZiweiChart {
+}, gender = 1): ZiweiChart {
   const YG = lunar.getYearGan()
   const M = Math.abs(lunar.getMonth())
   const D = lunar.getDay()
@@ -69,7 +73,18 @@ export function ziweiChart(lunar: {
     extras: [...extras[i]],
   }))
   const juName = NAYIN_OF[mgz]
-  return { palaces, mingIndex: ming, juName: `${juName}局`, siHua: hm }
+
+  // 大限：局数起限，阳男阴女顺行、阴男阳女逆行，每十年过一宫
+  const yangYear = '甲丙戊庚壬'.includes(YG)
+  const forward = yangYear === (gender === 1)
+  const limits: Record<number, string> = {}
+  for (let i = 0; i < 12; i++) {
+    const idx = forward ? (ming + i) % 12 : (((ming - i) % 12) + 12) % 12
+    const a = ju + i * 10
+    limits[idx] = `${a}-${a + 9}`
+  }
+
+  return { palaces, mingIndex: ming, juName: `${juName}局`, siHua: hm, limits, forward }
 }
 
 /** 三方四正评分（与 v5 引擎 twdsscore 同规则），返回分数与命宫三方明细 */

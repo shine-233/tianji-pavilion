@@ -2,6 +2,7 @@
 import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'
+import { vTilt } from '../lib/tilt'
 
 interface Lineage {
   name: string
@@ -134,7 +135,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
       <div class="g-grid" :class="{ loaded: entered }">
         <button
           v-for="(l, i) in filtered" :key="l.name"
-          class="g-card" :class="{ on: openName === l.name }"
+          v-tilt="7" class="g-card" :class="{ on: openName === l.name }"
           :style="{ transitionDelay: entered ? `${Math.min(i * 22, 400)}ms` : '0ms' }"
           @click="open(l)"
         >

@@ -1,71 +1,171 @@
 import { Element, SHENSHA_MEANING, SHENG, WOKE, YIN } from './constants'
-import { ChartResult } from './engine'
+import { shiShen, ChartResult } from './engine'
 
-/** 由评分结果离线生成白话解读（确定性文本拼装，无任何网络调用） */
+/** 由评分结果离线生成白话解读（确定性文本拼装，无任何网络调用）。
+ *  文案原则：说人话、给场景、不排比、不喊口号。 */
 export function interpret(r: ChartResult): Array<{ title: string; text: string }> {
   const out: Array<{ title: string; text: string }> = []
-  const dmg = r.dmg
-  const strong = r.r >= 0.62
-  const weak = r.r <= 0.38
 
-  out.push({
-    title: '日主强弱',
-    text: strong
-      ? `日主${dmg}，同党（${dmg}＋${YIN[dmg]}）占比 ${r.r.toFixed(2)}，属身旺之局。身旺喜克泄耗，宜财官食伤发挥。`
-      : weak
-        ? `日主${dmg}，同党占比仅 ${r.r.toFixed(2)}，属身弱之局。身弱喜印比扶身，忌官杀财星过重。${r.cong ? (r.pure ? '且满盘无异党，构成「纯从格」——弃命相从，反以从势为贵。' : '接近「假从格」，从得不纯，岁运引发摇摆。') : ''}`
-        : `日主${dmg}，同党占比 ${r.r.toFixed(2)}，强弱中和偏衡。此类命局最重岁运引动，大运走向对人生节奏影响显著。`,
-  })
+  // ---------- 日主强弱（按强弱带细分五档） ----------
+  out.push({ title: '日主强弱', text: strengthCopy(r) })
 
+  // ---------- 格局与根气 ----------
   out.push({
     title: '格局与根气',
     text: r.gdet.length
-      ? `格局取用按「根气信用」计分：${r.gdet.map((x) => x.replace(':', ' 得根气信用 ')).join('；')}。` + (r.byao ? ' 命局病药相济——有病有药，行药运则发，古诀所谓「病药两停，贵不可言」。' : '')
-      : `财官印三类用神在天干地支均未见有根之气，格局信用偏低，层次更多依赖大运补救。`,
+      ? `格局按「根气信用」打分：${r.gdet.map((x) => x.replace(':', ' 得根 ')).join('；')}。` +
+        (r.byao
+          ? ' 这盘还有个难得之处——病药相济。命里最碍事的那个字，恰好有另一个字治得住它，行到药运的年头，爆发力比四平八稳的命大得多。'
+          : ' 根气就是天干在地支里扎下的根：根深的字说话算数，虚浮的字容易雷声大雨点小。')
+      : `财、官、印三类用神在天干地支都没找到有根的字，格局信用偏低。
+直白点说：这盘的成色更多要靠大运来补，原局是「半成品」，走对运才能出厂。`,
   })
 
-  const cold = ['亥', '子', '丑'].includes(r.ps[1][1])
-  const hot = ['巳', '午', '未'].includes(r.ps[1][1])
+  // ---------- 十神配置 ----------
+  out.push({ title: '十神速写', text: shiShenCopy(r) })
+
+  // ---------- 调候寒燥 ----------
+  const cold = ['亥', '子', '丑'].includes(r.ps[1]![1]!)
+  const hot = ['巳', '午', '未'].includes(r.ps[1]![1]!)
   out.push({
     title: '调候寒燥',
     text: cold
-      ? `生于${r.ps[1][1]}月隆冬，寒气偏重，调候首重丙火解冻。盘中火字 ${r.cnt['火']} 个，${r.cnt['火'] >= 2 ? '暖局有成，冬金得暖、生机勃发。' : '火力不足，早岁多寒滞感，行南方火运如枯木逢春。'}`
+      ? `生在${r.ps[1]![1]}月隆冬，一盘寒气，调候头等大事是丙火解冻。
+盘里火字 ${r.cnt['火']} 个——${r.cnt['火']! >= 2 ? '够用，冬木冬金得了暖气，人显得有精神头，做事也热得起来。' : r.cnt['火'] === 1 ? '只有一个，聊胜于无。早年会觉得施展不开，等到南方火运，就像屋里生了炉子。' : '一个都没有，寒气全靠硬扛。这类盘怕冷也怕慢，遇火运如枯木逢春，遇水运则加倍阴冷。'}`
       : hot
-        ? `生于${r.ps[1][1]}月盛夏，燥热明显，调候首重壬水润局。盘中水字 ${r.cnt['水']} 个，${r.cnt['水'] >= 2 ? '润局有成，烈火得制，聪明秀气。' : '滴水难支，防急躁冒进，行北方水运方得舒展。'}`
-        : `月令${r.ps[1][1]}，寒燥适中，调候压力不大，结构优劣主导层次高低。`,
+        ? `生在${r.ps[1]![1]}月盛夏，燥气明显，最盼壬水润局。
+盘里水字 ${r.cnt['水']} 个——${r.cnt['水']! >= 2 ? '润局有成。烈火得制反而显贵，人聪明、反应快，只是别把性子磨得太急。' : r.cnt['水'] === 1 ? '一滴水救不了大火炉，脾气上来的时候记得给自己泼盆冷水。' : '滴水皆无，纯阳之燥。行事容易上头，凡事先放一晚再决定，能避开大半冲动型坑。'}`
+        : `月令${r.ps[1]![1]}，不寒不燥，调候上没什么可操心的。
+省下来的注意力可以放在结构上：这盘的高低，主要看五行搭配本身。`,
   })
 
+  // ---------- 冲刑提示 ----------
   if (r.chong > 0 || r.zx > 0) {
     out.push({
       title: '冲刑提示',
-      text: `${r.chong > 0 ? `地支六冲 ${r.chong} 组，主动荡变迁、聚散无常，应期多在冲动之年。` : ''}${r.zx > 0 ? `自刑 ${r.zx} 组，主内耗纠结、自我拉扯，修心可解。` : ''}结构项因此扣分 ${6 * r.chong + 3 * r.zx} 分。`,
+      text: `${r.chong > 0 ? `地支六冲 ${r.chong} 组。冲主变动：搬家、换工作、聚散，多半应在被冲动的流年。忌神被冲反而是好事，相当于拔掉了钉子。` : ''}${r.zx > 0 ? `自刑 ${r.zx} 组。自刑说白了就是内耗——翻旧账、自我怀疑、睡前开复盘会。古书说得玄乎，落到今天就是提醒你少跟自己较劲。` : ''}`,
     })
   }
 
+  // ---------- 大运节奏 ----------
   const best = [...r.dlist].sort((a, b) => b.fin - a.fin)[0]
   const worst = [...r.dlist].sort((a, b) => a.fin - b.fin)[0]
   if (best && worst) {
+    const current = r.dlist.find((d) => {
+      const [a, b] = d.window.split('–').map(Number)
+      const now = new Date().getFullYear()
+      return now >= (a ?? 0) && now <= (b ?? 0)
+    })
     out.push({
       title: '大运节奏',
-      text: `评估窗口内最顺为 ${best.gz} 大运（${best.window}，亲和度 ${best.fin.toFixed(2)}），${worst.gz !== best.gz ? `最需谨慎为 ${worst.gz} 运（${worst.window}，${worst.fin.toFixed(2)}）` : ''}。喜用神为【${r.fav.join('、')}】，逢此类五行流年多有顺风局。`,
+      text: `${current ? `你现在正走在 ${current.gz} 运里（${current.window}）。` : ''}` +
+        `评估窗口内最顺的一段是 ${best.gz} 运（${best.window}，亲和度 ${best.fin.toFixed(2)}）——${best.fin >= 0.6 ? '顺风局，想做的事趁那十年铺开，别拖。' : '不算大顺，但比其他年份省力。'}` +
+        (worst.gz !== best.gz ? `最费劲的是 ${worst.gz} 运（${worst.window}），那段日子宜守不宜攻，管好身体和现金流就算赢。` : '') +
+        `\n喜用神是【${r.fav.join('、')}】：逢这些五行的流年办事顺一些，挑方位、颜色、行业时也可以拿它们当参考系。`,
     })
   }
 
+  // ---------- 神煞点缀 ----------
   if (r.got.length) {
     out.push({
       title: '神煞点缀',
       text: r.got.map((g) => `【${g}】${shensa(g)}`).join('\n'),
     })
   } else {
-    out.push({ title: '神煞点缀', text: '本盘未检出常见吉凶神煞，平淡亦是福——少刑冲则少波澜。' })
+    out.push({ title: '神煞点缀', text: '常见吉凶神煞一概没检出。别失望——少刑冲就少波澜，平淡的盘往往睡得安稳。' })
   }
 
-  out.push({
-    title: '紫微三方',
-    text: `三方四正综合 ${r.zs.toFixed(1)}/10。此分与八字七柱体系相互独立：八字看「禀气深浅」，紫微看「宫星配置」，两者相关性实测 ρ≈-0.06（不显著），恰说明两套体系测的并非同一维度。`,
-  })
+  // ---------- 紫微三方（读取真实星曜明细） ----------
+  out.push({ title: '紫微三方', text: ziweiCopy(r) })
 
   return out
+}
+
+/** 强弱文案：按 r 值分五档，附同党异党拆解 */
+function strengthCopy(r: ChartResult): string {
+  const dmg = r.dmg
+  const ye = YIN[dmg]
+  const sameCnt = r.cnt[dmg]
+  const supCnt = r.cnt[ye]
+  const strong = r.r >= 0.62
+  const weak = r.r <= 0.38
+  const base = `日主${dmg}，帮它的字（${dmg}＋${ye}）共 ${sameCnt + supCnt} 个，强弱系数 r=${r.r.toFixed(2)}。`
+
+  if (r.cong) {
+    return (
+      base +
+      (r.pure
+        ? ` 更特别的是：满盘找不到一个克泄${dmg}的字，构成「纯从格」。弃命从势，反以势大为贵——这类盘不看身强身弱，看的是大势往哪边倒。`
+        : ` 它接近「假从格」：想从却从得不干净。反映在生活里就是反复横跳——一会儿想彻底躺平随大流，一会儿又想自己单干，岁运一来这种拉扯会更明显。`)
+    )
+  }
+  if (r.r >= 0.75) {
+    return base + ' 明显身旺，而且旺过了头。这类盘的人主意大、不听劝，财官就在对面摆着——学会「耗」自己：找事做、找人合作、把精力花出去，比补什么都有用。'
+  }
+  if (strong) {
+    return base + ' 属身旺。扛得住财官，适合自己去闯：业绩岗、创业、牵头做事都行。要注意的反而是别揽太多——身旺人的累，多是自找的。'
+  }
+  if (r.r >= 0.45 && r.r <= 0.55) {
+    return base + ' 中和偏衡，是教科书里最喜欢的「中和」盘。不过别高兴太早：中和的命最吃岁运，大运走向几乎决定人生节奏——运好比什么都好。'
+  }
+  if (weak) {
+    return base + ' 属身弱。先扶身再谈别的：印星（学习、证书、贵人）和比劫（朋友、团队）是两根拐杖。硬扛高压岗位或重资产创业，容易把自己压垮。' 
+  }
+  return base + ' 略偏弱但不至于扶不起来。选平台比拼胆量重要——跟着对的团队，你的输出反而比身旺人更稳。'
+}
+
+/** 十神速写：其余三干的十神角色 + 场景化解读 */
+function shiShenCopy(r: ChartResult): string {
+  const roles: Record<string, number> = {}
+  r.ps.forEach((p, i) => {
+    if (i === 2) return
+    const s = shiShen(r.dmg, p[0]!)
+    roles[s] = (roles[s] ?? 0) + 1
+  })
+  // 地支藏干太细，此处只数天干，说明口径即可
+  const parts: string[] = []
+  const desc: Record<string, string> = {
+    比肩: '平辈分量的自己人——同事、合伙人、也包括跟你抢资源的对手',
+    劫财: '带竞争属性的自己人，合作愉快时是帮手，分钱时容易红脸',
+    食神: '输出与口福之星，代表表达、手艺、慢慢打磨的东西',
+    伤官: '才华外露的那根刺，创意顶呱呱，说话也得罪人',
+    偏财: '活钱——经营、流动、机会型的收入',
+    正财: '死工资式的稳钱，也代表男命的妻星',
+    七杀: '压力源兼发动机，逼你成长的狠角色',
+    正官: '规则、名誉、约束，也是女命的夫星',
+    偏印: '偏门学问与直觉，学东西快，但容易想太多',
+    正印: '庇护伞——学历、长辈、名声，缺了它安全感会打折',
+  }
+  Object.entries(roles).forEach(([k, v]) => {
+    parts.push(`${k}×${v}`)
+  })
+  const headline = parts.length ? `年、月、时三干落了：${parts.join('、')}。` : '年、月、时三干没有透出明显的十神角色（少见的地支主导盘）。'
+  const top = Object.entries(roles).sort((a, b) => b[1] - a[1])[0]
+  const tail = top
+    ? `分量最重的是「${top[0]}」——${desc[top[0]]}。它就是你这张盘的日常背景音，习惯了它的存在，就知道哪些事顺手、哪些事别扭。`
+    : ''
+  return headline + tail
+}
+
+/** 紫微段：点名真实星曜而不是套话 */
+function ziweiCopy(r: ChartResult): string {
+  const head = `三方四正综合 ${r.zs.toFixed(1)}/10。`
+  if (!r.ziweiDetail?.length) {
+    return head + ' 此分与八字体系相互独立：八字看禀气深浅，紫微看宫星配置，两者相关性实测 ρ≈-0.06（不显著）——本就是两把不同的尺子。'
+  }
+  const named = r.ziweiDetail
+    .map((d) => `「${d.palace}」${d.stars.length ? d.stars.join('、') : '空宫（借对宫星）'}`)
+  const good = [...r.ziweiDetail].sort((a, b) => b.delta - a.delta)[0]
+  const bad = [...r.ziweiDetail].sort((a, b) => a.delta - b.delta)[0]
+  let body = `命宫四方分别是：${named.join('；')}。`
+  if (good && good.delta > 0) {
+    body += `\n加分最多的是「${good.palace}」（+${good.delta.toFixed(1)}）：这一宫的吉星密度最高，是你天生占便宜的角落，重要的事尽量往这个领域靠。`
+  }
+  if (bad && bad.delta < 0 && bad.palace !== good?.palace) {
+    body += `\n拖后腿的是「${bad.palace}」（${bad.delta.toFixed(1)}）：煞忌集中在此，相关事务多留书面凭证、多做两手准备，不吃亏。`
+  }
+  body += '\n提醒一句：八字与紫微测的不是同一个维度，两边的分数没法互相换算，分开看各自的意义。'
+  return body
 }
 
 function shensa(name: string): string {
