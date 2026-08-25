@@ -1,463 +1,315 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Solar } from 'lunar-javascript'
-import {
-  assembleReading, bitsFromCast, changedBits, COIN_LABEL, install, tossCoins, yongshenLiuqin,
-} from '../lib/liuyao'
-import type { InstalledGua, LiuyaoResult } from '../lib/liuyao'
-import { ELE_B } from '../lib/constants'
+import { analyzeYongshen, buildChart, summarize, tossText, YONGSHEN_MAP, type LiuYaoChart } from '../lib/liuyao'
+import { Lunar } from 'lunar-javascript'
+import { addRecord } from '../lib/records'
 import { sfx } from '../lib/sfx'
+import { sparkle } from '../lib/sparkle'
 
-const question = ref('')
-const category = ref('财运')
-const CATEGORIES = ['财运', '事业', '婚姻', '健康', '学业', '寻物', '行人', '其他']
+type Phase = 'ready' | 'casting' | 'done'
 
-type Phase = 'idle' | 'tossing' | 'done'
-const phase = ref<Phase>('idle')
-const cast = ref<number[]>([])
-const round = ref(-1)
-const coinFaces = ref<[boolean, boolean, boolean]>([false, false, false])
-const spinning = ref(false)
-const result = ref<LiuyaoResult | null>(null)
-const manualMode = ref(false)
-const manual = ref<number[]>([7, 7, 7, 7, 7, 7])
-const copied = ref(false)
+const phase = ref<Phase>('ready')
+const tosses = ref<number[]>([])
+const currentToss = ref(-1)
+const question = ref(YONGSHEN_MAP[0].key)
+const autoMode = ref(true)
+const manualPick = ref<number | null>(null)
+const chart = computed<LiuYaoChart | null>(() => {
+  if (tosses.value.length !== 6) return null
+  const l = Lunar.fromDate(new Date())
+  return buildChart({
+    tosses: [...tosses.value],
+    dayGan: l.getDayInGanZhi()[0],
+    dayZhi: l.getDayInGanZhi()[1],
+    monthZhi: l.getMonthInGanZhi()[1],
+  })
+})
+const verdict = computed(() => {
+  if (!chart.value) return null
+  const y = YONGSHEN_MAP.find((x) => x.key === question.value)!
+  const v = analyzeYongshen(chart.value, y.liuqin, Lunar.fromDate(new Date()).getMonthInGanZhi()[1], Lunar.fromDate(new Date()).getDayInGanZhi()[1])
+  return { label: y.label, v, text: summarize(v, chart.value, y.label) }
+})
 
-const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms))
+let timer: number | null = null
 
-function nowContext(): { dayGZ: string; monthGZ: string } {
-  const lunar = Solar.fromDate(new Date()).getLunar()
-  return { dayGZ: lunar.getDayInGanZhi(), monthGZ: lunar.getMonthInGanZhi() }
-}
-
-function kongOf(dayGZ: string): string {
-  const GAN = '甲乙丙丁戊己庚辛壬癸'
-  const ZHI = '子丑寅卯辰巳午未申酉戌亥'
-  const gi = GAN.indexOf(dayGZ[0]!)
-  let zi = ZHI.indexOf(dayGZ[1]!)
-  while (((zi % 10) + 10) % 10 !== ((gi % 10) + 10) % 10) zi += 12
-  const start = Math.floor(zi / 10) * 10
-  return ZHI[(start + 10) % 12]! + ZHI[(start + 11) % 12]!
-}
-
-interface HistoryEntry {
-  ts: number
-  q: string
-  cat: string
-  cast: number[]
-  benName: string
-  bianName: string | null
-  dayGZ: string
-  monthGZ: string
-}
-
-const HKEY = 'bs-liuyao-history'
-function loadHistory(): HistoryEntry[] {
-  try {
-    return JSON.parse(localStorage.getItem(HKEY) ?? '[]') as HistoryEntry[]
-  } catch {
-    return []
-  }
-}
-const history = ref<HistoryEntry[]>(loadHistory())
-
-function pushHistory(ctx: { dayGZ: string; monthGZ: string }): void {
-  const ben = install(bitsFromCast(cast.value), ctx.dayGZ)
-  const movers = cast.value.some((v) => v === 6 || v === 9)
-  const bian = movers ? install(changedBits(bitsFromCast(cast.value), cast.value), ctx.dayGZ) : null
-  history.value = [
-    { ts: Date.now(), q: question.value.trim(), cat: category.value, cast: [...cast.value], benName: ben.name, bianName: bian?.name ?? null, dayGZ: ctx.dayGZ, monthGZ: ctx.monthGZ },
-    ...history.value,
-  ].slice(0, 12)
-  try {
-    localStorage.setItem(HKEY, JSON.stringify(history.value))
-  } catch { /* noop */ }
-}
-
-async function shake(): Promise<void> {
-  if (phase.value === 'tossing') return
-  phase.value = 'tossing'
-  cast.value = []
-  result.value = null
-  round.value = -1
-  sfx.gong()
-  const ctx = nowContext()
-  for (let r = 0; r < 6; r++) {
-    round.value = r
-    spinning.value = true
-    const spinTimer = window.setInterval(() => {
-      coinFaces.value = [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5]
-      sfx.tick()
-    }, 110)
-    await sleep(950)
-    window.clearInterval(spinTimer)
-    const v = tossCoins()
-    coinFaces.value = [v >= 7, v >= 8, v >= 9]
-    spinning.value = false
-    cast.value.push(v)
-    sfx.flip()
-    await sleep(420)
-  }
-  const ben = install(bitsFromCast(cast.value), ctx.dayGZ)
-  const movers = cast.value.some((v) => v === 6 || v === 9)
-  const bian = movers ? install(changedBits(bitsFromCast(cast.value), cast.value), ctx.dayGZ) : null
-  result.value = assembleReading(ben, bian, cast.value, {
-    dayGZ: ctx.dayGZ, monthGZ: ctx.monthGZ, kong: kongOf(ctx.dayGZ),
-  }, category.value, question.value)
-  phase.value = 'done'
-  pushHistory(ctx)
-  sfx.ding()
-}
-
-function manualAssemble(): void {
-  const ctx = nowContext()
-  const bits = bitsFromCast(manual.value)
-  const ben = install(bits, ctx.dayGZ)
-  const movers = manual.value.some((v) => v === 6 || v === 9)
-  const bian = movers ? install(changedBits(bits, manual.value), ctx.dayGZ) : null
-  result.value = assembleReading(ben, bian, [...manual.value], {
-    dayGZ: ctx.dayGZ, monthGZ: ctx.monthGZ, kong: kongOf(ctx.dayGZ),
-  }, category.value, question.value)
-  phase.value = 'done'
-  cast.value = [...manual.value]
-  pushHistory(ctx)
-  sfx.gong()
-}
-
-function replay(h: HistoryEntry): void {
-  question.value = h.q
-  category.value = h.cat
-  cast.value = [...h.cast]
-  const ben = install(bitsFromCast(cast.value), h.dayGZ)
-  const movers = cast.value.some((v) => v === 6 || v === 9)
-  const bian = movers ? install(changedBits(bitsFromCast(cast.value), cast.value), h.dayGZ) : null
-  result.value = assembleReading(ben, bian, [...h.cast], {
-    dayGZ: h.dayGZ, monthGZ: h.monthGZ, kong: kongOf(h.dayGZ),
-  }, h.cat, h.q)
-  phase.value = 'done'
+function castOnce(): void {
+  // 每枚铜钱独立掷正反，背面数即爻的结果
+  let backs = 0
+  for (let i = 0; i < 3; i++) if (Math.random() < 0.5) backs++
+  tosses.value.push(backs)
   sfx.pop()
+  sparkle(window.innerWidth / 2 + (Math.random() - 0.5) * 200, window.innerHeight * 0.4, 5)
 }
 
-function clearHistory(): void {
-  history.value = []
-  try {
-    localStorage.removeItem(HKEY)
-  } catch { /* noop */ }
-  sfx.toggle()
+function startCast(): void {
+  if (phase.value === 'done') {
+    tosses.value = []
+  }
+  phase.value = 'casting'
+  currentToss.value = 0
+  const step = (): void => {
+    castOnce()
+    currentToss.value = tosses.value.length
+    if (tosses.value.length >= 6) {
+      if (timer !== null) window.clearInterval(timer)
+      timer = null
+      window.setTimeout(() => {
+        phase.value = 'done'
+        sfx.gong()
+        if (chart.value) {
+          addRecord({
+            kind: 'liuyao',
+            title: `六爻 · ${chart.value.name}${chart.value.changedName ? ' 之 ' + chart.value.changedName : ''}`,
+            detail: YONGSHEN_MAP.find((x) => x.key === question.value)!.label,
+          })
+        }
+      }, 450)
+    }
+  }
+  step()
+  timer = window.setInterval(step, 950)
 }
 
-async function copyReading(): Promise<void> {
-  if (!result.value) return
-  const text = `【六爻问卦】${question.value.trim() || '(未记所问)'} · ${category.value}\n`
-    + `${result.value.ctx.dayGZ}日 ${result.value.ctx.monthGZ}月 旬空${result.value.ctx.kong}\n`
-    + `本卦 ${result.value.ben.name}` + (result.value.bian ? ` → 变卦 ${result.value.bian.name}` : '') + '\n'
-    + result.value.reading.join('\n')
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    window.setTimeout(() => (copied.value = false), 1600)
-    sfx.blip()
-  } catch { /* noop */ }
+function pickManual(n: number): void {
+  sfx.blip()
+  tosses.value.push(n)
+  currentToss.value = tosses.value.length
+  if (tosses.value.length >= 6) {
+    phase.value = 'done'
+    sfx.gong()
+  }
 }
 
 function reset(): void {
-  phase.value = 'idle'
-  cast.value = []
-  result.value = null
-  round.value = -1
-  sfx.toggle()
-}
-
-const MANUAL_OPTS = [
-  { v: 6, label: '老阴 ⚋ 动' },
-  { v: 7, label: '少阳 ⚊ 静' },
-  { v: 8, label: '少阴 ⚋ 静' },
-  { v: 9, label: '老阳 ⚊ 动' },
-]
-
-interface Row {
-  pos: number
-  liushou: string
-  liuqin: string
-  najia: string
-  wx: string
-  yang: boolean
-  moving: boolean
-  mark: string
-  isYs: boolean
-}
-
-function toRows(g: InstalledGua): Row[] {
-  const ys = yongshenLiuqin(category.value)
-  return g.yaos.map((y) => ({
-    pos: y.pos,
-    liushou: y.liushou,
-    liuqin: y.liuqin,
-    najia: y.najia,
-    wx: ELE_B[y.najia[1]!]!,
-    yang: y.yang,
-    moving: y.moving,
-    mark: y.shi ? '世' : y.ying ? '应' : '',
-    isYs: ys !== null && y.liuqin === ys,
-  }))
-}
-
-const benRows = computed(() => (result.value ? toRows(result.value.ben) : []))
-const bianRows = computed(() => (result.value?.bian ? toRows(result.value.bian) : []))
-const ysLabel = computed(() => yongshenLiuqin(category.value))
-
-function lineClass(yang: boolean, moving: boolean): string {
-  if (yang && moving) return 'yao lao-yang'
-  if (!yang && moving) return 'yao lao-yin'
-  if (yang) return 'yao shao-yang'
-  return 'yao shao-yin'
+  if (timer !== null) window.clearInterval(timer)
+  timer = null
+  phase.value = 'ready'
+  tosses.value = []
+  currentToss.value = -1
 }
 </script>
 
 <template>
   <main class="page">
-    <div class="card">
-      <h2>六爻问卦 · 火珠林纳甲法</h2>
-      <p class="sub" style="margin-bottom: 4px">
-        三枚铜钱摇六次，从下往上积成一卦。装卦、六亲、六兽、世应、旬空全部自动排好，
-        附一条白话提示。心静、事专、一卦一问。
-      </p>
-      <div class="ask-row">
-        <div class="q-col">
-          <label>所问何事（可不填）</label>
-          <input v-model="question" maxlength="30" placeholder="例：这季度项目能不能顺利结项" @keyup.enter="shake()" />
-        </div>
-        <div>
-          <label>事类（决定取用神）</label>
-          <select v-model="category">
-            <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
+    <h1>六爻纳甲</h1>
+    <p class="sub">
+      心里存一件事，摇六次铜钱。三枚铜钱落下，几个背就记几——这是流传最广的一套起卦法。
+      装卦、世应、六亲、断语都按京房老规矩来，解出来的话仅供参考，主意还得你自己拿。
+    </p>
+
+    <section class="card">
+      <div class="form-row">
+        <div class="q-wrap">
+          <label>这一卦问什么</label>
+          <select v-model="question" :disabled="phase === 'casting' || tosses.length > 0">
+            <option v-for="y in YONGSHEN_MAP" :key="y.key" :value="y.key">{{ y.label }}</option>
           </select>
         </div>
-      </div>
-
-      <div class="cast-zone">
-        <div class="coins-block">
-          <div class="coins-row">
-            <div v-for="(f, ci) in coinFaces" :key="ci" class="coin-tilt">
-              <div class="coin" :class="{ back: f, spin: spinning }">
-                <span>{{ f ? '背' : '字' }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="cast-btns">
-            <button v-if="phase !== 'done'" :disabled="phase === 'tossing'" @click="shake()">
-              {{ phase === 'tossing' ? `第 ${round + 1} 爻摇制中…` : '⚱ 焚香摇卦' }}
-            </button>
-            <button v-else class="ghost" @click="reset()">↺ 再问一卦</button>
-            <span class="note">已得 {{ cast.length }} / 6 爻</span>
-          </div>
+        <div class="mode-toggle">
+          <label>起卦方式</label>
+          <button class="ghost small" @click="autoMode = !autoMode; sfx.toggle()">{{ autoMode ? '自动摇币' : '手动记录' }}</button>
         </div>
-
-        <div class="stack" aria-label="卦象">
-          <div v-for="i in 6" :key="i" class="slot">
-            <template v-if="cast[6 - i] !== undefined">
-              <div class="yline" :class="lineClass(cast[6 - i] === 7 || cast[6 - i] === 9, cast[6 - i] === 6 || cast[6 - i] === 9)">
-                <template v-if="cast[6 - i] === 7 || cast[6 - i] === 9"><i></i></template>
-                <template v-else><i></i><i></i></template>
-                <em v-if="cast[6 - i] === 6 || cast[6 - i] === 9" class="mdot">●</em>
-              </div>
-              <span class="ylab">{{ COIN_LABEL[cast[6 - i] as 6 | 7 | 8 | 9] }}</span>
-            </template>
-            <span v-else class="empty-hint">第 {{ 7 - i }} 爻待摇</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="manual-toggle">
-        <button class="ghost sm" @click="manualMode = !manualMode; sfx.toggle()">
-          {{ manualMode ? '收起手动报卦' : '线下自己摇好了？手动报卦 →' }}
+        <button class="cast-btn" :disabled="phase === 'casting' || (phase === 'done')" @click="startCast">
+          {{ phase === 'ready' ? '☯ 心诚则灵，开始摇卦' : phase === 'casting' ? '卦成中…' : '已成一卦' }}
         </button>
-        <div v-if="manualMode" class="manual-grid">
-          <div v-for="i in 6" :key="i">
-            <label>{{ 7 - i }}爻</label>
-            <select v-model.number="manual[6 - i]">
-              <option v-for="o in MANUAL_OPTS" :key="o.v" :value="o.v">{{ o.label }}</option>
-            </select>
+        <button class="ghost small" :disabled="tosses.length === 0" @click="reset">重新来</button>
+      </div>
+
+      <!-- 铜钱台 -->
+      <div class="coin-stage" :class="{ shaking: phase === 'casting' }">
+        <div v-for="i in 3" :key="i" class="coin" :class="{ spin: phase === 'casting' }" :style="{ '--d': i * 0.12 + 's' }">
+          <span class="hole"></span>
+          <span class="glyph">{{ ['乾', '坤', '元'][i - 1] }}</span>
+        </div>
+      </div>
+
+      <!-- 手动记录 -->
+      <div v-if="!autoMode && phase !== 'done'" class="manual">
+        <label>第 {{ tosses.length + 1 }} 爻 · 手头有真铜钱的话，照落下的样子点：</label>
+        <div class="pick-row">
+          <button v-for="n in [3, 2, 1, 0]" :key="n" class="ghost small" @click="pickManual(n)">
+            {{ tossText(n).label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 已落的爻 -->
+      <transition-group name="line-in" tag="ol" class="lines">
+        <li v-for="(t, i) in tosses" :key="i" class="line-item" :style="{ '--i': i }">
+          <span class="pos">第{{ i + 1 }}爻</span>
+          <span class="yao" :class="{ yang: t === 1 || t === 3 }">
+            <template v-if="t === 1 || t === 3"><i></i></template>
+            <template v-else><i></i><i></i></template>
+          </span>
+          <span class="tt">{{ tossText(t).detail }}</span>
+          <span v-if="t === 3" class="mark move">○ 动</span>
+          <span v-else-if="t === 0" class="mark move dark">× 动</span>
+        </li>
+      </transition-group>
+    </section>
+
+    <template v-if="phase === 'done' && chart && verdict">
+      <section class="card">
+        <h2>装卦盘</h2>
+        <div class="board-head">
+          <span class="tag gold">本卦 {{ chart.name }}</span>
+          <span v-if="chart.changedName" class="tag red">变卦 {{ chart.changedName }}</span>
+          <span class="tag">{{ chart.palace }} · {{ chart.seqRole }}</span>
+          <span class="tag">旬空 {{ chart.xunkong.join('、') }}</span>
+        </div>
+        <transition-group name="row-in" tag="div" class="gua-board">
+          <div v-for="l in [...chart.lines].reverse()" :key="l.pos" class="gua-row" :style="{ '--i': 6 - l.pos }">
+            <span class="beast">{{ l.beast }}</span>
+            <span class="lq">{{ l.liuqin }}</span>
+            <span class="gz ele-text" :data-e="l.element">{{ l.najia }}</span>
+            <span class="yao-cell" :class="{ moving: l.moving }">
+              <span class="yao" :class="{ yang: l.bit === 1 }"><i></i><i v-if="l.bit === 0"></i></span>
+              <sup v-if="l.moving" class="mk">{{ l.mark }}</sup>
+            </span>
+            <span class="sy" :class="{ on: l.shiYing }">{{ l.shiYing ?? '' }}</span>
           </div>
-          <button class="sm go" @click="manualAssemble()">直接装卦</button>
-        </div>
-      </div>
-    </div>
+        </transition-group>
+        <p class="note">上为第六爻、下为初爻。○ 为老阳动、× 为老阴动；「世」是你，「应」是对方或所问之事的另一端。</p>
+      </section>
 
-    <template v-if="result && phase === 'done'">
-      <div class="card">
-        <div class="board-head2">
-          <h2 style="margin-bottom: 0">卦盘 · {{ result.ben.name }}<template v-if="result.bian"> → {{ result.bian.name }}</template></h2>
-          <button class="ghost sm" @click="copyReading()">{{ copied ? '✔ 已复制' : '⧉ 复制解读' }}</button>
+      <section class="card verdict-card">
+        <h2>白话断语 · 问「{{ verdict.label }}」取「{{ verdict.v.liuqin }}」为用神</h2>
+        <p class="verdict-text">{{ verdict.text }}</p>
+        <ul class="phrases">
+          <li v-for="(p, i) in verdict.v.phrases" :key="i" :style="{ '--i': i }">{{ p }}</li>
+        </ul>
+        <div class="meter">
+          <span class="meter-label">用神旺衰（传统口径的粗估）</span>
+          <div class="bar"><i :style="{ width: ((verdict.v.strengthScore + 100) / 2) + '%' }"></i></div>
+          <b class="meter-val" :data-c="verdict.v.conclusion">{{ verdict.v.conclusion }}</b>
         </div>
-        <p v-if="ysLabel" class="note ys-hint">高亮行为本类事的用神——<b>{{ ysLabel }}</b>爻，先看它旺不旺。</p>
-        <div class="board" :class="{ two: !!result.bian }">
-          <table class="gua-table">
-            <thead>
-              <tr><th>六兽</th><th>本卦 {{ result.ben.name }}</th><th></th><th>位</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="r in benRows" :key="r.pos" :class="{ mv: r.moving, ys: r.isYs }">
-                <td class="ls">{{ r.liushou }}</td>
-                <td>
-                  <b :class="`ele-${r.wx}`">{{ r.liuqin }}</b> <span class="gz">{{ r.najia }}</span><i class="wx-dot" :class="`ele-${r.wx}`">{{ r.wx }}</i>
-                  <em v-if="r.isYs" class="ys-tag">用神</em>
-                </td>
-                <td class="glyph-cell"><span :class="lineClass(r.yang, r.moving)" class="inline"><i></i></span><em v-if="r.moving" class="mv-em">动</em></td>
-                <td class="mark"><b v-if="r.mark">{{ r.mark }}</b></td>
-              </tr>
-            </tbody>
-          </table>
-          <table v-if="result.bian && bianRows.length" class="gua-table bian">
-            <thead>
-              <tr><th colspan="2">变卦 {{ result.bian.name }}</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(r, i) in bianRows" :key="r.pos" :class="{ mv: benRows[i]?.moving }">
-                <td class="glyph-cell"><span :class="lineClass(r.yang, false)" class="inline"><i></i></span></td>
-                <td>
-                  <template v-if="benRows[i]?.moving">
-                    <b :class="`ele-${r.wx}`">{{ r.liuqin }}</b> <span class="gz">{{ r.najia }}</span>
-                  </template>
-                  <span v-else class="dim-note">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="note" style="margin-top: 10px">
-          日辰 {{ result.ctx.dayGZ }} · 月建 {{ result.ctx.monthGZ }} · 旬空 {{ result.ctx.kong }} · 卦身属{{ result.ben.gongWuxing }}（{{ result.ben.gong }}宫）
-        </p>
-      </div>
-
-      <div class="card">
-        <h2>白话提示</h2>
-        <p v-for="(t, i) in result.reading" :key="i" class="reading-line" :style="{ animationDelay: `${i * 0.08}s` }">{{ t }}</p>
-      </div>
+        <p class="note">以上是把传统断卦的路数翻译成白话，图个参考。真要决断大事，请多问几个人、多想几天。</p>
+      </section>
     </template>
-
-    <div v-if="history.length" class="card">
-      <div class="board-head2">
-        <h2 style="margin-bottom: 0">最近问过的卦（本地保存）</h2>
-        <button class="ghost sm" @click="clearHistory()">清空</button>
-      </div>
-      <table>
-        <tbody>
-          <tr v-for="h in history.slice(0, 6)" :key="h.ts" class="his-row" @click="replay(h)">
-            <td class="his-name">{{ h.benName }}<template v-if="h.bianName"> → {{ h.bianName }}</template></td>
-            <td class="note">{{ h.cat }}{{ h.q ? ' · ' + h.q : '' }}</td>
-            <td class="note his-ts">{{ new Date(h.ts).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</td>
-            <td><span class="tag teal pointer">复盘</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </main>
 </template>
 
 <style scoped>
-.ask-row { display: grid; grid-template-columns: 1fr 180px; gap: 12px; margin-bottom: 14px; }
+.form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.q-wrap { flex: 1; min-width: 180px; }
+.mode-toggle { min-width: 130px; }
+.small { padding: 8px 12px; font-size: 0.82rem; }
 
-.cast-zone {
-  display: grid;
-  grid-template-columns: auto 150px;
-  gap: 22px;
-  align-items: center;
-  border-top: 1px dashed var(--line);
-  padding-top: 16px;
+.cast-btn { font-size: 1rem; }
+.coin-stage {
+  display: flex; justify-content: center; gap: 26px;
+  padding: 30px 0 10px;
 }
-.coins-block { display: flex; flex-direction: column; gap: 14px; }
-.coins-row { display: flex; gap: 16px; perspective: 500px; }
-.coin-tilt { transform: rotateX(14deg); }
 .coin {
-  width: 60px;
-  height: 60px;
+  position: relative;
+  width: 64px; height: 64px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--cute);
-  font-size: 1.18rem;
-  background: radial-gradient(circle at 34% 30%, #ffe9a8, #d8a94e 62%, #a87c2c);
-  color: #5c3d08;
-  border: 3px solid #8a6420;
-  box-shadow: inset 0 0 0 4px rgba(255, 244, 200, 0.55), inset 0 -5px 9px rgba(90, 60, 10, 0.45), 0 7px 15px rgba(0, 0, 0, 0.35);
-  transition: background 0.25s ease;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.35), transparent 42%),
+    linear-gradient(145deg, var(--gold-bright), var(--gold) 55%, #a87f35);
+  border: 3px solid #8a6524;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4), inset 0 0 0 4px rgba(138, 101, 36, 0.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease;
 }
-.coin.back { background: radial-gradient(circle at 34% 30%, #f2ede0, #cfc4ab 60%, #a2967a); color: #4a4436; }
-.coin.spin { animation: coin-flip 0.22s linear infinite; }
-@keyframes coin-flip {
-  0% { transform: rotateX(0deg) translateY(0); }
-  50% { transform: rotateX(180deg) translateY(-13px); }
-  100% { transform: rotateX(360deg) translateY(0); }
+.coin .hole {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: var(--bg);
+  border: 2px solid #8a6524;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
 }
-.cast-btns { display: flex; align-items: center; gap: 12px; }
-.cast-btns button:disabled { opacity: 0.65; cursor: wait; }
-
-.stack { display: flex; flex-direction: column-reverse; gap: 9px; justify-content: center; min-height: 240px; }
-.slot { display: flex; align-items: center; gap: 10px; min-height: 26px; animation: yao-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes yao-in {
-  from { opacity: 0; transform: translateX(-26px); filter: blur(3px); }
-  to { opacity: 1; transform: none; filter: none; }
+.coin .glyph {
+  position: absolute;
+  bottom: -22px;
+  font-size: 0.72rem;
+  color: var(--dim);
+  letter-spacing: 0.2em;
+  opacity: 0;
 }
-.empty-hint { color: var(--dim); font-size: 0.74rem; opacity: 0.55; letter-spacing: 0.2em; }
-.yline { position: relative; display: flex; gap: 10px; width: 132px; }
-.yline i { display: block; height: 11px; flex: 1; border-radius: 3px; background: linear-gradient(140deg, var(--gold), color-mix(in srgb, var(--gold) 70%, #000)); box-shadow: 0 0 10px rgba(var(--acc-rgb), 0.35); }
-.yline.shao-yin i { max-width: 57px; }
-.yline.lao-yin i { max-width: 57px; background: linear-gradient(140deg, var(--teal), color-mix(in srgb, var(--teal) 70%, #000)); }
-.yline.lao-yang i { background: linear-gradient(140deg, var(--teal), color-mix(in srgb, var(--teal) 70%, #000)); }
-.mdot { position: absolute; right: -18px; top: -3px; color: var(--teal); font-size: 0.72rem; animation: mdot-pulse 1.6s ease-in-out infinite; }
-@keyframes mdot-pulse { 50% { opacity: 0.35; } }
-.ylab { font-size: 0.68rem; color: var(--dim); }
-
-.manual-toggle { margin-top: 16px; }
-.manual-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; margin-top: 10px; }
-.manual-grid label { margin-top: 0; }
-button.sm { padding: 7px 13px; font-size: 0.85rem; }
-.go { grid-column: 7; }
-
-.board-head2 { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.ys-hint b { color: var(--gold-bright); }
-.board { display: grid; grid-template-columns: 1fr; gap: 14px; }
-.board.two { grid-template-columns: 1.6fr 1fr; }
-.gua-table td, .gua-table th { padding: 7px 8px; }
-.gua-table tbody tr { transition: background 0.2s ease; }
-.gua-table tbody tr:hover { background: rgba(var(--acc-rgb), 0.05); }
-.gua-table tr.mv { background: rgba(var(--acc2-rgb), 0.06); }
-.gua-table tr.ys { box-shadow: inset 3px 0 0 var(--gold); background: rgba(var(--acc-rgb), 0.07); }
-.ls { color: var(--teal); font-size: 0.78rem; white-space: nowrap; }
-.gz { color: var(--fg); font-family: var(--cute); letter-spacing: 0.08em; }
-.wx-dot { font-style: normal; font-size: 0.66rem; margin-left: 6px; opacity: 0.85; }
-.ys-tag {
-  font-style: normal;
-  margin-left: 7px;
-  font-size: 0.6rem;
-  color: var(--on-accent);
-  background: var(--gold);
-  border-radius: 999px;
-  padding: 1px 7px;
-  vertical-align: 1px;
+.coin.spin { animation: coin-toss 0.85s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes coin-toss {
+  0% { transform: translateY(0) rotateX(0); }
+  40% { transform: translateY(-46px) rotateX(360deg); }
+  70% { transform: translateY(-10px) rotateX(560deg); }
+  85% { transform: translateY(4px) rotateX(700deg); }
+  100% { transform: translateY(0) rotateX(720deg); }
 }
-.mark b { color: var(--gold-bright); font-family: var(--cute); }
-.inline { display: inline-flex; gap: 5px; width: 64px; vertical-align: middle; }
-.inline i { height: 8px; flex: 1; border-radius: 2px; background: linear-gradient(140deg, var(--gold), color-mix(in srgb, var(--gold) 70%, #000)); }
-.inline.shao-yin i, .inline.lao-yin i { max-width: 27px; }
-.inline.lao-yang i, .inline.lao-yin i { background: linear-gradient(140deg, var(--teal), color-mix(in srgb, var(--teal) 70%, #000)); }
-.mv-em { font-style: normal; color: var(--teal); font-size: 0.7rem; margin-left: 6px; }
-.dim-note { color: var(--dim); opacity: 0.5; }
-.reading-line { margin-bottom: 10px; line-height: 1.95; font-size: 0.9rem; animation: yao-in 0.5s ease both; }
+.coin-stage.shaking .coin { box-shadow: 0 14px 24px rgba(0, 0, 0, 0.5), inset 0 0 0 4px rgba(138, 101, 36, 0.35); }
 
-.his-row { cursor: pointer; }
-.his-row:hover td { color: var(--gold-bright); }
-.his-name { font-family: var(--cute); white-space: nowrap; }
-.his-ts { white-space: nowrap; }
-.pointer { cursor: pointer; }
+.manual { margin-top: 14px; }
+.pick-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-@media (max-width: 800px) {
-  .ask-row { grid-template-columns: 1fr; }
-  .cast-zone { grid-template-columns: 1fr; }
-  .board.two { grid-template-columns: 1fr; }
-  .manual-grid { grid-template-columns: repeat(3, 1fr); }
-  .go { grid-column: auto; }
+.lines { list-style: none; margin-top: 18px; display: flex; flex-direction: column-reverse; gap: 7px; }
+.line-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 6px 10px;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.86rem;
+}
+.line-in-enter-active { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--i) * 0.04s); }
+.line-in-enter-from { opacity: 0; transform: translateX(-24px); }
+.pos { color: var(--dim); white-space: nowrap; }
+.tt { color: var(--dim); font-size: 0.78rem; }
+.mark.move { color: var(--red); font-size: 0.76rem; }
+.mark.move.dark { color: var(--amber); }
+
+.yao { display: inline-flex; gap: 7px; align-items: center; height: 14px; }
+.yao i { display: block; width: 52px; height: 8px; border-radius: 4px; background: var(--dim); opacity: 0.75; }
+.yao.yang i { background: var(--gold); opacity: 1; box-shadow: 0 0 8px rgba(232, 196, 115, 0.5); }
+
+.board-head { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.gua-board { display: flex; flex-direction: column; gap: 4px; }
+.gua-row {
+  display: grid;
+  grid-template-columns: 3.2em 3.2em 4.6em 1fr 2.4em;
+  align-items: center; gap: 10px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 0.88rem;
+}
+.row-in-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--i) * 0.09s); }
+.row-in-enter-from { opacity: 0; transform: translateY(-14px); }
+.beast, .lq { color: var(--dim); }
+.gz { font-weight: bold; letter-spacing: 0.08em; }
+.gz[data-e='木'] { color: var(--wood); }
+.gz[data-e='火'] { color: var(--fire); }
+.gz[data-e='土'] { color: var(--earth); }
+.gz[data-e='金'] { color: var(--metal); }
+.gz[data-e='水'] { color: var(--water); }
+.yao-cell { position: relative; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.yao-cell.moving .yao i { animation: move-pulse 1.6s ease-in-out infinite; }
+@keyframes move-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+.mk { color: var(--red); font-size: 0.72rem; }
+.sy { text-align: center; color: transparent; font-family: var(--cute); }
+.sy.on { color: var(--gold-bright); text-shadow: 0 0 8px rgba(232, 196, 115, 0.6); }
+
+.verdict-card { border-color: var(--card-glow); }
+.verdict-text { font-size: 1rem; line-height: 2; margin-bottom: 12px; }
+.phrases { list-style: none; }
+.phrases li {
+  padding: 7px 0 7px 18px;
+  position: relative;
+  color: var(--fg);
+  font-size: 0.9rem;
+  line-height: 1.9;
+  animation: phrase-in 0.5s ease both;
+  animation-delay: calc(var(--i) * 0.12s + 0.3s);
+}
+.phrases li::before { content: '❖'; position: absolute; left: 0; color: var(--gold); font-size: 0.7rem; top: 11px; }
+@keyframes phrase-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.meter { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.meter-label { font-size: 0.78rem; color: var(--dim); white-space: nowrap; }
+.meter { flex-wrap: wrap; }
+.bar { flex: 1; min-width: 160px; }
+.meter-val[data-c='旺'] { color: var(--teal); }
+.meter-val[data-c='平'] { color: var(--amber); }
+.meter-val[data-c='弱'] { color: var(--red); }
+
+@media (max-width: 640px) {
+  .gua-row { grid-template-columns: 3em 3em 4em 1fr 2em; gap: 6px; font-size: 0.8rem; }
+  .coin { width: 54px; height: 54px; }
 }
 </style>
