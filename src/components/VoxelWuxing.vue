@@ -324,7 +324,26 @@ function pick(ev: PointerEvent): void {
     emit('select', e)
     sfx.pop()
     hint.value = false
+    if (selected) {
+      focusOn(selected)
+    } else {
+      camZ = 17
+      wake()
+    }
   }
+}
+
+/** 镜头聚焦：把选中元素转到镜头正前方并拉近，选中期间暂停自转 */
+function focusOn(e: Element): void {
+  const baseAng = (SHENG_ORDER.indexOf(e) / 5) * Math.PI * 2 - Math.PI / 2
+  const want = Math.PI / 2 - baseAng
+  let delta = (want - targetRotY) % (Math.PI * 2)
+  if (delta > Math.PI) delta -= Math.PI * 2
+  if (delta < -Math.PI) delta += Math.PI * 2
+  targetRotY += delta
+  targetRotX = 0.14
+  camZ = Math.max(12.5, camZ - 3.5)
+  wake()
 }
 
 function wake(): void {
@@ -397,7 +416,7 @@ function tick(): void {
 
   stepBursts(dt)
 
-  if (!dragging && idleTimer === null && rootGroup) targetRotY += dt * 0.12
+  if (!dragging && idleTimer === null && !selected && rootGroup) targetRotY += dt * 0.12
   if (rootGroup) {
     rootGroup.rotation.y += (targetRotY - rootGroup.rotation.y) * 0.09
     rootGroup.rotation.x += (targetRotX - rootGroup.rotation.x) * 0.09
@@ -455,6 +474,7 @@ defineExpose({
     selected = e
     hint.value = false
     wake()
+    focusOn(e)
   },
 })
 </script>

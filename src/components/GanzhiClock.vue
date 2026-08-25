@@ -134,7 +134,7 @@ onBeforeUnmount(() => window.clearTimeout(raf))
 
 <style scoped>
 .clock-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; user-select: none; }
-.dial-outer { position: relative; width: 280px; height: 280px; cursor: grab; touch-action: none; }
+.dial-outer { position: relative; width: 280px; height: 280px; cursor: grab; touch-action: pan-y; }
 .dial-outer:active { cursor: grabbing; }
 
 .zhi-text { font-family: var(--cute); font-size: 26px; fill: #8b93a7; transition: fill 0.25s ease, font-size 0.25s ease; }

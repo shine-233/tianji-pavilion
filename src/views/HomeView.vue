@@ -117,7 +117,7 @@ function arcPath(i: number, j: number, off: number): string {
       <div class="hero-wheel" aria-hidden="true">
         <div class="wheel-ring"></div>
         <div class="wheel-core">☯</div>
-        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" @mouseenter="hoverEle = e; sfx.blip()" @mouseleave="hoverEle = null">
+        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" role="button" tabindex="0" @mouseenter="hoverEle = e; sfx.blip()" @mouseleave="hoverEle = null" @click="hoverEle = hoverEle === e ? null : e; sfx.blip()" @keydown.enter="hoverEle = e; sfx.blip()">
           {{ e }}
         </div>
         <svg class="wheel-arrows" viewBox="0 0 300 300">

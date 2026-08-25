@@ -248,6 +248,13 @@ watch(() => props.char, (c) => {
   if (TAOESSES[c]) {
     buildModel(c)
     sfx.flip()
+    // 换人运镜：镜头推近再拉回，道长转身一圈入场
+    targetRotY += Math.PI * 2
+    popT = 0
+    camZTarget = 20
+    window.setTimeout(() => {
+      camZTarget = 26
+    }, 520)
   }
 })
 
