@@ -209,7 +209,6 @@ export interface BuildOpts {
 
 export function buildChart(opts: BuildOpts): LiuYaoChart {
   const { tosses, dayGan, dayZhi } = opts
-  const monthZhi = opts.monthZhi || '卯'
   if (tosses.length !== 6) throw new Error('需要六次掷币结果')
 
   // 背数 → 爻：1背=少阳(阳静)，2背=少阴(阴静)，3背=老阳(阳动)，0背=老阴(阴动)

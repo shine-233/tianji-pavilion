@@ -31,8 +31,9 @@ const chart = computed<MeihuaChart | null>(() => {
 })
 
 function numberChartSafe(a: number, b: number): MeihuaChart {
-  // eslint-disable-next-line
-  return fromNumbers((((a - 1) % 8) + 8) % 8 + 1, (((b - 1) % 8) + 8) % 8 + 1)
+  // 动爻：两数之和除六取余（余0作六）
+  const mv = (((a + b - 1) % 6) + 6) % 6 + 1
+  return fromNumbers((((a - 1) % 8) + 8) % 8 + 1, (((b - 1) % 8) + 8) % 8 + 1, mv)
 }
 
 const texts = computed(() => (chart.value ? chartText(chart.value) : []))

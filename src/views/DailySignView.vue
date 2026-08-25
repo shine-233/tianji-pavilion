@@ -12,7 +12,6 @@ const flipped = ref(false)
 const shaking = ref(false)
 const stickFly = ref(false)
 const isRandomPick = ref(false)
-const history = ref<string[]>([])
 
 const tierStyle = computed(() => TIER_STYLE[shown.value.tier])
 

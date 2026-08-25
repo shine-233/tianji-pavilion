@@ -13,7 +13,6 @@ const tosses = ref<number[]>([])
 const currentToss = ref(-1)
 const question = ref(YONGSHEN_MAP[0].key)
 const autoMode = ref(true)
-const manualPick = ref<number | null>(null)
 const chart = computed<LiuYaoChart | null>(() => {
   if (tosses.value.length !== 6) return null
   const l = Lunar.fromDate(new Date())

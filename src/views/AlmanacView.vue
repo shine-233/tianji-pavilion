@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Solar, Lunar } from 'lunar-javascript'
+import { Solar } from 'lunar-javascript'
 import { sfx } from '../lib/sfx'
 
 const offset = ref(0)
