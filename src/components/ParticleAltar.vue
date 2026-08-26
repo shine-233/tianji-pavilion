@@ -9,7 +9,8 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 const host = ref<HTMLDivElement | null>(null)
 
 const SHAPES = ['☯', '☰', '知命'] as const
-const COUNT = 1100
+/** 粒子数按画布面积缩放：手机不该跟桌面跑同样多的点 */
+const COUNT = Math.max(360, Math.min(1100, Math.round((window.innerWidth * window.innerHeight) / 1300)))
 const MORPH_MS = 4600
 const REPEL_R = 85
 

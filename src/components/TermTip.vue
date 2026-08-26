@@ -10,6 +10,8 @@ let hideTimer = 0
 let lastPointerType = 'mouse'
 
 function enter(): void {
+  // 触屏的合成 mouseenter 先于 click 到达，这里若开箱，click 的收合逻辑会立刻关掉——闪现即灭
+  if (lastPointerType === 'touch') return
   window.clearTimeout(hideTimer)
   if (!open.value) sfx.tick()
   open.value = true

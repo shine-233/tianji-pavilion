@@ -14,6 +14,13 @@ import { sfx } from '../lib/sfx'
 
 const router = useRouter()
 const hoverEle = ref<Element | null>(null)
+let lastPtr = 'mouse'
+/** 触屏的合成 mouseenter 先于 click，不能在这里开箱，否则点按立刻自消 */
+function hoverEnter(e: Element): void {
+  if (lastPtr === 'touch') return
+  hoverEle.value = e
+  sfx.blip()
+}
 
 const SAGE = buildTaoess('qingxuan')
 
@@ -143,7 +150,7 @@ function arcPath(i: number, j: number, off: number): string {
       <div class="hero-wheel" aria-hidden="true">
         <div class="wheel-ring"></div>
         <div class="wheel-core">☯</div>
-        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" role="button" tabindex="0" @mouseenter="hoverEle = e; sfx.blip()" @mouseleave="hoverEle = null" @click="hoverEle = hoverEle === e ? null : e; sfx.blip()" @keydown.enter="hoverEle = e; sfx.blip()">
+        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" role="button" tabindex="0" @pointerdown="lastPtr = $event.pointerType" @mouseenter="hoverEnter(e)" @mouseleave="hoverEle = null" @click="hoverEle = hoverEle === e ? null : e; sfx.blip()" @keydown.enter="hoverEle = e; sfx.blip()">
           {{ e }}
         </div>
         <svg class="wheel-arrows" viewBox="0 0 300 300">

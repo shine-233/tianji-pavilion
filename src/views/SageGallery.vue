@@ -176,6 +176,9 @@ function gMotion(id: string): Record<string, string> {
 
 <style scoped>
 .stage-card { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: stretch; }
+@media (max-width: 720px) {
+  .stage-card { grid-template-columns: 1fr; }
+}
 .stage-left { min-width: 0; }
 .stage-right { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }

@@ -190,13 +190,18 @@ function spawnShootingStar(): void {
   window.setTimeout(() => el.remove(), 1300)
 }
 
+/** 粗指针设备（手机/平板）：光标拖尾、伴飞环、视差变量都是鼠标专属，触屏上一律不装 */
+const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
 onMounted(() => {
   initTheme()
-  window.addEventListener('mousemove', onMouseMove)
+  if (!coarsePointer) {
+    window.addEventListener('mousemove', onMouseMove)
+    rafId = requestAnimationFrame(ringLoop)
+  }
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('click', onDocClick)
   onScroll()
-  rafId = requestAnimationFrame(ringLoop)
   scheduleShootingStar()
 })
 onBeforeUnmount(() => {

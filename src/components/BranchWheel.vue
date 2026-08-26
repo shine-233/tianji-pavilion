@@ -132,7 +132,6 @@ const LEGEND = [
         <text
           :x="pt(z, R)![0]" :y="pt(z, R)![1]" class="zhi"
           :class="{ on: zhiState(z), mine: presentSet.has(z) }"
-          @mouseenter="onNodeEnter(z)" @mouseleave="hover = null" @click="togglePin(z)"
         >{{ z }}</text>
       </g>
     </svg>

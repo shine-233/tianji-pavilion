@@ -81,7 +81,11 @@ const labels = computed(() =>
   }),
 )
 
+let lastPtr = 'mouse'
+
 function onWedge(i: number): void {
+  // 触屏合成 mouseenter 先于 click，若在此开箱会被 toggle 立刻关掉
+  if (lastPtr === 'touch') return
   hover.value = i
   sfx.tick()
 }
@@ -94,7 +98,7 @@ function toggleWedge(i: number): void {
 </script>
 
 <template>
-  <svg width="300" height="290" viewBox="0 0 300 290" class="radar">
+  <svg width="300" height="290" viewBox="0 0 300 290" class="radar" @pointerdown="lastPtr = $event.pointerType">
     <!-- 交互扇区（透明热区，置底） -->
     <path
       v-for="(_, i) in items" :key="'w' + i"

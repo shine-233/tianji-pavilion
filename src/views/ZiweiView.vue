@@ -157,6 +157,12 @@ function speakStar(st: string): void {
     detail: p ? `${st}·${p.ming}：「${p.hello}」` : `${st}：${STAR_TIP[st] ?? ''}`,
   }))
 }
+
+/** 宫位小星签的触屏路径：点一下，道长念出这句释义（悬停气泡在手机上不存在） */
+function tapStar(st: string): void {
+  sfx.blip()
+  window.dispatchEvent(new CustomEvent('sage-say', { detail: `${st}：${STAR_TIP[st] ?? ''}` }))
+}
 </script>
 
 <template>
@@ -207,7 +213,7 @@ function speakStar(st: string): void {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="chipTip(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
+                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="chipTip(st)" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -277,12 +283,14 @@ function speakStar(st: string): void {
       <div class="card">
         <h2>三方四正逐宫明细</h2>
         <table>
+          <tbody>
           <tr><th>宫位</th><th>主星</th><th>子分增减</th></tr>
           <tr v-for="d in scored.detail" :key="d.palace">
             <td>{{ d.palace }}</td>
             <td>{{ d.stars.join(' ') || '—' }}</td>
             <td :style="{ color: d.delta >= 0 ? 'var(--teal)' : '#f87171' }">{{ d.delta >= 0 ? '+' : '' }}{{ d.delta.toFixed(1) }}</td>
           </tr>
+                  </tbody>
         </table>
         <p class="note" style="margin-top: 8px">
           记分规则与 v5 引擎一致：吉星+0.8 / 煞星-0.8 / 化禄权+1.0 / 化科+0.7 / 化忌-1.2 / 空宫-0.6，
