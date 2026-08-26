@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 /** 奇门遁甲 · 入门盘 v1：阴阳遁定局、三元、地盘三奇六仪、旬空、驿马 */
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import { xunKong } from '../lib/liuyaoExtra'
 import { sfx } from '../lib/sfx'
@@ -137,7 +137,7 @@ function calc(): void {
 const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
 
 /* 用神细断：问事类型 → 取门/星/干 */
-const YS: Record<string, { men?: string; xing?: string; gan?: string; label: string }> = {
+const YS: Record<string, { men?: string; xing?: string; gan?: string; ma?: boolean; label: string }> = {
   求财: { men: '生', gan: '戊', label: '生门为财源，戊为资本' },
   官事: { men: '开', xing: '值符', label: '开门主官途，值符为权贵' },
   婚姻: { men: '六合作合', gan: '乙', label: '六合主婚媒，乙奇为女方' },
