@@ -283,7 +283,7 @@ viewBox="0 0 26 29" style="width:90px;margin:6px 0"
 }
 .g-name { font-family: var(--cute); font-size: 0.98rem; }
 .g-name i { font-style: normal; opacity: 0.5; margin: 0 3px; }
-.g-page { font-size: 0.68rem; color: var(--teal); opacity: 0; transition: opacity 0.22s ease; }
+.g-page { font-size: 0.68rem; color: var(--teal); opacity: 0.55; transition: opacity 0.22s ease; }
 .g-card:hover .g-page { opacity: 1; }
 
 .mini-bubble {

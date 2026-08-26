@@ -178,6 +178,11 @@ function onPointerUp(e: PointerEvent): void {
   scheduleIdle()
   if (movedPx < 6) raycastPick(e)
 }
+// 浏览器接管手势（竖滑滚页面）时把状态清干净，别留下"半按着"的僵尸指针
+function onPointerCancel(e: PointerEvent): void {
+  activePtrs.delete(e.pointerId)
+  dragging = false
+}
 function raycastPick(e: PointerEvent): void {
   if (!container.value || !mesh || !camera) return
   const rect = container.value.getBoundingClientRect()
@@ -234,6 +239,7 @@ onMounted(() => {
   el.addEventListener('pointerdown', onPointerDown)
   el.addEventListener('pointermove', onPointerMove)
   el.addEventListener('pointerup', onPointerUp)
+  el.addEventListener('pointercancel', onPointerCancel)
   el.addEventListener('wheel', onWheel, { passive: false })
 
   window.addEventListener('resize', onResize)
@@ -272,6 +278,7 @@ onBeforeUnmount(() => {
     el.removeEventListener('pointerdown', onPointerDown)
     el.removeEventListener('pointermove', onPointerMove)
     el.removeEventListener('pointerup', onPointerUp)
+    el.removeEventListener('pointercancel', onPointerCancel)
     el.removeEventListener('wheel', onWheel)
   }
   if (idleTimer !== null) window.clearTimeout(idleTimer)
@@ -292,7 +299,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .sv-stage { position: relative; width: 100%; height: 340px; border-radius: 14px; overflow: hidden; }
-.sv-canvas { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.sv-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
 .sv-canvas:active { cursor: grabbing; }
 .sv-hint {
   position: absolute;

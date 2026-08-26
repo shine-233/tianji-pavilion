@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import { sfx } from '../lib/sfx'
 
@@ -48,11 +48,15 @@ const calCells = computed<DayCell[]>(() => {
 function calShift(n: number): void {
   sfx.blip()
   calBase.value = new Date(calBase.value.getFullYear(), calBase.value.getMonth() + n, 1)
+  activeZhi.value = null
+  pickedItem.value = null
 }
 function pickDay(c: DayCell): void {
   sfx.blip()
   const mid = new Date(new Date().toDateString()).getTime()
   offset.value = Math.round((c.date.getTime() - mid) / 86400000)
+  activeZhi.value = null
+  pickedItem.value = null
 }
 
 /** lunar-javascript 无官方类型，这里按用到的 API 手写最小接口 */
@@ -118,14 +122,38 @@ const shadowCx = computed(() => 50 + Math.cos(Math.min(info.value.lunarDay / 30,
 /* ---------- 十二时辰互动 ---------- */
 const ZHI_NAMES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
 const activeZhi = ref<number | null>(null)
+/**
+ * getTimes() 实际返回 13 段：首段是早子（0~1 点）、末段是晚子（23~24 点），
+ * 中间 12 段依次对应十二支。支名按每段的 zhiIndex 取，避免第 13 枚芯片显示 undefined；
+ * 早晚子分别标注以免混淆。
+ */
+function zhiName(i: number): string {
+  const t = info.value.times[i]
+  if (!t) return ''
+  if (i === 0) return ZHI_NAMES[t.zhiIndex] ?? '子'
+  return i === info.value.times.length - 1 ? `晚${ZHI_NAMES[t.zhiIndex] ?? '子'}` : ZHI_NAMES[t.zhiIndex] ?? '子'
+}
 function pickZhi(i: number): void {
   activeZhi.value = activeZhi.value === i ? null : i
   sfx.blip()
 }
-/** 当前真实时辰（仅看今天时高亮） */
+/** 当前真实时辰（仅看今天时高亮）；23 点要落到第 13 段晚子而不是第 0 段早子。
+ *  每分钟自增一次驱动重算，跨时辰瞬间高亮会自己跳过去。 */
+const nowTick = ref(0)
+let tickTimer: number | null = null
+onMounted(() => {
+  tickTimer = window.setInterval(() => {
+    nowTick.value++
+  }, 60000)
+})
+onBeforeUnmount(() => {
+  if (tickTimer !== null) window.clearInterval(tickTimer)
+})
 const liveZhi = computed(() => {
+  void nowTick.value
   if (offset.value !== 0) return -1
   const h = new Date().getHours()
+  if (h === 23) return info.value.times.length - 1
   return Math.floor(((h + 1) % 24) / 2)
 })
 
@@ -324,7 +352,7 @@ function backToday(): void {
           :style="{ '--i': i }"
           @click="pickZhi(i)"
         >
-          <b>{{ ZHI_NAMES[i] }}{{ i === liveZhi ? ' · 现在' : '' }}</b>
+          <b>{{ zhiName(i) }}{{ i === liveZhi ? ' · 现在' : '' }}</b>
           <small>{{ tm.range.split(' – ')[0] }}~{{ tm.range.split(' – ')[1].slice(0, 2) }}</small>
           <em>{{ tm.shen }}</em>
         </button>
@@ -332,7 +360,7 @@ function backToday(): void {
       <Transition name="dict-pop">
         <div v-if="activeZhi !== null" class="hour-detail">
           <header>
-            <b class="hd-title">{{ ZHI_NAMES[activeZhi] }}时 · {{ info.times[activeZhi]!.gz }}</b>
+            <b class="hd-title">{{ zhiName(activeZhi) }}时 · {{ info.times[activeZhi]!.gz }}</b>
             <span class="hd-luck" :class="info.times[activeZhi]!.luck === '吉' ? 'g' : 'b'">
               {{ info.times[activeZhi]!.shen }}（{{ info.times[activeZhi]!.luck }}）
             </span>

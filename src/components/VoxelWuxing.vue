@@ -479,8 +479,29 @@ onBeforeUnmount(() => {
     gate?.dispose()
   window.removeEventListener('resize', onResize)
   cleanupFns.forEach((f) => f())
+  // 遍历整棵场景树释放 geometry / material / 贴图（太极 CanvasTexture 挂在材质上，随材质一起放）
+  const releaseMat = (m: THREE.Material): void => {
+    ;(m as unknown as { map?: THREE.Texture | null }).map?.dispose()
+    m.dispose()
+  }
+  scene?.traverse((o) => {
+    const mesh = o as THREE.Mesh
+    mesh.geometry?.dispose()
+    const mat = mesh.material as THREE.Material | THREE.Material[] | undefined
+    if (Array.isArray(mat)) mat.forEach(releaseMat)
+    else if (mat) releaseMat(mat)
+  })
+  scene?.clear()
+  burstGeo.dispose()
+  // 后期链：先让各 pass 放掉自带的渲染目标，再销毁 composer 本体
+  composer?.passes.forEach((p) => (p as unknown as { dispose?: () => void }).dispose?.())
+  composer?.dispose()
+  composer = null
+  scene = null
+  rootGroup = null
   renderer?.dispose()
   renderer?.domElement.remove()
+  renderer = null
 })
 
 defineExpose({

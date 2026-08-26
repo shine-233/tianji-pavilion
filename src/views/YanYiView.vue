@@ -27,11 +27,24 @@ function onScroll(): void {
   })
 }
 
+/** 混沌墨云呼吸相位：模板里直接算 Date.now() 非响应式会冻结画面，改由定时器驱动 */
+const chaosWave = ref(0)
+let chaosTimer: number | null = null
+
 onMounted(() => {
   if (!reducedMotion) window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
+  // 减少动效时不启动呼吸动画；250ms 一跳足够顺滑又不至于太密
+  if (!reducedMotion) {
+    chaosTimer = window.setInterval(() => {
+      chaosWave.value = Math.sin(Date.now() / 900)
+    }, 250)
+  }
 })
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+  if (chaosTimer !== null) window.clearInterval(chaosTimer)
+})
 
 /** 某幕的局部进度 0..1 */
 function sp(start: number, end: number): number {
@@ -93,7 +106,7 @@ const pFinal = computed(() => sp(0.85, 1))
         <svg viewBox="0 0 640 420" class="scene" role="img" aria-label="八字推演过程动画">
           <!-- 0 混沌：一团呼吸的墨云 -->
           <g :style="{ opacity: stageVis[0] }">
-            <circle cx="320" cy="210" :r="70 + Math.sin(Date.now() / 900) * 4" fill="url(#chaos)" />
+            <circle cx="320" cy="210" :r="70 + chaosWave * 4" fill="url(#chaos)" />
             <text x="320" y="330" class="cap" :style="{ opacity: stageVis[0] }">混沌 · 无名之气</text>
           </g>
 
@@ -223,7 +236,13 @@ const pFinal = computed(() => sp(0.85, 1))
           </defs>
         </svg>
 
-        <a href="#/chart" class="go-btn" :style="{ opacity: sp(0.95, 1) }" @click="sfx.ding()">去排你的盘 →</a>
+        <a
+          href="#/chart"
+          class="go-btn"
+          :class="{ show: sp(0.95, 1) > 0 }"
+          :style="{ opacity: sp(0.95, 1) }"
+          @click="sfx.ding()"
+        >去排你的盘 →</a>
 
         <!-- 幕间字幕 -->
         <div class="caption">
@@ -292,7 +311,10 @@ const pFinal = computed(() => sp(0.85, 1))
   font-size: 1.05rem;
   text-decoration: none;
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  /* 淡入完成前禁点，避免透明按钮被误触 */
+  pointer-events: none;
 }
+.go-btn.show { pointer-events: auto; }
 .go-btn:hover { text-decoration: none; filter: brightness(1.1); }
 
 .caption {

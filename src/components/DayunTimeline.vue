@@ -4,6 +4,7 @@ import type { DayunItem } from '../lib/engine'
 import { sfx } from '../lib/sfx'
 
 const props = defineProps<{ items: DayunItem[]; activeIndex?: number | null }>()
+const emit = defineEmits<{ pick: [i: number | null] }>()
 const shown = ref(false)
 const active = ref<number | null>(null)
 let showTimer = 0
@@ -12,9 +13,9 @@ onMounted(() => {
 })
 onBeforeUnmount(() => window.clearTimeout(showTimer))
 
-/** 三维山河图点选山峰时同步定位到那十年 */
+/** 与三维山河图双向联动：点山峰定位到那十年；三维侧取消（null）也同步清掉高亮，防两处选中态漂移 */
 watch(() => props.activeIndex, (i) => {
-  if (typeof i === 'number' && i >= 0) active.value = i
+  active.value = typeof i === 'number' && i >= 0 ? i : null
 })
 
 function colorOf(fin: number): string {
@@ -22,6 +23,8 @@ function colorOf(fin: number): string {
 }
 function pick(i: number): void {
   active.value = active.value === i ? null : i
+  // 点时间轴也要回传父级，让三维山河图的光环同步亮起
+  emit('pick', active.value)
   sfx.blip()
 }
 </script>

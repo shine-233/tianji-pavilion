@@ -98,6 +98,7 @@ const filtered = computed<Chapter[]>(() => {
 function pickBook(b: string): void {
   sfx.blip()
   selBook.value = selBook.value === b ? null : b
+  openChapter.value = null
 }
 
 /** 书档：选中书目后的档案卡数据 */
@@ -231,8 +232,8 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
       <div class="card hoverable">
         <h2>章节检索 <small class="sub">共 {{ filtered.length }} / {{ chapters.length }} 节{{ selBook ? ` · 已限定「${selBook}」` : '' }}</small></h2>
         <div class="search-row">
-          <input v-model="query" type="text" placeholder="搜索书名 / 章节名 / 主题，如：天道、女命、调候…" />
-          <button v-if="selBook" class="ghost" @click="selBook = null; sfx.toggle()">清除书筛</button>
+          <input v-model="query" type="text" placeholder="搜索书名 / 章节名 / 主题，如：天道、女命、调候…" @input="openChapter = null" />
+          <button v-if="selBook" class="ghost" @click="selBook = null; openChapter = null; sfx.toggle()">清除书筛</button>
         </div>
 
         <transition-group name="rowfade" tag="div" class="ch-list">

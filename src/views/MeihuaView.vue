@@ -31,9 +31,12 @@ const chart = computed<MeihuaChart | null>(() => {
 })
 
 function numberChartSafe(a: number, b: number): MeihuaChart {
+  // 小数先向下取整再入卦（3.5 当 3 用）：否则余数带小数，order[2.5] 查空、卦名断语全丢
+  const ia = Math.floor(Math.abs(a))
+  const ib = Math.floor(Math.abs(b))
   // 动爻：两数之和除六取余（余0作六）
-  const mv = (((a + b - 1) % 6) + 6) % 6 + 1
-  return fromNumbers((((a - 1) % 8) + 8) % 8 + 1, (((b - 1) % 8) + 8) % 8 + 1, mv)
+  const mv = (((ia + ib - 1) % 6) + 6) % 6 + 1
+  return fromNumbers((((ia - 1) % 8) + 8) % 8 + 1, (((ib - 1) % 8) + 8) % 8 + 1, mv)
 }
 
 const texts = computed(() => (chart.value ? chartText(chart.value) : []))

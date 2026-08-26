@@ -34,6 +34,7 @@ const verdict = computed(() => {
 })
 
 let timer: number | null = null
+let doneTimer: number | null = null
 
 function castOnce(): void {
   // 每枚铜钱独立掷正反，背面数即爻的结果
@@ -56,7 +57,10 @@ function startCast(): void {
     if (tosses.value.length >= 6) {
       if (timer !== null) window.clearInterval(timer)
       timer = null
-      window.setTimeout(() => {
+      doneTimer = window.setTimeout(() => {
+        doneTimer = null
+        // 中途重置或已离开页面就不再落定，避免把空卦强设成 done 造成按钮死锁
+        if (tosses.value.length !== 6) return
         phase.value = 'done'
         sfx.gong()
         if (chart.value) {
@@ -93,6 +97,8 @@ function pickManual(n: number): void {
 function reset(): void {
   if (timer !== null) window.clearInterval(timer)
   timer = null
+  if (doneTimer !== null) window.clearTimeout(doneTimer)
+  doneTimer = null
   phase.value = 'ready'
   tosses.value = []
   currentToss.value = -1
@@ -101,6 +107,8 @@ function reset(): void {
 onBeforeUnmount(() => {
   if (timer !== null) window.clearInterval(timer)
   timer = null
+  if (doneTimer !== null) window.clearTimeout(doneTimer)
+  doneTimer = null
 })
 
 /* ===== 六十四卦卦库速览 ===== */

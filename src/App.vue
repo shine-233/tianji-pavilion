@@ -12,7 +12,7 @@ const AuroraBloom = defineAsyncComponent(() => import('./components/AuroraBloom.
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import ThemeDecor from './components/ThemeDecor.vue'
-import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
+import { buildTaoessHd, TAOESS_IDS } from './data/sageSprite'
 
 const soundOn = ref(isSoundOn())
 
@@ -327,8 +327,8 @@ onBeforeUnmount(() => {
       class="parader"
       :style="{ '--dur': `${p.dur}s`, '--delay': `${p.delay}s`, '--bob': `${p.bobDur}s` }"
     >
-<svg viewBox="0 0 26 29">
-<rect v-for="(px, i) in buildTaoess(p.char)" :key="i" :x="px.x + 0.06" :y="px.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="px.fill" :opacity="(px.op ?? 1) * (0.93 + ((px.x * 7 + px.y * 13) % 5) * 0.0175)" />
+<svg viewBox="0 0 52 58">
+<rect v-for="(px, i) in buildTaoessHd(p.char)" :key="i" :x="px.x + 0.12" :y="px.y + 0.12" width="0.88" height="0.88" rx="0.22" :fill="px.fill" />
       </svg>
       <i>{{ (TAOESS_IDS.indexOf(p.char) + 1) }}</i>
     </span>
@@ -568,6 +568,5 @@ onBeforeUnmount(() => {
   .topbar { flex-wrap: wrap; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); }
   .nav { order: 3; width: 100%; }
   .name small { display: none; }
-  .corner-maiden { width: 96px !important; }
 }
 </style>

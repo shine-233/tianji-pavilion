@@ -369,7 +369,7 @@ function moreSr(): void {
         </div>
         <p class="note">当前 {{ srFiltered.length }} 条{{ srBook ? ` · 《${srBook}》` : '' }}</p>
         <div class="nv-list">
-          <div v-for="(r, i) in srFiltered.slice(0, srLimit)" :key="i" class="nv-item" @click="sfx.tick()">
+          <div v-for="(r, i) in srFiltered.slice(0, srLimit)" :key="i" class="nv-item">
             <span class="tag gold">{{ r.book }}</span>
             <p class="rule-text">{{ r.rule.trim() }}</p>
           </div>

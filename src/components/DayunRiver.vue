@@ -78,26 +78,23 @@ function segMid(i: number): [number, number] {
   return pointAt((t0 + t1) / 2)
 }
 
-/** 小船位置：按当前年在总窗口中的比例 */
+/** 小船位置：当前年定位所在段，再按段内年份占比插值（与 segT 的 i/n 坐标系一致） */
 const boatPos = computed<[number, number]>(() => {
   if (!props.stops.length) return pointAt(0)
+  const n = props.stops.length
   const y0 = startYear(props.stops[0]!.window)
-  const y1 = endYear(props.stops[props.stops.length - 1]!.window)
-  const clamped = Math.max(y0, Math.min(y1, NOW))
-  const total = y1 - y0 || 1
-  // 找到所在段，在段内再插值
-  let acc = 0
-  for (let i = 0; i < props.stops.length; i++) {
+  const y1 = endYear(props.stops[n - 1]!.window)
+  const cur = Math.max(y0, Math.min(y1, NOW))
+  for (let i = 0; i < n; i++) {
     const s = props.stops[i]!
-    const len = endYear(s.window) - startYear(s.window) + 1
-    const segT0 = acc / props.stops.length
-    if (clamped <= endYear(s.window) || i === props.stops.length - 1) {
-      const inner = (clamped - startYear(s.window)) / (len || 1)
-      return pointAt(segT0 + (inner * (1 / props.stops.length)))
+    if (cur <= endYear(s.window) || i === n - 1) {
+      // 段内按年格占比走：每年占 1/len 段宽；恰好压在段边界（10 的倍数年）时归前一段末尾，不越界跳段
+      const len = Math.max(1, endYear(s.window) - startYear(s.window) + 1)
+      const inner = Math.max(0, Math.min(1, (cur - startYear(s.window)) / len))
+      const [t0, t1] = segT(i)
+      return pointAt(t0 + inner * (t1 - t0))
     }
-    acc += len
   }
-  void total
   return pointAt(1)
 })
 

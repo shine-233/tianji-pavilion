@@ -15,6 +15,7 @@ const GROUPS: Array<{ name: string; halls: Hall[] }> = [
       { to: '/ziwei', label: '紫微命盘', glyph: '紫', line: '十二宫与星空盘' },
       { to: '/liuyao', label: '六爻纳甲', glyph: '爻', line: '摇铜钱装卦，附卦库' },
       { to: '/meihua', label: '梅花易数', glyph: '梅', line: '时间起卦，体用生克' },
+      { to: '/shuzi', label: '数字能量', glyph: '数', line: '号码起卦，梅花新玩' },
     ],
   },
   {
@@ -24,7 +25,6 @@ const GROUPS: Array<{ name: string; halls: Hall[] }> = [
       { to: '/jiaobei', label: '杯筊问事', glyph: '筊', line: '掷筊问允否，三圣为凭' },
       { to: '/xiaoliuren', label: '小六壬', glyph: '掌', line: '掐指一算，速断小事' },
       { to: '/almanac', label: '今日黄历', glyph: '历', line: '十二时辰黄黑道' },
-      { to: '/oracle', label: '轻卜抽签', glyph: '卜', line: '旧版抽签，情怀常驻' },
     ],
   },
   {
@@ -34,6 +34,8 @@ const GROUPS: Array<{ name: string; halls: Hall[] }> = [
       { to: '/qimen', label: '奇门入门盘', glyph: '奇', line: '定局布仪，旬空驿马' },
       { to: '/yanyi', label: '演易长卷', glyph: '䷀', line: '从无极到六十四卦' },
       { to: '/sages', label: '道长图鉴', glyph: '鉴', line: '十位当值道长在此' },
+      { to: '/memory', label: '卦象记忆', glyph: '忆', line: '翻牌配对记八卦' },
+      { to: '/story', label: '易道长卷', glyph: '易', line: '滚动叙事，六幕演进' },
     ],
   },
   {
@@ -65,16 +67,18 @@ const GUIDE: Record<string, { who: string; line: string }> = {
   '/jiaobei': { who: '梅雪', line: '筊杯掷得响，答案掷得准。允不允，问了才算。' },
   '/xiaoliuren': { who: '灵蓍', line: '大安留连速喜，掐指便知，小事别排盘。' },
   '/almanac': { who: '素问', line: '今日五行穿什么颜色、哪个时辰行事，历上都写着。' },
-  '/oracle': { who: '梅雪', line: '老签池留着呢，情怀也是灵验的一种。' },
+  '/shuzi': { who: '灵蓍', line: '一串数字也能起卦，手机号生日都使得。' },
   '/wuxing': { who: '素问', line: '五行天穹开着，进去转一圈，比背口诀快。' },
   '/qimen': { who: '丹霞', line: '奇门地基刚打好，先看定局布仪，别急着上天盘。' },
   '/yanyi': { who: '星阑', line: '从无极滚到六十四卦，一路往下看就是一部易学史。' },
   '/sages': { who: '青玄', line: '观里上下十位都在图鉴里，去挑个投缘的说话。' },
+  '/memory': { who: '青玄', line: '翻牌配对玩两局，八卦长相就刻进脑子了。' },
+  '/story': { who: '云笈', line: '易道长卷铺开了，慢慢往下滚，六幕一路看到底。' },
   '/classics': { who: '云笈', line: '藏经阁七部古书都在架上，我扫了这么久的地，随你翻。' },
   '/geju': { who: '霜华', line: '四十九族格局谱系，个个来路清白，尽管查。' },
   '/rules': { who: '守拙', line: '七百九十九条规则码得整整齐齐，欢迎挑刺。' },
   '/cases': { who: '拾遗', line: '两千多个命例落着灰，提灯给你照着挑。' },
-  '/settings': { who: '青玄', line: '衣房在客舍里，七套道袍随主题换，慢慢挑。' },
+  '/settings': { who: '青玄', line: '衣房在客舍里，六套道袍随主题换，慢慢挑。' },
 }
 </script>
 
@@ -82,7 +86,7 @@ const GUIDE: Record<string, { who: string; line: string }> = {
   <main class="page">
     <div class="card" v-reveal>
       <h2>道观地图 · 一图通全观</h2>
-      <p class="sub">十七进殿宇按功能分了四路。初来客官从前殿走起；老香客直接奔后山。</p>
+      <p class="sub">二十进殿宇按功能分了四路。初来客官从前殿走起；老香客直接奔后山。</p>
     </div>
     <section v-for="(g, gi) in GROUPS" :key="g.name" v-reveal="gi * 60" class="zone">
       <h2>{{ g.name }}</h2>

@@ -49,7 +49,7 @@ function disposeSceneObjects(): void {
   sectorMeshes = []
   if (haloMesh) {
     haloMesh.geometry.dispose()
-    ;(haloMaterial()).dispose()
+    // 材质是跨重建缓存的共享实例，只摘不销毁，下次选宫还要用
     group?.remove(haloMesh)
     haloMesh = null
   }
@@ -108,9 +108,12 @@ function angleOf(i: number): number {
 }
 
 function buildSky(): void {
-  if (!scene || !group || !props.palaces) return
+  if (!scene || !props.palaces) return
   disposeSceneObjects()
-  group.clear()
+  // 上一步已把旧容器连同资源整体摘除并置空，这里换一个干净的新容器挂回场景，
+  // 避免对已置空的 group 再调 clear() 抛空指针
+  group = new THREE.Group()
+  scene.add(group)
   sectorMeshes = []
 
   const pal = props.palaces
@@ -274,7 +277,11 @@ function scheduleIdle(): void {
   }, 5200)
 }
 
-watch(() => [props.palaces, props.selected, props.mingIndex], () => buildSky(), { deep: false })
+/* 父组件重渲染会新建 palaces 数组，按身份比较会整景销毁重建——改为深比较，内容没变不动 */
+watch(
+  () => `${JSON.stringify(props.palaces)}#${props.mingIndex}#${String(props.selected)}`,
+  () => buildSky(),
+)
 
 onMounted(() => {
   const el = container.value
@@ -326,6 +333,8 @@ onBeforeUnmount(() => {
   }
   if (idleTimer !== null) window.clearTimeout(idleTimer)
   disposeSceneObjects()
+  _haloMat?.dispose()
+  _haloMat = null
   renderer?.dispose()
   el?.querySelector('canvas')?.remove()
 })
@@ -358,13 +367,13 @@ onBeforeUnmount(() => {
   gap: 6px;
 }
 .zoom-btns button {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(11, 13, 18, 0.72);
   color: var(--gold-bright);
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   backdrop-filter: blur(4px);

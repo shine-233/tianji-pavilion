@@ -11,6 +11,7 @@ export function toast(msg: string, dur = 2800): void {
   const el = document.createElement('div')
   el.className = 'toast-item'
   el.textContent = msg
+  el.setAttribute('role', 'status')
   host.appendChild(el)
   window.setTimeout(() => {
     el.classList.add('out')

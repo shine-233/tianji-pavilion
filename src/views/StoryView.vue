@@ -329,6 +329,19 @@ onMounted(() => {
     window.removeEventListener('scroll', onTouchSway)
     window.removeEventListener('resize', resize)
     window.removeEventListener('scroll', onScroll)
+    // 遍历整棵场景树释放 geometry / material / 贴图（太极、卦符、双珠的 CanvasTexture 都挂在材质上）
+    const releaseMat = (m: THREE.Material): void => {
+      ;(m as unknown as { map?: THREE.Texture | null }).map?.dispose()
+      m.dispose()
+    }
+    scene.traverse((o) => {
+      const mesh = o as THREE.Mesh
+      mesh.geometry?.dispose()
+      const mat = mesh.material as THREE.Material | THREE.Material[] | undefined
+      if (Array.isArray(mat)) mat.forEach(releaseMat)
+      else if (mat) releaseMat(mat)
+    })
+    scene.clear()
     renderer.dispose()
     host.contains(renderer.domElement) && host.removeChild(renderer.domElement)
   })

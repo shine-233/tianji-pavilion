@@ -4,11 +4,12 @@ import { ref } from 'vue'
 import { GUA_TIP, install, TRI_NATURE, type Trigram } from '../lib/liuyaoExtra'
 import { sfx } from '../lib/sfx'
 import { toast } from '../lib/toast'
+import { sparkle } from '../lib/sparkle'
 
 const digits = ref('')
 const result = ref<null | { name: string; tip: string; upper: Trigram; lower: Trigram; mv: number; rows: string[] }>(null)
 
-function calc(): void {
+function calc(e?: MouseEvent): void {
   const ds = digits.value.replace(/\D/g, '')
   if (ds.length < 4) {
     toast('至少给我 4 位数字才起得来卦呀')
@@ -35,6 +36,7 @@ function calc(): void {
     rows,
   }
   sfx.ding()
+  if (e) sparkle(e.clientX, e.clientY, 10)
 }
 </script>
 
@@ -44,7 +46,7 @@ function calc(): void {
       <h2>数字能量 · 梅花心易</h2>
       <p class="sub">手机号、QQ号、生日都行。前半求上卦，后半求下卦，总数除六取动爻——梅花旧法，号码新用。</p>
       <input v-model="digits" inputmode="numeric" maxlength="20" placeholder="输入一串数字" @keyup.enter="calc()" />
-      <div style="margin-top: 12px"><button @click="calc()">☯ 起卦</button></div>
+      <div style="margin-top: 12px"><button @click="calc($event)">☯ 起卦</button></div>
     </div>
 
     <div v-if="result" class="card" v-reveal="80">

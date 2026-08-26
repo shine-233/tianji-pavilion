@@ -9,11 +9,32 @@ let hideTimer = 0
 /** 触屏上 mouseenter 会先于 click 合成触发，用指针类型拦一下防"闪现即关" */
 let lastPointerType = 'mouse'
 
+const termEl = ref<HTMLSpanElement | null>(null)
+/** 气泡 left（相对词条容器、配合 translateX(-50%) 居中锚点）；null 时回落 CSS 默认居中 */
+const tipLeft = ref<number | null>(null)
+
+/** JS 智能定位：气泡默认对准触发词居中，再 clamp 进视口 8px 内边距——靠左的词不再把气泡顶出屏幕 */
+function placeTip(): void {
+  const el = termEl.value
+  const wrap = el?.parentElement
+  if (!el || !wrap) {
+    tipLeft.value = null
+    return
+  }
+  const vw = document.documentElement.clientWidth
+  const w = vw <= 720 ? 224 : 264
+  const r = el.getBoundingClientRect()
+  const wr = wrap.getBoundingClientRect()
+  const clampedLeft = Math.max(8, Math.min(vw - w - 8, r.left + r.width / 2 - w / 2))
+  tipLeft.value = clampedLeft + w / 2 - wr.left
+}
+
 function enter(): void {
   // 触屏的合成 mouseenter 先于 click 到达，这里若开箱，click 的收合逻辑会立刻关掉——闪现即灭
   if (lastPointerType === 'touch') return
   window.clearTimeout(hideTimer)
   if (!open.value) sfx.tick()
+  placeTip()
   open.value = true
 }
 function leave(): void {
@@ -25,6 +46,7 @@ function tap(): void {
     return
   }
   if (!open.value) sfx.blip()
+  placeTip()
   open.value = !open.value
 }
 function onPointDown(e: PointerEvent): void {
@@ -35,6 +57,7 @@ function onPointDown(e: PointerEvent): void {
 <template>
   <span class="term-wrap">
     <span
+      ref="termEl"
       class="term" role="button" tabindex="0"
       :aria-expanded="open"
       @pointerdown="onPointDown"
@@ -45,7 +68,7 @@ function onPointDown(e: PointerEvent): void {
       @keydown.esc="open = false"
     >{{ props.k }}</span>
     <transition name="term-pop">
-      <span v-if="open && lookup(props.k)" class="tip" @mouseenter="enter" @mouseleave="leave">
+      <span v-if="open && lookup(props.k)" class="tip" :style="tipLeft !== null ? { left: `${tipLeft}px` } : undefined" @mouseenter="enter" @mouseleave="leave">
         <i class="cat">{{ { 基础: '基础', 十神: '十神', 格局: '格局', 神煞: '神煞', 紫微: '紫微' }[lookup(props.k)!.cat] }}</i>
         <b class="t-name">{{ Object.keys(GLOSSARY).find((x) => GLOSSARY[x] === lookup(props.k)) ?? props.k }}</b>
         <p>{{ lookup(props.k)!.text }}</p>
@@ -75,7 +98,8 @@ function onPointDown(e: PointerEvent): void {
   border: 1px solid rgba(232, 196, 115, 0.45);
   border-radius: 12px;
   padding: 11px 14px 9px;
-  z-index: 60;
+  /* 高于顶栏(900)、低于彩蛋层(2600)，悬浮词不再被顶栏盖住 */
+  z-index: 1200;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
   display: block;
 }
@@ -102,14 +126,11 @@ function onPointDown(e: PointerEvent): void {
 .src { display: block; text-align: right; font-size: 0.66rem; color: var(--dim); margin-top: 4px; }
 
 @media (max-width: 720px) {
-  .tip { width: 224px; left: auto; right: -40px; transform: none; }
+  .tip { width: 224px; }
 }
 
 .term-pop-enter-active { transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.term-pop-enter-from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.94); }
-@media (max-width: 720px) {
-  .term-pop-enter-from { transform: translateY(6px) scale(0.94); }
-}
+.term-pop-enter-from { transform: translateX(-50%) translateY(6px) scale(0.94); }
 .term-pop-leave-active { transition: all 0.15s ease; }
 .term-pop-leave-to { opacity: 0; }
 </style>

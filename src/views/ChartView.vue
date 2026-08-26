@@ -137,7 +137,7 @@ const shareSpec = computed(() => {
     pillars: [...r.ps],
     total: r.tot.toFixed(1) + ' 分',
     scores: blocks.value.map((b) => [b.name, Math.max(0, b.score)] as [string, number]),
-    notes: [pctlText.value || '', '规则全公开可审计 · 仅供传统文化研究与娱乐参考'],
+    notes: [pctlText.value || '', '规则全公开，欢迎对答案 · 仅供把玩参考'],
   }
 })
 
@@ -153,11 +153,25 @@ function restore(h: HistoryItem): void {
   calc()
 }
 
-function lunarInfo(): string {
+function lunarInfo(): string | null {
+  // 守卫：日期被清空/填一半时会出现 NaN，直接喂历法库会把整个视图 patch 炸掉。
+  // 年月日必须是有效整数、年份限定 1900-2100，非法一律返回 null，由模板兜底。
   const dtp = dt.value.split('-').map(Number)
-  const solar = Solar.fromYmdHms(dtp[0]!, dtp[1]!, dtp[2]!, 12, 0, 0)
-  const lunar = solar.getLunar()
-  return `农历 ${lunar.toString()} ${lunar.getYearInGanZhiExact()}年 · 生肖${lunar.getYearShengXiao()}`
+  const y = dtp[0]
+  const m = dtp[1]
+  const d = dtp[2]
+  if (
+    dtp.length < 3 ||
+    !Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d) ||
+    y! < 1900 || y! > 2100 || m! < 1 || m! > 12 || d! < 1 || d! > 31
+  ) return null
+  try {
+    const solar = Solar.fromYmdHms(y!, m!, d!, 12, 0, 0)
+    const lunar = solar.getLunar()
+    return `农历 ${lunar.toString()} ${lunar.getYearInGanZhiExact()}年 · 生肖${lunar.getYearShengXiao()}`
+  } catch {
+    return null
+  }
 }
 </script>
 
@@ -166,7 +180,7 @@ function lunarInfo(): string {
     <div class="card">
       <h2><DecryptTitle text="四柱排盘 · v5 公开规则引擎" /></h2>
       <p class="sub" style="margin-bottom: 6px">
-        权重：结构22 / 格局20 / 层次10 / 调候16 / 大运联动14 / 紫微10 / 神煞8 —— 全部公开可审计
+        权重：结构22 / 格局20 / 层次10 / 调候16 / 大运联动14 / 紫微10 / 神煞8。每一项的算法都摆在明面上，点开分项就能看到扣分理由。
       </p>
       <div class="form-row">
         <div><label>公历出生日期</label><input v-model="dt" type="date" /></div>
@@ -179,7 +193,7 @@ function lunarInfo(): string {
         <span class="tag teal pointer" @click="preset('2002-10-26', '10:30')">A·2002巳时盘</span>
         <span class="tag teal pointer" @click="preset('1997-10-22', '03:30')">B·1997寅时盘</span>
         <span class="tag teal pointer" @click="preset('1997-10-22', '11:30')">C·1997午时盘</span>
-        <span class="tag">{{ lunarInfo() }}</span>
+        <span class="tag">{{ lunarInfo() ?? '农历 · 填好日期再看' }}</span>
       </div>
       <div class="note">⚠️ 晚子时暂不支持｜女命百分位池建设中｜真太阳时未自动校正｜仅供传统文化研究与娱乐参考。</div>
 
@@ -260,7 +274,7 @@ function lunarInfo(): string {
 
       <div class="card">
         <h2>大运时间轴 · 未来 25 年评估窗口</h2>
-        <DayunTimeline :items="result.dlist" :active-index="voyageSel" />
+        <DayunTimeline :items="result.dlist" :active-index="voyageSel" @pick="(i: number | null) => (voyageSel = i)" />
       </div>
 
       <div class="card" v-reveal>
@@ -281,6 +295,7 @@ function lunarInfo(): string {
         </p>
         <DayunVoyage3D
           :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))"
+          :selected="voyageSel"
           @select="(i: number) => (voyageSel = voyageSel === i ? null : i)"
         />
       </div>

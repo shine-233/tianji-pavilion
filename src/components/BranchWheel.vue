@@ -127,6 +127,11 @@ const LEGEND = [
         <circle
           :cx="pt(z, R)![0]" :cy="pt(z, R)![1]" r="15"
           class="node" :class="{ on: zhiState(z), mine: presentSet.has(z), pin: pinned === z }"
+        />
+        <!-- 透明命中圆：把触屏热区扩到 r=22，视觉半径不变 -->
+        <circle
+          :cx="pt(z, R)![0]" :cy="pt(z, R)![1]" r="22"
+          class="hit"
           @mouseenter="onNodeEnter(z)" @mouseleave="hover = null" @click="togglePin(z)"
         />
         <text
@@ -188,9 +193,11 @@ const LEGEND = [
   fill: var(--card-2);
   stroke: rgba(139, 147, 167, 0.4);
   stroke-width: 1;
-  cursor: pointer;
+  pointer-events: none;
   transition: all 0.25s ease;
 }
+/* 命中圆透明不可见，只负责接住指针事件 */
+.hit { fill: transparent; stroke: none; pointer-events: all; cursor: pointer; }
 .node.on { stroke: var(--gold-bright); stroke-width: 1.6; }
 .node.pin { stroke: var(--gold-bright); stroke-width: 2; }
 .node.mine { stroke: var(--teal); stroke-width: 2; filter: drop-shadow(0 0 6px rgba(94, 234, 212, 0.5)); }

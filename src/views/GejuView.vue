@@ -89,6 +89,8 @@ const filtered = computed(() => {
 function pickCat(c: string): void {
   sfx.blip()
   selCat.value = selCat.value === c ? null : c
+  openName.value = null
+  expandSnip.value = null
 }
 
 function open(l: Lineage): void {
@@ -137,7 +139,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
             class="tag cat-tag" :class="{ on: selCat === c }"
             @click="pickCat(c)"
           >{{ c }}</span>
-          <input v-model="query" type="text" class="q" placeholder="搜索格局名 / 书名 / 年代…" />
+          <input v-model="query" type="text" class="q" placeholder="搜索格局名 / 书名 / 年代…" @input="openName = null; expandSnip = null" />
         </div>
         <p class="note">当前 {{ filtered.length }} 个格局{{ selCat ? ` · 类别「${selCat}」` : '' }}</p>
       </div>

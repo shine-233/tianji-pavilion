@@ -43,6 +43,9 @@ const locked = ref(false)
 let timer: number | null = null
 
 const won = computed(() => matched.value.length === deck.value.length)
+/** 遮罩可手动关掉；won 是只读计算值，别直接写它 */
+const maskOpen = ref(false)
+const newRecord = ref(false)
 
 const BEST_KEY = 'bs-memory-best'
 const best = ref<{ moves: number; secs: number } | null>(loadBest())
@@ -93,7 +96,10 @@ function win(): void {
   sfx.gong()
   sparkle(window.innerWidth / 2, window.innerHeight / 2, 14)
   const cur = { moves: moves.value, secs: secs.value }
-  if (!best.value || cur.moves < best.value.moves || (cur.moves === best.value.moves && cur.secs < best.value.secs)) {
+  const beat =
+    !best.value || cur.moves < best.value.moves || (cur.moves === best.value.moves && cur.secs < best.value.secs)
+  newRecord.value = beat
+  if (beat) {
     best.value = cur
     try {
       localStorage.setItem(BEST_KEY, JSON.stringify(cur))
@@ -101,6 +107,7 @@ function win(): void {
       /* 隐私模式就算了 */
     }
   }
+  maskOpen.value = true
 }
 
 function restart(): void {
@@ -111,6 +118,8 @@ function restart(): void {
   moves.value = 0
   secs.value = 0
   locked.value = false
+  maskOpen.value = false
+  newRecord.value = false
   sfx.toggle()
 }
 
@@ -164,10 +173,10 @@ onBeforeUnmount(stopTimer)
     </section>
 
     <transition name="pop">
-      <div v-if="won" class="win-mask" @click="won = false">
+      <div v-if="won && maskOpen" class="win-mask" @click="maskOpen = false">
         <div class="card win-card" @click.stop>
           <h2>☰ 全配对了 ☱</h2>
-          <p class="sub">{{ moves }} 步 · {{ secs }} 秒{{ best && moves <= best.moves ? ' · 新纪录！' : '' }}</p>
+          <p class="sub">{{ moves }} 步 · {{ secs }} 秒{{ newRecord ? ' · 新纪录！' : '' }}</p>
           <p class="note">乾天坤地，离火坎水，震雷艮山，巽风兑泽——这八个字现在归你了。</p>
           <button @click="restart">再来一局</button>
         </div>

@@ -50,9 +50,11 @@ function stepsFor(a: number, b: number, c: number): number[] {
   return path
 }
 
+/** 超过一百零八的大数按「减六的倍数」折回，落宫不变、动画不失控 */
 function parseNum(s: string): number {
   const n = Math.floor(Math.abs(Number(s)))
-  return Number.isFinite(n) && n > 0 ? n : 1
+  if (!Number.isFinite(n) || n <= 0) return 1
+  return ((n - 1) % 108) + 1
 }
 
 async function cast(e?: MouseEvent): Promise<void> {
@@ -71,10 +73,12 @@ async function cast(e?: MouseEvent): Promise<void> {
   const path = stepsFor(...nums)
   walking.value = true
   result.value = null
-  for (let i = 0; i < path.length; i++) {
+  // 大数折算后仍可能上百步：只演最后一程，前面直接快进
+  const animStart = Math.max(0, path.length - 48)
+  for (let i = animStart; i < path.length; i++) {
     walkIdx.value = path[i]!
     sfx.tick()
-    await new Promise((r) => setTimeout(r, Math.max(60, 220 - i * 4)))
+    await new Promise((r) => setTimeout(r, Math.max(60, 220 - (i - animStart) * 4)))
   }
   result.value = path[path.length - 1] ?? 0
   walking.value = false

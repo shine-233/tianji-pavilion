@@ -38,7 +38,9 @@ export class FrameGate {
   readonly lowEnd = LOW_END
 
   constructor(el?: HTMLElement | Element | null, opts: FrameGateOptions = {}) {
-    this.minInterval = opts.fpsCapOnLowEnd === undefined || opts.fpsCapOnLowEnd <= 0 ? 0 : Math.ceil(1000 / opts.fpsCapOnLowEnd)
+    // 低端机不限参时默认限 30fps；显式传 0 才表示不限帧
+    const cap = opts.fpsCapOnLowEnd !== undefined ? opts.fpsCapOnLowEnd : LOW_END ? 30 : 0
+    this.minInterval = cap > 0 ? Math.ceil(1000 / cap) : 0
     if (typeof document !== 'undefined') {
       this.hiddenTab = document.hidden
       this.onVis = () => {

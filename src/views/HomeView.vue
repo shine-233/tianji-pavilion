@@ -3,13 +3,14 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { SHENG_CYCLE, KE_CYCLE } from '../data/wuxingData'
 import { Element, SHENG_ORDER } from '../lib/constants'
-import { buildTaoess } from '../data/sageSprite'
+import { buildTaoessHd } from '../data/sageSprite'
 import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
 import YiJiCard from '../components/YiJiCard.vue'
 import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
+import { toast } from '../lib/toast'
 import { vTilt } from '../lib/tilt'
 
 const router = useRouter()
@@ -38,7 +39,7 @@ function heroGlowOff(): void {
   gy.value = -9999
 }
 
-const SAGE = buildTaoess('qingxuan')
+const SAGE = buildTaoessHd('qingxuan')
 
 /** 每日一签：按日期固定抽取，全天不变 */
 const QUOTES = [
@@ -66,9 +67,28 @@ function daySeed(): number {
 }
 const today = QUOTES[daySeed() % QUOTES.length]!
 
-function copyQuote(): void {
-  void navigator.clipboard?.writeText(`「${today.text}」——${today.src}`)
-  sfx.ding()
+async function copyQuote(): Promise<void> {
+  const text = `「${today.text}」——${today.src}`
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      sfx.ding()
+      return
+    }
+    // 旧环境兜底：隐藏文本域 + execCommand
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    const ok = document.execCommand('copy')
+    ta.remove()
+    if (ok) sfx.ding()
+    else toast('复制没成功，长按文字手动复制吧')
+  } catch {
+    toast('复制没成功，长按文字手动复制吧')
+  }
 }
 
 const STATS = [
@@ -91,7 +111,7 @@ const MODULE_TIERS: Array<{ title: string; sub: string; items: ModuleDef[] }> = 
       { to: '/daily', glyph: '签', title: '每日一签', desc: '按日期固定一签，全天不变。附十二时辰吉凶，出门前扫一眼。', tags: ['每日同签', '黄黑道'] },
       { to: '/almanac', glyph: '历', title: '今日黄历', desc: '宜忌、吉时、幸运色，老黄历翻新页。当参考，别当圣旨。', tags: ['宜忌', '吉时'] },
       { to: '/xiaoliuren', glyph: '掌', title: '小六壬', desc: '心里想事随口报数，指尖点过六宫落定吉凶。诸葛马前课，最快的一种。', tags: ['掐指一算', '报数起课'] },
-      { to: '/oracle', glyph: '卜', title: '轻卜抽签', desc: '摇签筒跪抽一签，配古诗签文。图个心境，也图个彩头。', tags: ['签诗', '仪式感'] },
+      { to: '/jiaobei', glyph: '筊', title: '杯筊问事', desc: '掷两片木筊问允否，连得三圣才算数。庙里问事的老规矩。', tags: ['圣杯阴杯', '三问定夺'] },
     ],
   },
   {
@@ -102,6 +122,7 @@ const MODULE_TIERS: Array<{ title: string; sub: string; items: ModuleDef[] }> = 
       { to: '/ziwei', glyph: '紫', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正连线自己画，大限标到每一宫。', tags: ['三方四正', '生年四化'] },
       { to: '/liuyao', glyph: '爻', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦、六亲六兽自动排好，附白话用神分析。', tags: ['火珠林法', '京房八宫'] },
       { to: '/meihua', glyph: '梅', title: '梅花易数', desc: '万物皆可起卦：报两个数、报个时间，体用互变断吉凶。邵雍的老玩法。', tags: ['数字起卦', '体用生克'] },
+      { to: '/shuzi', glyph: '数', title: '数字能量', desc: '手机号生日拆两半求和起卦，梅花旧法的新玩法，图个乐趣。', tags: ['号码起卦', '京房装卦'] },
     ],
   },
   {
@@ -178,8 +199,8 @@ function arcPath(i: number, j: number, off: number): string {
           <path v-for="(p, i) in SHENG_CYCLE" :key="'s' + i" :d="arcPath(SHENG_ORDER.indexOf(p[0]), SHENG_ORDER.indexOf(p[1]), -24)" class="arc-s" marker-end="url(#arrH)" />
           <path v-for="(p, i) in KE_CYCLE" :key="'k' + i" :d="arcPath(SHENG_ORDER.indexOf(p[0]), SHENG_ORDER.indexOf(p[1]), 26)" class="arc-k" marker-end="url(#arrR)" />
         </svg>
-<svg class="hero-sage" viewBox="0 0 26 30">
-<rect v-for="(p, i) in SAGE" :key="i" :x="p.x + 0.06" :y="p.y + 2.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
+<svg class="hero-sage" viewBox="0 0 52 60">
+<rect v-for="(p, i) in SAGE" :key="i" :x="p.x + 0.12" :y="p.y + 4.12" width="0.88" height="0.88" rx="0.22" :fill="p.fill" />
         </svg>
       </div>
     </section>

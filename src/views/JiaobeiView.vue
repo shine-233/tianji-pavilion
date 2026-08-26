@@ -28,8 +28,10 @@ async function throwOnce(): Promise<void> {
   spinning.value = true
   sfx.knock()
   await new Promise((r) => setTimeout(r, 650))
-  const t: Toss = { a: rand(), b: rand(), ok: (rand() === 'yang') !== false }
-  t.ok = (t.a === 'yang' && t.b === 'yin') || (t.a === 'yin' && t.b === 'yang')
+  const a = rand()
+  const b = rand()
+  // 一平一凸即圣杯
+  const t: Toss = { a, b, ok: a !== b }
   current.value = t
   spinning.value = false
   sfx.knock()
@@ -60,12 +62,13 @@ async function castThree(): Promise<void> {
   tossing.value = false
   const n = history.value.filter(Boolean).length
   verdict.value = [
-    '三阴——此事眼下不成，换个时机或换个问法。',
-    '一圣——念头未定，先静三日再来问。',
-    '两圣——大体可行，细节还需自己拿捏。',
-    '三圣——允了！放手去做，记得回头还愿。',
+    '三阴，此事眼下不成。换个时机或换个问法。',
+    '一圣，念头未定。先静三日再来问。',
+    '两圣，大体可行。细节还需自己拿捏。',
+    '三圣，允了！放手去做，记得回头还愿。',
   ][n]!
   sfx.ding()
+  window.dispatchEvent(new CustomEvent('sage-say', { detail: `杯筊三问得${['零', '一', '两', '三'][n]}圣：${verdict.value}` }))
   addRecord({ kind: 'sign', title: `杯筊三问·${n}圣`, detail: question.value || '未记所问' })
 }
 </script>

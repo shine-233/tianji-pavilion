@@ -510,6 +510,8 @@ export interface HdPixel {
   x: number
   y: number
   fill: string
+  /** 细节着色层透明度（来自 2× 基础像素） */
+  op?: number
 }
 
 function hexMix(a: string, b: string, t: number): string {
@@ -521,8 +523,8 @@ function hexMix(a: string, b: string, t: number): string {
   return '#' + ((r << 16) | (g << 8) | bl).toString(16).padStart(6, '0')
 }
 
-export function buildTaoessHd(id: string): HdPixel[] {
-  const base = buildTaoess(id)
+export function buildTaoessHd(id: string, palOverride?: Partial<Record<string, string>>, pose?: 'stand' | 'sit' | 'sword'): HdPixel[] {
+  const base = buildTaoess(id, palOverride, pose)
   const at = new Map<string, string>()
   base.forEach((p) => at.set(`${p.x},${p.y}`, p.fill))
   const out: HdPixel[] = []
@@ -536,7 +538,7 @@ export function buildTaoessHd(id: string): HdPixel[] {
         if (h && h !== fill) fill = hexMix(fill, h, 0.3)
         const v = at.get(`${p.x},${ny}`)
         if (v && v !== p.fill && v !== fill) fill = hexMix(fill, v, 0.3)
-        out.push({ x: p.x * 2 + ox, y: p.y * 2 + oy, fill })
+        out.push({ x: p.x * 2 + ox, y: p.y * 2 + oy, fill, op: p.op })
       }
     }
   })

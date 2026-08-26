@@ -55,8 +55,23 @@ const kindLabel = computed(() =>
   pickKind.value === 'random' ? '随手签' : pickKind.value === 'album' ? '册中回看' : '今日首签',
 )
 
+/** 未收集的格子点了给个摇头反馈，不再静默无响应 */
+const denyNo = ref<number | null>(null)
+let denyTimer: number | null = null
+
 function openFromAlbum(no: number): void {
-  if (!collectedSet.value.has(no)) return
+  // 摇签动画进行中不开册，避免册中签刚翻开又被落定的随机签盖掉
+  if (shaking.value) {
+    toast('签筒还在摇，等这支落定再翻册～')
+    return
+  }
+  if (!collectedSet.value.has(no)) {
+    denyNo.value = no
+    sfx.knock()
+    if (denyTimer !== null) window.clearTimeout(denyTimer)
+    denyTimer = window.setTimeout(() => (denyNo.value = null), 450)
+    return
+  }
   const s = ALL_SIGNS.find((x) => x.no === no)
   if (!s) return
   sfx.flip()
@@ -129,6 +144,13 @@ function backToTube(): void {
   sfx.flip()
   revealed.value = false
   question.value = ''
+}
+
+/** 签文已翻开时的「再摇一支」：先收起签筒，紧接着自动再摇一支 */
+function reshuffle(): void {
+  if (shaking.value) return
+  backToTube()
+  shakeTube()
 }
 </script>
 
@@ -216,7 +238,7 @@ function backToTube(): void {
           </div>
         </article>
         <div class="actions">
-          <button class="ghost" @click="shakeTube()">再摇一支</button>
+          <button class="ghost" @click="reshuffle()">再摇一支</button>
           <button class="ghost" @click="backToTube">收起签筒</button>
         </div>
         <p class="note hint">共 {{ ALL_SIGNS.length }} 支签。签是好签，事在人为。</p>
@@ -240,6 +262,7 @@ function backToTube(): void {
             got: collectedSet.has(s.no),
             today: s.no === todaySign.no,
             on: revealed && shown.no === s.no,
+            deny: denyNo === s.no,
           }"
           :title="collectedSet.has(s.no) ? `第${s.no}签 · ${s.tier}` : '尚未抽到'"
           @click="openFromAlbum(s.no)"
@@ -454,6 +477,12 @@ function backToTube(): void {
 .slot.got:hover { transform: translateY(-4px) rotate(-2deg); }
 .slot.today { border-style: dashed; border-color: var(--teal); }
 .slot.on { transform: scale(1.08); border-color: var(--gold-bright); z-index: 2; }
+.slot.deny { animation: slot-deny 0.42s ease; }
+@keyframes slot-deny {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-3deg); }
+  60% { transform: translateX(4px) rotate(3deg); }
+}
 .dd span { padding: 9px 12px; border-radius: 9px; font-size: 0.82rem; line-height: 1.7; }
 .dd b { display: inline-block; margin-right: 8px; font-family: var(--cute); font-size: 0.9rem; }
 .do { background: rgba(94, 234, 212, 0.08); border: 1px solid rgba(94, 234, 212, 0.25); }

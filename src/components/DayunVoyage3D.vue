@@ -241,7 +241,11 @@ function scheduleIdle(): void {
   }, 5200)
 }
 
-watch(() => [props.stops, props.selected], () => buildVoyage(), { deep: false })
+/* 父组件重渲染会新建 stops 数组，按身份比较会整景销毁重建——改为深比较，内容没变不动 */
+watch(
+  () => `${JSON.stringify(props.stops)}#${String(props.selected)}`,
+  () => buildVoyage(),
+)
 
 onMounted(() => {
   const el = container.value
@@ -330,13 +334,13 @@ onBeforeUnmount(() => {
   gap: 6px;
 }
 .zoom-btns button {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(11, 13, 18, 0.72);
   color: var(--gold-bright);
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   backdrop-filter: blur(4px);

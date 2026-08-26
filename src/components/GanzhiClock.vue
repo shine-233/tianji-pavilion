@@ -29,22 +29,24 @@ const SHICHEN: ShichenInfo[] = [
   { name: '亥', hours: '21–23', ele: '水', tip: '人定，该睡了。三焦通百脉，亥时入睡是老祖宗的美容方。' },
 ]
 
-function nowIdx(): number {
-  const h = new Date().getHours()
-  return Math.floor(((h + 1) % 24) / 2)
-}
-
 const manual = ref<number | null>(null)
 const dragging = ref(false)
 let raf = 0
-
-const idx = computed(() => manual.value ?? nowIdx())
-const info = computed(() => SHICHEN[idx.value]!)
+/** 响应式的当前时间：定时刷新它，computed 才会跟着重算（Date.now 本身不是响应式的） */
+const nowTs = ref(Date.now())
 
 /** 当前时辰扇区的角度：每辰 30°，子时在正上方 */
 function sectorAngle(i: number): number {
   return i * 30
 }
+
+function nowIdx(): number {
+  const h = new Date(nowTs.value).getHours()
+  return Math.floor(((h + 1) % 24) / 2)
+}
+
+const idx = computed(() => manual.value ?? nowIdx())
+const info = computed(() => SHICHEN[idx.value]!)
 
 function setFromEvent(e: PointerEvent | MouseEvent): void {
   const el = e.currentTarget as HTMLElement
@@ -81,6 +83,7 @@ function backToNow(): void {
 
 function tickLoop(): void {
   // 每 30 秒刷新一次「现在」，跨时辰自动归位
+  nowTs.value = Date.now()
   raf = window.setTimeout(tickLoop, 30000)
 }
 onMounted(() => tickLoop())
