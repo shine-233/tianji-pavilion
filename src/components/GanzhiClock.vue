@@ -35,7 +35,6 @@ function nowIdx(): number {
 
 const manual = ref<number | null>(null)
 const dragging = ref(false)
-const angle = ref(0)
 let raf = 0
 
 const idx = computed(() => manual.value ?? nowIdx())
@@ -80,8 +79,7 @@ function backToNow(): void {
 }
 
 function tickLoop(): void {
-  // 每分钟刷新一次「现在」
-  angle.value = sectorAngle(nowIdx())
+  // 每 30 秒刷新一次「现在」，跨时辰自动归位
   raf = window.setTimeout(tickLoop, 30000)
 }
 onMounted(() => tickLoop())
@@ -118,7 +116,7 @@ onBeforeUnmount(() => window.clearTimeout(raf))
           <circle cx="160" cy="52" r="5" fill="#ffe3a8" />
         </g>
       </svg>
-      <button class="core" title="回到当前时辰" @click.stop="backToNow()">☯</button>
+      <button class="core" title="回到当前时辰" aria-label="回到当前时辰" @click.stop="backToNow()">☯</button>
     </div>
 
     <transition name="popi" mode="out-in">

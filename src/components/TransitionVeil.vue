@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -10,6 +10,10 @@ watch(() => route.path, () => {
   active.value = true
   if (timer !== null) window.clearTimeout(timer)
   timer = window.setTimeout(() => (active.value = false), 620)
+})
+
+onBeforeUnmount(() => {
+  if (timer !== null) window.clearTimeout(timer)
 })
 </script>
 

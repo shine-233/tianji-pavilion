@@ -5,6 +5,7 @@
  */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
+import { FrameGate, dprCap } from '../lib/perf'
 import { sfx } from '../lib/sfx'
 
 export interface SkyPalace {
@@ -28,6 +29,7 @@ let sectorMeshes: THREE.Mesh[] = []
 let haloMesh: THREE.Mesh | null = null
 let raf = 0
 let disposed = false
+let gate: FrameGate | null = null
 
 let dragging = false
 let lastX = 0
@@ -208,7 +210,7 @@ function animate(): void {
     const m = haloMaterial()
     m.opacity = 0.32 + 0.26 * Math.sin(t * 4.2)
   }
-  renderer.render(scene, camera)
+  if (gate?.shouldRender) renderer.render(scene, camera)
 }
 
 function onResize(): void {
@@ -271,7 +273,8 @@ onMounted(() => {
   const el = container.value
   if (!el) return
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(dprCap(2))
+  gate = gate ?? new FrameGate(renderer.domElement)
   renderer.setSize(el.clientWidth, el.clientHeight)
   el.appendChild(renderer.domElement)
   scene = new THREE.Scene()
@@ -303,6 +306,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   disposed = true
   cancelAnimationFrame(raf)
+    gate?.dispose()
   window.removeEventListener('resize', onResize)
   const el = container.value
   if (el) {

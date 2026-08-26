@@ -7,6 +7,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as THREE from 'three'
+import { FrameGate, dprCap } from '../lib/perf'
 import { sfx } from '../lib/sfx'
 
 const router = useRouter()
@@ -66,6 +67,7 @@ function goChart(): void {
 
 /* ---------- three.js 场景 ---------- */
 let disposed = false
+let gate: FrameGate | null = null
 let raf = 0
 
 function taijiTexture(): THREE.Texture {
@@ -128,7 +130,8 @@ onMounted(() => {
   } catch {
     return // 无 WebGL 环境静默降级，文字面板仍可用 CSS 展示
   }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75))
+  renderer.setPixelRatio(dprCap(2))
+  gate = gate ?? new FrameGate(renderer.domElement)
   renderer.setSize(host.clientWidth, host.clientHeight)
   host.appendChild(renderer.domElement)
 
@@ -289,7 +292,7 @@ onMounted(() => {
     camera.position.x += (mx * 0.6 - camera.position.x) * 0.04
     camera.lookAt(0, 0, 0)
 
-    renderer.render(scene, camera)
+    if (gate?.shouldRender) renderer.render(scene, camera)
     if (reduced) return
   }
   tick()
@@ -308,6 +311,7 @@ onMounted(() => {
   onBeforeUnmountCleanup(() => {
     disposed = true
     cancelAnimationFrame(raf)
+    gate?.dispose()
     window.removeEventListener('mousemove', onMouse)
     window.removeEventListener('resize', resize)
     window.removeEventListener('scroll', onScroll)

@@ -93,9 +93,9 @@ const PETALS = Array.from({ length: 9 }, (_, i) => ({
   filter: blur(2px);
   background: radial-gradient(closest-side, currentColor, transparent 72%);
 }
-.b1 { color: var(--acc-rgb); background: radial-gradient(closest-side, rgba(var(--acc-rgb), 0.10), transparent 70%); width: 340px; height: 300px; top: -80px; right: -60px; }
-.b2 { color: var(--acc2-rgb); background: radial-gradient(closest-side, rgba(var(--acc2-rgb), 0.08), transparent 70%); width: 260px; height: 230px; top: 30px; right: 160px; }
-.hills { position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; color: var(--acc-rgb); }
+.b1 { background: radial-gradient(closest-side, rgba(var(--acc-rgb), 0.10), transparent 70%); width: 340px; height: 300px; top: -80px; right: -60px; }
+.b2 { background: radial-gradient(closest-side, rgba(var(--acc2-rgb), 0.08), transparent 70%); width: 260px; height: 230px; top: 30px; right: 160px; }
+.hills { position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; color: rgb(var(--acc-rgb)); }
 
 /* 朱砂 */
 .seal {

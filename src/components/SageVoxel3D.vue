@@ -5,6 +5,7 @@
  */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
+import { FrameGate, dprCap } from '../lib/perf'
 import { buildTaoess, TAOESSES } from '../data/sageSprite'
 import { sfx } from '../lib/sfx'
 
@@ -21,6 +22,7 @@ let mesh: THREE.InstancedMesh | null = null
 let dust: THREE.Points | null = null
 let raf = 0
 let disposed = false
+let gate: FrameGate | null = null
 
 let dragging = false
 let lastX = 0
@@ -114,7 +116,7 @@ function animate(): void {
     }
     pa.needsUpdate = true
   }
-  renderer.render(scene, camera)
+  if (gate?.shouldRender) renderer.render(scene, camera)
 }
 
 // 双指捏合缩放
@@ -207,7 +209,8 @@ onMounted(() => {
   const el = container.value
   if (!el) return
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(dprCap(2))
+  gate = gate ?? new FrameGate(renderer.domElement)
   renderer.setSize(el.clientWidth, el.clientHeight)
   el.appendChild(renderer.domElement)
 
@@ -262,6 +265,7 @@ watch(() => props.char, (c) => {
 onBeforeUnmount(() => {
   disposed = true
   cancelAnimationFrame(raf)
+    gate?.dispose()
   window.removeEventListener('resize', onResize)
   const el = container.value
   if (el) {
