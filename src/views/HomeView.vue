@@ -219,7 +219,7 @@ function arcPath(i: number, j: number, off: number): string {
           <div class="m-glyph">{{ m.glyph }}</div>
           <div class="m-title">{{ m.title }}</div>
           <p class="sub">{{ m.desc }}</p>
-          <div><span v-for="t in m.tags" :key="t" class="tag gold">{{ t }}</span></div>
+          <div><span v-for="t in m.tags.slice(0, 2)" :key="t" class="tag gold">{{ t }}</span></div>
           <div class="m-go">进去看看 →</div>
         </a>
       </section>

@@ -324,5 +324,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 @media (max-width: 560px) {
   .search-row { flex-direction: column; }
   .stats { gap: 14px; }
+  .matrix th, .matrix td { padding: 6px 5px; font-size: 0.78rem; }
+  .bp-bar-row { gap: 8px; }
 }
 </style>

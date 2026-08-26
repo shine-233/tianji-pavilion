@@ -232,4 +232,11 @@ function doClear(): void {
 
 .about-text { max-width: 720px; }
 .wardrobe-note { margin-top: -4px; }
+
+/* 窄屏：时间戳挪到标题下面，别跟长标题挤一行 */
+@media (max-width: 560px) {
+  .ledger-row { grid-template-columns: 2em 1fr; row-gap: 2px; }
+  .lg-time { grid-column: 2; white-space: normal; }
+  .skin { padding: 11px; }
+}
 </style>
