@@ -130,7 +130,10 @@ function talkStage(): void {
       <div class="stage-right">
         <h3 class="gold-t2">立体道长 · 体素建模</h3>
         <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
-<svg viewBox="0 0 26 29" style="width:90px;margin:6px 0">
+<svg
+  viewBox="0 0 26 29" style="width:90px;margin:6px 0"
+  :class="`g-svg motion-${motionOf(selected3d).mode}`" :style="gMotion(selected3d)"
+>
 <rect v-for="(p, i) in buildTaoess(selected3d, undefined, stance)" :key="'s' + i + String(sit)" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
         </svg>
         <div class="chip-row">

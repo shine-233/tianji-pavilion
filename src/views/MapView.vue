@@ -71,7 +71,7 @@ const GUIDE: Record<string, { who: string; line: string }> = {
   '/yanyi': { who: '星阑', line: '从无极滚到六十四卦，一路往下看就是一部易学史。' },
   '/sages': { who: '青玄', line: '观里上下十位都在图鉴里，去挑个投缘的说话。' },
   '/classics': { who: '云笈', line: '藏经阁七部古书都在架上，我扫了这么久的地，随你翻。' },
-  '/geju': { who: '霜华', line: '格局谱系五十九族，个个来路清白，尽管查。' },
+  '/geju': { who: '霜华', line: '四十九族格局谱系，个个来路清白，尽管查。' },
   '/rules': { who: '守拙', line: '七百九十九条规则码得整整齐齐，欢迎挑刺。' },
   '/cases': { who: '拾遗', line: '两千多个命例落着灰，提灯给你照着挑。' },
   '/settings': { who: '青玄', line: '衣房在客舍里，七套道袍随主题换，慢慢挑。' },

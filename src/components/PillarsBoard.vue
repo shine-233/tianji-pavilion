@@ -84,6 +84,22 @@ function animalPixels(zhi: string) {
   return spritePixels(def)
 }
 
+/** 十二生肖各自的兽性微动作：同一张兽像，动起来要像它自己 */
+const Z_MOTION: Record<string, string> = {
+  鼠: 'z-twitch',
+  牛: 'z-sway-heavy',
+  虎: 'z-pounce',
+  兔: 'z-hop',
+  龙: 'z-float',
+  蛇: 'z-slither',
+  马: 'z-gallop',
+  羊: 'z-graze',
+  猴: 'z-rock',
+  鸡: 'z-peck',
+  狗: 'z-wag',
+  猪: 'z-roll',
+}
+
 function ganEle(p: string): Element | null {
   return ELE_S[p] ?? null
 }
@@ -111,7 +127,7 @@ function toggle(i: number): void {
           <div class="head">{{ HEADS[i] }}<span v-if="i === 2" class="dm-badge">日主</span></div>
           <div class="row-top">
             <span class="big-gan">{{ p[0] }}</span>
-            <svg v-if="spiritOf(p[0])" class="mini-sprite" viewBox="0 0 8 12" shape-rendering="crispEdges">
+            <svg v-if="spiritOf(p[0])" class="mini-sprite s-bob" :style="{ animationDelay: `${i * 0.35}s` }" viewBox="0 0 8 12" shape-rendering="crispEdges">
               <rect v-for="(q, qi) in spiritOf(p[0])!.pixels" :key="qi"
                 :x="q.x" :y="q.y" width="1.05" height="1.05" :fill="q.fill" />
             </svg>
@@ -119,7 +135,7 @@ function toggle(i: number): void {
           <div class="ten-god">{{ i === 2 ? '元神' : shiShen(props.ps[2]!, p[0]) }}</div>
           <div class="divider"></div>
           <div class="row-bottom">
-            <svg class="mini-sprite wide" viewBox="0 0 11 10" shape-rendering="crispEdges">
+            <svg class="mini-sprite wide" :class="Z_MOTION[animalOf(p[1])] ?? ''" viewBox="0 0 11 10" shape-rendering="crispEdges">
               <rect v-for="(q, qi) in animalPixels(p[1])" :key="qi"
                 :x="q.x" :y="q.y" width="1.05" height="1.05" :fill="q.fill" />
             </svg>
@@ -298,6 +314,90 @@ function toggle(i: number): void {
 .big-zhi { font-size: 1.9rem; font-family: var(--cute); text-shadow: 0 0 20px currentColor; }
 .mini-sprite { width: 26px; height: 39px; }
 .mini-sprite.wide { width: 34px; height: 31px; }
+
+/* 兽性微动作：幅度克制，动得像它自己而不是像抽风 */
+.mini-sprite { transform-origin: 50% 85%; }
+.s-bob { animation: s-bob 3.2s ease-in-out infinite; }
+@keyframes s-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -1.6px; }
+}
+.z-twitch { animation: z-twitch 2.1s steps(2, jump-none) infinite; }
+@keyframes z-twitch {
+  0%, 88%, 100% { translate: 0 0; }
+  90% { translate: -0.8px 0; }
+  94% { translate: 0.8px 0; }
+}
+.z-sway-heavy { animation: z-sway 4.4s ease-in-out infinite; }
+@keyframes z-sway {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -2.2deg; }
+  55% { rotate: 1.6deg; }
+}
+.z-pounce { animation: z-pounce 3.6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+@keyframes z-pounce {
+  0%, 62%, 100% { scale: 1 1; }
+  70% { scale: 1.06 0.92; }
+  82% { scale: 0.95 1.08; translate: 0 -1px; }
+}
+.z-hop { animation: z-hop 2.6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+@keyframes z-hop {
+  0%, 46%, 100% { translate: 0 0; }
+  52% { translate: 0 -3px; scale: 1.04 0.96; }
+  60% { translate: 0 0; }
+  66% { translate: 0 -2.2px; }
+  74% { translate: 0 0; }
+}
+.z-float { animation: z-float 3.8s ease-in-out infinite; filter: drop-shadow(0 0 3px rgba(232, 196, 115, 0.5)); }
+@keyframes z-float {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  33% { translate: 0.7px -2.4px; rotate: 1.6deg; }
+  66% { translate: -0.7px -1.1px; rotate: -1.6deg; }
+}
+.z-slither { animation: z-slither 3s ease-in-out infinite; }
+@keyframes z-slither {
+  0%, 100% { translate: 0 0; skewX(0deg); }
+  25% { translate: 1.1px 0; skewX(3deg); }
+  75% { translate: -1.1px 0; skewX(-3deg); }
+}
+.z-gallop { animation: z-gallop 1.9s ease-in-out infinite; }
+@keyframes z-gallop {
+  0%, 40%, 100% { translate: 0 0; }
+  48% { translate: 0 -2.4px; rotate: -1.5deg; }
+  58% { translate: 0 0; }
+  68% { translate: 0 -1.7px; rotate: 1.2deg; }
+  78% { translate: 0 0; }
+}
+.z-graze { animation: z-graze 4s ease-in-out infinite; }
+@keyframes z-graze {
+  0%, 55%, 100% { rotate: 0deg; translate: 0 0; }
+  70% { rotate: 2.4deg; translate: 0 0.9px; }
+  84% { rotate: 2.4deg; translate: 0 0.9px; }
+}
+.z-rock { animation: z-rock 2.4s ease-in-out infinite; }
+@keyframes z-rock {
+  0%, 100% { rotate: 0deg; translate: 0 0; }
+  28% { rotate: -4deg; translate: -0.6px 0; }
+  62% { rotate: 3.4deg; translate: 0.6px 0; }
+}
+.z-peck { animation: z-peck 2.8s ease-in-out infinite; }
+@keyframes z-peck {
+  0%, 74%, 100% { translate: 0 0; rotate: 0deg; }
+  80% { translate: 0 1.1px; rotate: 3deg; }
+  86% { translate: 0 0; rotate: 0deg; }
+  91% { translate: 0 1.1px; rotate: 3deg; }
+}
+.z-wag { animation: z-wag 1.7s ease-in-out infinite; }
+@keyframes z-wag {
+  0%, 100% { rotate: -2.4deg; }
+  50% { rotate: 2.4deg; }
+}
+.z-roll { animation: z-roll 4.8s ease-in-out infinite; }
+@keyframes z-roll {
+  0%, 64%, 100% { rotate: 0deg; translate: 0 0; }
+  76% { rotate: 6deg; translate: 1px 0.5px; }
+  88% { rotate: -4deg; translate: -1px 0.5px; }
+}
 .ten-god { font-size: 0.72rem; color: var(--gold); min-height: 1.1em; }
 .nayin {
   font-size: 0.62rem;

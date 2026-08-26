@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * 十二时辰活钟：SVG 环形罗盘，指针实时指向当前时辰。
- * 拖拽可拨动指针查看任意时辰的宜忌与口诀，松手弹回「现在」。
+ * 拖拽可拨动指针查看任意时辰的宜忌与口诀，松手停在拨到的位置；
+ * 点中心「☯」随时弹回「现在」。
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'

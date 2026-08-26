@@ -38,12 +38,25 @@ function onToggleSound(): void {
   soundOn.value = toggleSound()
 }
 
+const confirmArm = ref(false)
+let armTimer: number | null = null
+
+/** 两段式确认代替原生 confirm：第一下进入待发状态，3 秒内再点才真清 */
 function doClear(): void {
-  if (!window.confirm('确定清空全部占卜记录？这一步没法撤销。')) return
+  if (!confirmArm.value) {
+    confirmArm.value = true
+    sfx.tick()
+    if (armTimer !== null) window.clearTimeout(armTimer)
+    armTimer = window.setTimeout(() => (confirmArm.value = false), 3000)
+    return
+  }
+  if (armTimer !== null) window.clearTimeout(armTimer)
+  confirmArm.value = false
   clearRecords()
   clearHistory()
   refresh()
   cleared.value = true
+  sfx.gong()
   window.setTimeout(() => (cleared.value = false), 2200)
 }
 </script>
@@ -99,7 +112,9 @@ function doClear(): void {
       </ul>
       <div class="row-actions" style="margin-top: 12px">
         <button class="ghost" @click="onToggleSound">{{ soundOn ? '🔊 音效已开' : '🔇 音效已关' }}</button>
-        <button class="ghost danger" @click="doClear">🗑 清空全部记录</button>
+        <button class="ghost danger" :class="{ armed: confirmArm }" @click="doClear">
+          {{ confirmArm ? '⚠ 再点一次，真的清空（3秒内）' : '🗑 清空全部记录' }}
+        </button>
         <transition name="pop">
           <span v-if="cleared" class="tag teal">已清空</span>
         </transition>
@@ -180,6 +195,17 @@ function doClear(): void {
 
 .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .danger:hover { border-color: var(--red); color: var(--red); }
+.danger.armed {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(var(--red-rgb), 0.1);
+  animation: arm-shake 0.4s ease;
+}
+@keyframes arm-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
 
 .ledger { list-style: none; display: flex; flex-direction: column; gap: 7px; }
 .ledger-row {

@@ -277,7 +277,7 @@ export const TAOESSES: Record<string, TaoessDef> = {
   },
   shuanghua: {
     id: 'shuanghua', nameCn: '霜华', title: '执剑道长', prop: 'sword', orbit: '⚔',
-    hello: '霜华按剑而立。五十九个格局谱系，个个来路清白，尽管查。',
+    hello: '霜华按剑而立。四十九个格局谱系，个个来路清白，尽管查。',
     palette: { H: '#b9aed6', R: '#dde3ea', D: '#aab4c0', Y: '#e8c473' },
   },
   shouzhuo: {
