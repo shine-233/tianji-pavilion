@@ -8,7 +8,7 @@ import { cardBackPixels } from '../data/sageSprite'
 import { ELEMENT_SPIRITS, spritePixels, ZODIAC_SPRITES } from '../data/pillarSprites'
 import { sfx } from '../lib/sfx'
 
-const props = defineProps<{ ps: Pillar }>()
+const props = defineProps<{ ps: Pillar; hide?: string[][] }>()
 const flipped = ref(false)
 const backs = ref<boolean[]>([true, true, true, true])
 onMounted(() => window.setTimeout(() => (flipped.value = true), 80))
@@ -101,6 +101,9 @@ function toggle(i: number): void {
             <span class="big-zhi" :class="zhiEle(p[1]) ? `ele-${zhiEle(p[1])}` : ''">{{ p[1] }}</span>
           </div>
           <div class="ten-god dim">{{ animalOf(p[1]) }} · {{ zhiEle(p[1]) }}</div>
+          <div v-if="props.hide?.[i]?.length" class="canggan" :title="'地支藏干：' + props.hide[i]!.join('、')">
+            <span class="cg-label">藏</span><span v-for="(h, hi) in props.hide[i]" :key="hi" class="cg-gan">{{ h }}</span>
+          </div>
           <div class="nayin" :title="'纳音五行：' + nayinOf(p[0], p[1])">纳音·{{ nayinOf(p[0], p[1]) }}</div>
         </div>
         <!-- 背面：道长小像纹样 -->
@@ -219,6 +222,21 @@ function toggle(i: number): void {
   letter-spacing: 0.08em;
   cursor: help;
 }
+.canggan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+.cg-label {
+  font-size: 0.56rem;
+  color: var(--teal);
+  border: 1px solid rgba(var(--acc2-rgb), 0.35);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.cg-gan { font-size: 0.74rem; color: var(--dim); font-family: var(--cute); }
 .divider { height: 1px; background: var(--line); margin: 7px 12px; }
 .dim { color: var(--dim); }
 
