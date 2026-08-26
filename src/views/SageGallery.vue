@@ -11,6 +11,13 @@ const router = useRouter()
 
 const selected3d = ref('qingxuan')
 const sit = ref(false)
+const stance = ref<'stand' | 'sit' | 'sword'>('stand')
+const STANCE_LABEL = { stand: '🚶 站姿', sit: '🧘 打坐', sword: '⚔️ 持剑' } as const
+function cycleStance(): void {
+  const order: Array<'stand' | 'sit' | 'sword'> = ['stand', 'sit', 'sword']
+  stance.value = order[(order.indexOf(stance.value) + 1) % 3]!
+  sfx.toggle()
+}
 
 function pick3d(id: string): void {
   selected3d.value = id
@@ -102,7 +109,7 @@ function gMotion(id: string): Record<string, string> {
         卡片下方的去处，就是她的值房。
       </p>
       <button @click="randomPick()">🎲 随缘指派一位</button>
-      <button class="ghost sm" style="margin-left: 10px" @click="sit = !sit; sfx.toggle()">{{ sit ? '🧘 打坐中' : '🚶 站姿' }}</button>
+      <button class="ghost sm" style="margin-left: 10px" @click="cycleStance()">{{ STANCE_LABEL[stance] }}</button>
     </div>
 
     <div class="card stage-card">
@@ -113,7 +120,7 @@ function gMotion(id: string): Record<string, string> {
         <h3 class="gold-t2">立体道长 · 体素建模</h3>
         <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
         <svg viewBox="0 0 26 29" shape-rendering="crispEdges" style="width:90px;image-rendering:pixelated;margin:6px 0">
-          <rect v-for="(p, i) in buildTaoess(selected3d, undefined, sit ? 'sit' : 'stand')" :key="'s' + i + String(sit)" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
+          <rect v-for="(p, i) in buildTaoess(selected3d, undefined, stance)" :key="'s' + i + String(sit)" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
         </svg>
         <div class="chip-row">
           <button

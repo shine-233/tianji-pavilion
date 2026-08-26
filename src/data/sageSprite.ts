@@ -315,7 +315,7 @@ const EYE_CHAR = 'E'
 
 /** 组装某位角色的完整像素列表（发型层 + 主骨架 + 配色替换 + 法器浮层）
  *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人、主题换袍等场景复用骨架 */
-export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>, pose: 'stand' | 'sit' = 'stand'): TaoPixel[] {
+export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>, pose: 'stand' | 'sit' | 'sword' = 'stand'): TaoPixel[] {
   const def = TAOESSES[id] ?? TAOESSES.qingxuan!
   const pal: Record<string, string> = { ...TAO_PALETTE }
   for (const k of Object.keys(def.palette)) {
