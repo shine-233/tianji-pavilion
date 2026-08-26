@@ -6,6 +6,7 @@ import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
 import { starSpritePixels, STAR_PERSONAS, starAccent } from '../data/starSprites'
 import { sfx } from '../lib/sfx'
+import { toast } from '../lib/toast'
 
 interface ScoredDetail { palace: string; stars: string[]; delta: number }
 interface Scored { score: number; detail: ScoredDetail[] }
@@ -38,7 +39,7 @@ const PALACE_MEANING: Record<string, string> = {
 function calc(): void {
   const dtp = dt.value.split('-').map(Number)
   const tmp = tm.value.split(':').map(Number)
-  if (dtp.length < 3 || tmp.length < 2) return alert('请填写完整日期与时间')
+  if (dtp.length < 3 || tmp.length < 2) return toast('日期和时间都填全才能起盘哦')
   sfx.gong()
   const r = ziweiFromDate(dtp[0]!, dtp[1]!, dtp[2]!, tmp[0]!, tmp[1]!, gender.value)
   zc.value = r.zc
@@ -282,16 +283,18 @@ function tapStar(st: string): void {
 
       <div class="card">
         <h2>三方四正逐宫明细</h2>
-        <table>
-          <tbody>
-          <tr><th>宫位</th><th>主星</th><th>子分增减</th></tr>
-          <tr v-for="d in scored.detail" :key="d.palace">
-            <td>{{ d.palace }}</td>
-            <td>{{ d.stars.join(' ') || '—' }}</td>
-            <td :style="{ color: d.delta >= 0 ? 'var(--teal)' : '#f87171' }">{{ d.delta >= 0 ? '+' : '' }}{{ d.delta.toFixed(1) }}</td>
-          </tr>
-                  </tbody>
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tbody>
+            <tr><th>宫位</th><th>主星</th><th>子分增减</th></tr>
+            <tr v-for="d in scored.detail" :key="d.palace">
+              <td>{{ d.palace }}</td>
+              <td>{{ d.stars.join(' ') || '—' }}</td>
+              <td :style="{ color: d.delta >= 0 ? 'var(--teal)' : '#f87171' }">{{ d.delta >= 0 ? '+' : '' }}{{ d.delta.toFixed(1) }}</td>
+            </tr>
+                    </tbody>
+          </table>
+        </div>
         <p class="note" style="margin-top: 8px">
           记分规则与 v5 引擎一致：吉星+0.8 / 煞星-0.8 / 化禄权+1.0 / 化科+0.7 / 化忌-1.2 / 空宫-0.6，
           映射至 0–10 分。该分与八字七柱相关性 ρ≈-0.06，两套体系互相独立。

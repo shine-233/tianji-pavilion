@@ -13,7 +13,6 @@ let gl: WebGLRenderingContext | null = null
 let raf = 0
 let disposed = false
 let running = false
-let themeObs: MutationObserver | null = null
 let dpr = 1
 let lastX = -1
 let lastY = -1
@@ -332,11 +331,10 @@ function frame(): void {
 }
 
 function inkColor(): [number, number, number] {
-  const theme = document.documentElement.dataset.theme || 'zixiao'
-  // 浅色主题：真墨；深色主题：淡金雾
-  if (theme === 'shuimo') return [0.045, 0.045, 0.055]
-  if (theme === 'qingci') return [0.06, 0.1, 0.09]
-  if (theme === 'yanzhi') return [0.14, 0.06, 0.09]
+  const theme = document.documentElement.dataset.theme || 'xuan'
+  // 浅色主题（月白/水墨）：真墨落纸；深色主题：淡金雾
+  if (theme === 'shui') return [0.045, 0.045, 0.055]
+  if (theme === 'yue') return [0.06, 0.1, 0.12]
   return [0.16, 0.13, 0.07]
 }
 
@@ -445,8 +443,6 @@ onMounted(() => {
     window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('resize', resize)
     document.addEventListener('visibilitychange', onVis)
-    themeObs = new MutationObserver(() => { /* 颜色在每次 splat 时实时读取，无需缓存 */ })
-    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
   } catch (e) {
     console.warn('水墨流体初始化失败，已降级:', e)
     gl = null
@@ -461,7 +457,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointermove', onMove)
   window.removeEventListener('resize', resize)
   document.removeEventListener('visibilitychange', onVis)
-  themeObs?.disconnect()
   host.value?.replaceChildren()
 })
 </script>

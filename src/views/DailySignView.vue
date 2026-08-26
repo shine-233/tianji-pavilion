@@ -251,15 +251,17 @@ function backToTube(): void {
 
     <section v-if="history.length > 0" class="card" v-reveal="120">
       <h2>本次所抽</h2>
-      <table>
-        <tbody>
-          <tr v-for="h in history" :key="h.ts">
-            <td><span class="tag g">{{ h.sign.tier }}</span></td>
-            <td>第{{ h.sign.no }}签 · {{ h.sign.poem.join('') }}</td>
-            <td class="note">{{ h.q || '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table>
+          <tbody>
+            <tr v-for="h in history" :key="h.ts">
+              <td><span class="tag g">{{ h.sign.tier }}</span></td>
+              <td>第{{ h.sign.no }}签 · {{ h.sign.poem.join('') }}</td>
+              <td class="note">{{ h.q || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </main>
 </template>

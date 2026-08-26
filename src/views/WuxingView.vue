@@ -75,16 +75,18 @@ function clearChart(): void {
             <span class="p-char">{{ selected }}</span>
             <span class="p-kw">{{ ELEMENT_DESC[selected].keyword }}</span>
           </div>
+        <div class="table-scroll">
           <table class="p-table">
               <tbody>
             <tr><th>方位季节</th><td>{{ ELEMENT_DESC[selected].season }}</td></tr>
             <tr><th>对应身体</th><td>{{ ELEMENT_DESC[selected].body }}</td></tr>
-            <tr><th>我生</th><td><b :class="`ele-${selected === '水' ? '木' : SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5] }}</b>（食伤·输出表达）</td></tr>
+            <tr><th>我生</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5] }}</b>（食伤·输出表达）</td></tr>
             <tr><th>我克</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 2) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 2) % 5] }}</b>（财星·掌控对象）</td></tr>
             <tr><th>克我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5] }}</b>（官杀·压力约束）</td></tr>
             <tr><th>生我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5] }}</b>（印星·资源庇护）</td></tr>
                     </tbody>
-        </table>
+          </table>
+        </div>
           <p v-if="chart" class="sub advice"><RichText :text="elementAdvice(selected, chart.cnt) + '（本盘日主：' + chart.dmg + '）'" /></p>
         </div>
       </div>
@@ -100,7 +102,7 @@ function clearChart(): void {
             <div v-for="e in SHENG_ORDER" :key="e" class="cnt-item">
               <div class="cnt-num ele" :class="`ele-${e}`">{{ chart.cnt[e] }}</div>
               <div class="note">{{ e }}</div>
-              <div class="cnt-bar"><i :class="`bg-${e}`" :style="{ width: `${(chart.cnt[e] / 5) * 100}%`, background: ELEMENT_DESC[e].color }"></i></div>
+              <div class="cnt-bar"><i :class="`bg-${e}`" :style="{ width: `${Math.min(100, (chart.cnt[e] / 8) * 100)}%`, background: ELEMENT_DESC[e].color }"></i></div>
             </div>
           </div>
           <p class="sub">四柱 {{ chart.ps.join(' ') }} · 日主 {{ chart.dmg }} · 喜用 {{ chart.fav.join('、') || '中和' }}</p>

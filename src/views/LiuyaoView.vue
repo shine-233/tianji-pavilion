@@ -80,6 +80,13 @@ function pickManual(n: number): void {
   if (tosses.value.length >= 6) {
     phase.value = 'done'
     sfx.gong()
+    if (chart.value) {
+      addRecord({
+        kind: 'liuyao',
+        title: `六爻 · ${chart.value.name}${chart.value.changedName ? ' 之 ' + chart.value.changedName : ''}`,
+        detail: YONGSHEN_MAP.find((x) => x.key === question.value)!.label,
+      })
+    }
   }
 }
 
@@ -142,7 +149,7 @@ const libRows = computed(() => {
           <label>起卦方式</label>
           <button class="ghost small" @click="autoMode = !autoMode; sfx.toggle()">{{ autoMode ? '自动摇币' : '手动记录' }}</button>
         </div>
-        <button class="cast-btn" :disabled="phase === 'casting' || (phase === 'done')" @click="startCast">
+        <button class="cast-btn" :disabled="phase === 'casting' || phase === 'done' || !autoMode" @click="startCast">
           {{ phase === 'ready' ? '☯ 心诚则灵，开始摇卦' : phase === 'casting' ? '卦成中…' : '已成一卦' }}
         </button>
         <button class="ghost small" :disabled="tosses.length === 0" @click="reset">重新来</button>
@@ -240,7 +247,7 @@ const libRows = computed(() => {
           :class="{ on: libSel === g.bits }"
           @click="pickLib(g.bits)"
         >
-          <span class="lib-lines"><i v-for="k in 6" :key="k" :class="{ yang: g.bits[6 - k] === '1' }"></i></span>
+          <span class="lib-lines"><i v-for="k in 6" :key="k" :class="{ yang: g.bits[k - 1] === '1' }"></i></span>
           <span class="lib-name">{{ g.name }}</span>
         </button>
       </div>

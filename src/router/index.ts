@@ -23,6 +23,7 @@ const router = createRouter({
     { path: '/jiaobei', name: 'jiaobei', component: () => import('../views/JiaobeiView.vue') },
     { path: '/xiaoliuren', name: 'xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
+    { path: '/memory', name: 'memory', component: () => import('../views/MemoryView.vue') },
     { path: '/story', name: 'story', component: () => import('../views/StoryView.vue') },
     { path: '/yanyi', name: 'yanyi', component: () => import('../views/YanYiView.vue') },
     { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue') },

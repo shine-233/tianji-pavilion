@@ -300,17 +300,29 @@ function bindEvents(): void {
     camZ = Math.max(9, Math.min(27, camZ + ev.deltaY * 0.012))
     wake()
   }
+  // 浏览器接管手势（竖滑滚页面）时把状态清干净，别留下"半按着"的僵尸指针
+  const onCancel = (ev: PointerEvent): void => {
+    activePtrs.delete(ev.pointerId)
+    dragging = false
+  }
   dom.addEventListener('pointerdown', onDown)
   dom.addEventListener('pointermove', onMove)
   dom.addEventListener('pointerup', onUp)
+  dom.addEventListener('pointercancel', onCancel)
   dom.addEventListener('wheel', onWheel, { passive: false })
 
   cleanupFns.push(() => {
     dom.removeEventListener('pointerdown', onDown)
     dom.removeEventListener('pointermove', onMove)
     dom.removeEventListener('pointerup', onUp)
+    dom.removeEventListener('pointercancel', onCancel)
     dom.removeEventListener('wheel', onWheel)
   })
+}
+
+function zoomBy(dir: number): void {
+  camZ = Math.max(9, Math.min(27, camZ + dir * 2.4))
+  wake()
 }
 
 const cleanupFns: Array<() => void> = []
@@ -487,8 +499,15 @@ defineExpose({
   <div class="vx-wrap">
     <div ref="container" class="vx-canvas"></div>
     <transition name="fadeh">
-      <div v-if="hint" class="hint">🖱 拖拽旋转 · 滚轮缩放 · 点击元素查看生克</div>
+      <div v-if="hint" class="hint">
+        <span class="hint-fine">🖱 拖拽旋转 · 滚轮缩放 · 点击元素查看生克</span>
+        <span class="hint-coarse">左右拖动旋转 · 点击元素查看生克</span>
+      </div>
     </transition>
+    <div class="zoom-btns">
+      <button aria-label="推近" @click.stop.prevent="zoomBy(-1)">＋</button>
+      <button aria-label="拉远" @click.stop.prevent="zoomBy(1)">－</button>
+    </div>
     <div class="legend">
       <span class="lg"><i class="ln gold"></i>相生弧线</span>
       <span class="lg"><i class="ln red"></i>相克虚线</span>
@@ -498,8 +517,34 @@ defineExpose({
 
 <style scoped>
 .vx-wrap { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(900px 500px at 50% 20%, rgba(232, 196, 115, 0.05), transparent 60%), #0b0d12; }
-.vx-canvas { width: 100%; height: 520px; cursor: grab; touch-action: none; }
+.vx-canvas { width: 100%; height: 520px; cursor: grab; touch-action: pan-y; }
 .vx-canvas:active { cursor: grabbing; }
+.zoom-btns {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zoom-btns button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(11, 13, 18, 0.72);
+  color: var(--gold-bright);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.zoom-btns button:active { transform: scale(0.92); }
+.hint-coarse { display: none; }
+@media (pointer: coarse) {
+  .hint-fine { display: none; }
+  .hint-coarse { display: inline; }
+}
 .hint {
   position: absolute;
   left: 50%; bottom: 18px;

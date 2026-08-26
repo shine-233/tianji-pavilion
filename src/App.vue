@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
 import Palette from './components/Palette.vue'
@@ -7,13 +7,20 @@ import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
 import ScrollProgress from './components/ScrollProgress.vue'
-import AuroraBloom from './components/AuroraBloom.vue'
+// 极光后处理很重，按需异步加载：触屏/省电用户不掏这份流量
+const AuroraBloom = defineAsyncComponent(() => import('./components/AuroraBloom.vue'))
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import ThemeDecor from './components/ThemeDecor.vue'
 import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
 
 const soundOn = ref(isSoundOn())
+
+/* 双击山门 logo：符箓雨 */
+const talisman = ref<InstanceType<typeof TalismanEgg> | null>(null)
+function onBrandDblClick(): void {
+  talisman.value?.rain()
+}
 
 function onToggleSound(): void {
   soundOn.value = toggleSound()
@@ -63,6 +70,7 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
       { to: '/qimen', label: '奇门入门', glyph: '🧭' },
       { to: '/map', label: '道观地图', glyph: '🗺' },
       { to: '/sages', label: '道长图鉴', glyph: '⛩' },
+      { to: '/memory', label: '卦象记忆', glyph: '🎴' },
     ],
   },
 ]
@@ -83,6 +91,7 @@ const ROUTE_SAGE: Record<string, string> = {
   '/rules': 'shouzhuo',
   '/cases': 'shiyi',
   '/sages': 'qingxuan',
+  '/memory': 'lingshi',
 }
 const sageChar = computed(() => ROUTE_SAGE[route.path] ?? 'qingxuan')
 
@@ -193,6 +202,9 @@ function spawnShootingStar(): void {
 /** 粗指针设备（手机/平板）：光标拖尾、伴飞环、视差变量都是鼠标专属，触屏上一律不装 */
 const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 
+/* 极光背景按需点亮：省流量，也让首屏更快 */
+const bloomReady = ref(false)
+
 onMounted(() => {
   initTheme()
   if (!coarsePointer) {
@@ -203,6 +215,9 @@ onMounted(() => {
   window.addEventListener('click', onDocClick)
   onScroll()
   scheduleShootingStar()
+  if (!prefersReduced.matches && !coarsePointer) {
+    window.setTimeout(() => (bloomReady.value = true), 500)
+  }
 })
 onBeforeUnmount(() => {
   window.removeEventListener('mousemove', onMouseMove)
@@ -217,10 +232,10 @@ onBeforeUnmount(() => {
 
 <template>
   <ScrollProgress />
-  <AuroraBloom />
+  <AuroraBloom v-if="bloomReady" />
   <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
-    <RouterLink to="/" class="brand" @click="onBrandClick()">
+    <RouterLink to="/" class="brand" @click="onBrandClick()" @dblclick.prevent="onBrandDblClick()">
       <span class="logo" :class="{ wiggle: brandClicks > 0 }">☯</span>
       <span class="name">命理天工<small>八字量化研究</small></span>
     </RouterLink>
@@ -313,7 +328,7 @@ onBeforeUnmount(() => {
 
   <PixelSage :key="sageChar" :char="sageChar" />
   <BackToTop />
-  <TalismanEgg />
+  <TalismanEgg ref="talisman" />
 </template>
 
 <style scoped>
@@ -530,7 +545,7 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 860px) {
-  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .topbar { flex-wrap: wrap; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); }
   .nav { order: 3; width: 100%; }
   .name small { display: none; }
   .corner-maiden { width: 96px !important; }

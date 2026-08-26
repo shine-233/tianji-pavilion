@@ -240,6 +240,13 @@ function onPointerUp(e: PointerEvent): void {
   scheduleIdle()
   if (movedPx < 6) pick(e)
 }
+function onPointerCancel(): void {
+  dragging = false
+}
+function zoomBy(dir: number): void {
+  camYTarget = Math.max(4.4, Math.min(15, camYTarget + dir * 1.7))
+  scheduleIdle()
+}
 function pick(e: PointerEvent): void {
   const el = container.value
   if (!el || !camera) return
@@ -298,6 +305,7 @@ onMounted(() => {
   el.addEventListener('pointerdown', onPointerDown)
   el.addEventListener('pointermove', onPointerMove)
   el.addEventListener('pointerup', onPointerUp)
+  el.addEventListener('pointercancel', onPointerCancel)
   el.addEventListener('wheel', onWheel, { passive: false })
   window.addEventListener('resize', onResize)
   animate()
@@ -313,6 +321,7 @@ onBeforeUnmount(() => {
     el.removeEventListener('pointerdown', onPointerDown)
     el.removeEventListener('pointermove', onPointerMove)
     el.removeEventListener('pointerup', onPointerUp)
+    el.removeEventListener('pointercancel', onPointerCancel)
     el.removeEventListener('wheel', onWheel)
   }
   if (idleTimer !== null) window.clearTimeout(idleTimer)
@@ -325,14 +334,47 @@ onBeforeUnmount(() => {
 <template>
   <div class="zs-wrap">
     <div ref="container" class="zs-canvas"></div>
-    <span class="zs-hint">拖拽旋转 · 滚轮升降 · 点击宫位查看详情</span>
+    <span class="zs-hint">
+      <span class="hint-fine">拖拽旋转 · 滚轮升降 · 点击宫位查看详情</span>
+      <span class="hint-coarse">左右拖动旋转 · 点击宫位查看详情</span>
+    </span>
+    <div class="zoom-btns">
+      <button aria-label="升高视角" @click.stop.prevent="zoomBy(-1)">＋</button>
+      <button aria-label="降低视角" @click.stop.prevent="zoomBy(1)">－</button>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .zs-wrap { position: relative; width: 100%; height: 400px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 0%, rgba(var(--acc-rgb), 0.07), transparent 60%), #07080d; }
-.zs-canvas { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.zs-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
 .zs-canvas:active { cursor: grabbing; }
+.zoom-btns {
+  position: absolute;
+  right: 10px;
+  bottom: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zoom-btns button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(11, 13, 18, 0.72);
+  color: var(--gold-bright);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.zoom-btns button:active { transform: scale(0.92); }
+.hint-coarse { display: none; }
+@media (pointer: coarse) {
+  .hint-fine { display: none; }
+  .hint-coarse { display: inline; }
+}
 .zs-hint {
   position: absolute;
   bottom: 10px;

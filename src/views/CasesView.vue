@@ -115,12 +115,14 @@ function switchTab(t: 'master' | 'qianli'): void {
 function pickBook(b: string): void {
   sfx.blip()
   selBook.value = selBook.value === b ? null : b
+  openIdx.value = null
   shown.value = 24
 }
 
 function pickTier(t: string): void {
   sfx.blip()
   selTier.value = t
+  openIdx.value = null
   shown.value = 24
 }
 
@@ -164,7 +166,7 @@ function fmtCtx(ctx: string): string {
       <div class="tabs card">
         <button class="tab-btn" :class="{ on: tab === 'master' }" @click="switchTab('master')">典籍互证 · {{ filteredMaster.length }}</button>
         <button class="tab-btn" :class="{ on: tab === 'qianli' }" @click="switchTab('qianli')">千里命稿 · {{ filteredQianli.length }}</button>
-        <input v-model="query" type="text" class="q" placeholder="搜索四柱 / 关键词 / 原文…" @input="shown = 24" />
+        <input v-model="query" type="text" class="q" placeholder="搜索四柱 / 关键词 / 原文…" @input="openIdx = null; shown = 24" />
       </div>
 
       <!-- 筛选（仅典籍页） -->

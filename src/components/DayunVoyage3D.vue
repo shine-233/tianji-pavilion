@@ -207,6 +207,13 @@ function onPointerUp(e: PointerEvent): void {
   scheduleIdle()
   if (movedPx < 6) pick(e)
 }
+function onPointerCancel(): void {
+  dragging = false
+}
+function zoomBy(dir: number): void {
+  camZTarget = Math.max(7, Math.min(26, camZTarget + dir * 2.4))
+  scheduleIdle()
+}
 function pick(e: PointerEvent): void {
   const el = container.value
   if (!el || !camera) return
@@ -263,6 +270,7 @@ onMounted(() => {
   el.addEventListener('pointerdown', onPointerDown)
   el.addEventListener('pointermove', onPointerMove)
   el.addEventListener('pointerup', onPointerUp)
+  el.addEventListener('pointercancel', onPointerCancel)
   el.addEventListener('wheel', onWheel, { passive: false })
   window.addEventListener('resize', onResize)
   animate()
@@ -278,6 +286,7 @@ onBeforeUnmount(() => {
     el.removeEventListener('pointerdown', onPointerDown)
     el.removeEventListener('pointermove', onPointerMove)
     el.removeEventListener('pointerup', onPointerUp)
+    el.removeEventListener('pointercancel', onPointerCancel)
     el.removeEventListener('wheel', onWheel)
   }
   if (idleTimer !== null) window.clearTimeout(idleTimer)
@@ -297,14 +306,47 @@ onBeforeUnmount(() => {
 <template>
   <div class="dv-wrap">
     <div ref="container" class="dv-canvas"></div>
-    <span class="dv-hint">拖拽环视 · 滚轮推近 · 点山峰看那十年的光景</span>
+    <span class="dv-hint">
+      <span class="hint-fine">拖拽环视 · 滚轮推近 · 点山峰看那十年的光景</span>
+      <span class="hint-coarse">左右拖动环视 · 点山峰看那十年的光景</span>
+    </span>
+    <div class="zoom-btns">
+      <button aria-label="推近" @click.stop.prevent="zoomBy(-1)">＋</button>
+      <button aria-label="拉远" @click.stop.prevent="zoomBy(1)">－</button>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .dv-wrap { position: relative; width: 100%; height: 380px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 0%, rgba(var(--acc-rgb), 0.06), transparent 60%), #07080d; }
-.dv-canvas { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.dv-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
 .dv-canvas:active { cursor: grabbing; }
+.zoom-btns {
+  position: absolute;
+  right: 10px;
+  bottom: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zoom-btns button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(11, 13, 18, 0.72);
+  color: var(--gold-bright);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.zoom-btns button:active { transform: scale(0.92); }
+.hint-coarse { display: none; }
+@media (pointer: coarse) {
+  .hint-fine { display: none; }
+  .hint-coarse { display: inline; }
+}
 .dv-hint {
   position: absolute;
   bottom: 10px;

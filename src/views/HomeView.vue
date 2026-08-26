@@ -22,6 +22,22 @@ function hoverEnter(e: Element): void {
   sfx.blip()
 }
 
+/* 标题鎏金显影：光标扫到哪儿，金字亮到哪儿 */
+const gx = ref(-9999)
+const gy = ref(-9999)
+const heroTitle = ref<HTMLElement | null>(null)
+function heroGlow(e: MouseEvent): void {
+  const host = heroTitle.value
+  if (!host) return
+  const r = host.getBoundingClientRect()
+  gx.value = e.clientX - r.left
+  gy.value = e.clientY - r.top
+}
+function heroGlowOff(): void {
+  gx.value = -9999
+  gy.value = -9999
+}
+
 const SAGE = buildTaoess('qingxuan')
 
 /** 每日一签：按日期固定抽取，全天不变 */
@@ -95,6 +111,7 @@ const MODULE_TIERS: Array<{ title: string; sub: string; items: ModuleDef[] }> = 
       { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克爆粒子花。', tags: ['Three.js', '辉光后处理'] },
       { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
       { to: '/sages', glyph: '⛩', title: '道长图鉴', desc: '观里十位当值女道士的名册，点一下会跟你搭话，还能随缘指派。', tags: ['吉祥物', '彩蛋'] },
+      { to: '/memory', glyph: '🎴', title: '卦象记忆', desc: '八卦翻牌配对小游戏，几步配完，八卦长相顺便记牢。', tags: ['小游戏', '记八卦'] },
       { to: '/classics', glyph: '📜', title: '典籍语料', desc: '章节检索加主题密度条形图，看看每部古书到底在讲什么。', tags: ['语料库', '主题密度'] },
       { to: '/geju', glyph: '⚔', title: '格局辞典', desc: '49 个特殊格局，五部书互证，原文书摘和源流年代都在。', tags: ['五书互证', '源流谱系'] },
       { to: '/rules', glyph: '⚖', title: '规则库', desc: '799 条清洗过的规则，调候速查、女命章法、六亲断语分栏可查。', tags: ['全部公开', '条件-结论'] },
@@ -135,8 +152,10 @@ function arcPath(i: number, j: number, off: number): string {
     <InkFluid />
     <section class="hero card hoverable">
       <ParticleAltar />
-      <div class="hero-left">
-        <h1>把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
+      <div class="hero-left" @mouseleave="heroGlowOff">
+        <h1 ref="heroTitle" @mousemove="heroGlow">把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
+        <h1 class="reveal-ghost" aria-hidden="true" :style="{ '--mx': `${gx}px`, '--my': `${gy}px` }">把命理摊开来<br />做成看得见规则的样子</h1>
+        <h1 class="reveal-ghost" aria-hidden="true" :style="{ '--mx': `${gx}px`, '--my': `${gy}px` }">把命理摊开来<br />做成看得见规则的样子</h1>
         <p class="sub hero-sub">
           子平八字 × 紫微斗数的量化研究工程。权重公开、数据公开、连引擎算得不准的地方也公开——
           每一分都能复核，每条断语都能溯源。
@@ -225,11 +244,11 @@ function arcPath(i: number, j: number, off: number): string {
     </section>
 
     <div class="note center-note">
-      当前悬浮五行：
+      当前选中五行：
       <template v-if="hoverEle">
-        <b :class="`ele-${hoverEle}`">{{ hoverEle }}</b> 生 {{ shengTarget(hoverEle) }} · 克 {{ keTarget(hoverEle) }} —— 鼠标移到别的字上试试
+        <b :class="`ele-${hoverEle}`">{{ hoverEle }}</b> 生 {{ shengTarget(hoverEle) }} · 克 {{ keTarget(hoverEle) }} —— 点别的字换一个试试
       </template>
-      <template v-else>把鼠标挪到右边轮盘的任意一个字上</template>
+      <template v-else>点一下右边轮盘的任意一个字</template>
     </div>
   </main>
 </template>
@@ -238,6 +257,20 @@ function arcPath(i: number, j: number, off: number): string {
 .hero { position: relative; display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
 .hero-left { flex: 1; min-width: 260px; position: relative; z-index: 1; }
 .hero h1 { font-size: 2.15rem; line-height: 1.35; margin-bottom: 14px; }
+.reveal-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  pointer-events: none;
+  color: transparent;
+  background: linear-gradient(115deg, #ffe9b8, var(--gold-bright) 45%, #7ef0c8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-mask-image: radial-gradient(120px circle at var(--mx, -9999px) var(--my, -9999px), rgba(0, 0, 0, 0.95), transparent 78%);
+  mask-image: radial-gradient(120px circle at var(--mx, -9999px) var(--my, -9999px), rgba(0, 0, 0, 0.95), transparent 78%);
+}
+@media (pointer: coarse) { .reveal-ghost { display: none; } }
 .gold-t { color: var(--gold-bright); text-shadow: 0 0 26px rgba(var(--acc-rgb), 0.45); }
 .hero-sub { max-width: 470px; margin-bottom: 20px; }
 .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }

@@ -213,7 +213,7 @@ function lunarInfo(): string {
             <path
               d="M 20 120 A 100 100 0 0 1 220 120" fill="none"
               stroke="url(#gaugeGrad)" stroke-width="13" stroke-linecap="round"
-              :stroke-dasharray="`${(percentile(result.tot) / 100) * Math.PI * 100} ${Math.PI * 200}`"
+              :stroke-dasharray="`${(isFinite(percentile(result.tot)) ? percentile(result.tot) : 0) / 100 * Math.PI * 100} ${Math.PI * 200}`"
             />
             <defs>
               <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -299,7 +299,8 @@ function lunarInfo(): string {
       <div class="card">
         <h2>最近排盘记录（本地保存）</h2>
         <div v-if="historyList.length === 0" class="sub">暂无记录——每次排盘会自动保存到浏览器。</div>
-        <table v-else>
+        <div v-else class="table-scroll">
+          <table>
             <tbody>
           <tr><th>四柱</th><th>出生</th><th>总分</th><th>百分位</th><th></th></tr>
           <tr v-for="h in historyList.slice(0, 8)" :key="h.ts">
@@ -307,10 +308,11 @@ function lunarInfo(): string {
             <td>{{ h.y }}-{{ String(h.m).padStart(2, '0') }}-{{ String(h.d).padStart(2, '0') }} {{ String(h.hh).padStart(2, '0') }}时</td>
             <td>{{ h.tot.toFixed(2) }}</td>
             <td>{{ h.pctl !== null ? h.pctl.toFixed(1) + '%' : '—' }}</td>
-            <td><span class="tag teal pointer" @click="restore(h)">复算</span></td>
+            <td><button class="tag teal pointer restore-btn" @click="restore(h)">复算</button></td>
           </tr>
                   </tbody>
-        </table>
+          </table>
+        </div>
         <div style="margin-top: 10px"><button class="ghost" @click="clearHistory(); historyList = []">清空记录</button></div>
       </div>
     </template>

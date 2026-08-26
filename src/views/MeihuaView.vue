@@ -38,20 +38,25 @@ function numberChartSafe(a: number, b: number): MeihuaChart {
 
 const texts = computed(() => (chart.value ? chartText(chart.value) : []))
 
-let revealed = ref(false)
+const revealed = ref(false)
+let lastRecordedKey = ''
 function reroll(): void {
   sfx.ding()
   revealed.value = false
   window.setTimeout(() => {
     revealed.value = true
   }, 30)
-  if (chart.value) {
-    addRecord({
-      kind: 'meihua',
-      title: `梅花 · ${chart.value.upperName}${chart.value.lowerName} 动${chart.value.movingLine}`,
-      detail: chart.value.verdict.level,
-    })
-  }
+  const c = chart.value
+  if (!c) return
+  // 同一时辰内时间卦不会变，别把手账刷成复读机
+  const key = `${c.upperName}${c.lowerName}${c.movingLine}`
+  if (key === lastRecordedKey) return
+  lastRecordedKey = key
+  addRecord({
+    kind: 'meihua',
+    title: `梅花 · ${c.upperName}${c.lowerName} 动${c.movingLine}`,
+    detail: c.verdict.level,
+  })
 }
 </script>
 
@@ -61,6 +66,7 @@ function reroll(): void {
     <p class="sub">
       不用铜钱也能起卦：抬头看个时辰、随手报两个数，都行。
       这套法子相传是邵雍先生走路时想出来的，讲究一个「触机而发」——你起念的那一刻，卦就成了。
+      <br />顺手一提：<a href="#/memory">卦象记忆</a>能帮你把八卦长相记熟，<a href="#/shuzi">数字能量</a>是同款算法拿手机号来玩。
     </p>
 
     <section v-reveal="0" class="card">

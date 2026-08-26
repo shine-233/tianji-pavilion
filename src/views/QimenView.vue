@@ -68,8 +68,7 @@ function qiMenPan(d: Date): Pan {
   const ftGz = GAN[ftN % 10]! + ZHI[ftN % 12]!
   const ftZhi = ftGz[1]!
   const yuan = ('子午卯酉'.includes(ftZhi) ? '上元' : '寅申巳亥'.includes(ftZhi) ? '中元' : '下元') as Pan['yuan']
-  const trio = JU_TABLE[jieqi] ?? [1, 1, 1]
-  const ju = yangDun ? trio[['上元', '中元', '下元'].indexOf(yuan)]! : trio[['上元', '中元', '下元'].indexOf(yuan)]!
+  const ju = (JU_TABLE[jieqi] ?? [1, 1, 1])[['上元', '中元', '下元'].indexOf(yuan)]!
   const seq = ['戊', '己', '庚', '辛', '壬', '癸', '丁', '丙', '乙']
   const diPan: string[] = new Array(10).fill('')
   for (let k = 0; k < 9; k++) {
@@ -86,12 +85,16 @@ function qiMenPan(d: Date): Pan {
   const xunStartN = tn - (tn % 10)
   const xunZhi = ZHI[xunStartN % 12]!
   const fuYi = XUN_YI[xunZhi] ?? '戊'
-  let fuPal = Math.max(1, diPan.indexOf(fuYi))
-  if (fuPal === -1 || fuPal === 0) fuPal = 5
-  const zhiFuXing = XING[fuPal]!
-  const zhiShiMen = (MEN0[fuPal] ?? '禽') + '门'
+  const fuIdx = diPan.indexOf(fuYi)
+  const fuPal = fuIdx === -1 ? 5 : fuIdx
+  const zhiFuXing = XING[fuPal === 5 ? 2 : fuPal]!
+  // 值使门：中五宫寄坤二宫
+  const zhiShiMen = (MEN0[fuPal === 5 ? 2 : fuPal] ?? '死') + '门'
   const tGan = timeGZ[0]!
-  let p0 = Math.max(1, diPan.indexOf(tGan))
+  // 时干为甲时不在六仪之列，用旬首遁干定直符
+  let p0raw = diPan.indexOf(tGan)
+  if (p0raw === -1) p0raw = diPan.indexOf(fuYi)
+  let p0 = Math.max(1, p0raw)
   if (p0 === 5) p0 = 2
   const deltaS = ((RING.indexOf(p0) - RING.indexOf(fuPal)) % 8 + 8) % 8
   const offset = tn - xunStartN
@@ -157,7 +160,10 @@ const ysVerdict = computed(() => {
   }
   let pal: number | null = null
   if (cfg.men && !cfg.men.includes('合')) pal = findMenPal(cfg.men)
-  if (pal === null && cfg.gan) pal = Math.max(1, pan.value.diPan.indexOf(cfg.gan))
+  if (pal === null && cfg.gan) {
+    const gi2 = pan.value.diPan.indexOf(cfg.gan)
+    pal = gi2 === -1 ? null : gi2
+  }
   if (pal === null && cfg.xing && cfg.xing !== '值符') {
     for (let i = 1; i <= 9; i++) if (pan.value.tian[i]?.xing === cfg.xing) pal = i
   }
@@ -177,9 +183,9 @@ const ysVerdict = computed(() => {
     <div class="card" v-reveal>
       <h2>奇门遁甲 · 入门盘</h2>
       <p class="sub">
-        第一步只做最要紧的事：<b class="gold-t">定阴阳遁、取局数、布地盘三奇六仪</b>，
-        再标出旬空与驿马。值符天盘与八门九星属于下一步，先把地基打准——
-        排错一宫，全盘皆废。
+        以当前时辰起局：<b class="gold-t">定阴阳遁、取局数、布地盘三奇六仪</b>，
+        再转动天盘，安上九星八门与八神，标出旬空、驿马，顺手点几处显性格局。
+        时干逢甲的时辰会自动改用旬首遁干定直符——排错一宫，全盘皆废，所以这里每步都按古法来。
       </p>
       <button @click="calc()">☯ 以当前时辰起局</button>
     </div>

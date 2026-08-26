@@ -25,6 +25,7 @@ const selCat = ref<string | null>(null)
 const query = ref('')
 const openName = ref<string | null>(null)
 const expandSnip = ref<number | null>(null)
+const allSnips = ref(false)
 
 const loadErr = ref(false)
 
@@ -93,6 +94,7 @@ function pickCat(c: string): void {
 function open(l: Lineage): void {
   sfx.pop()
   expandSnip.value = null
+  allSnips.value = false
   openName.value = openName.value === l.name ? null : l.name
 }
 
@@ -176,7 +178,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
                 <span class="src-book" :style="{ color: bookColor(s.book) }">{{ s.book }}</span>
                 <span class="bar"><i
                   :style="{
-                    width: `${(s.n / Math.max(...srcBars(l).map((x) => x.n))) * 100}%`,
+                    width: `${Math.min(100, (s.n / Math.max(1, ...srcBars(l).map((x) => x.n))) * 100)}%`,
                     background: bookColor(s.book),
                     transitionDelay: `${si * 70}ms`,
                   }"
@@ -188,7 +190,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
             <h2 style="margin-top: 18px">原文节选（{{ snipsOf(l.name).length }} 条）</h2>
             <div class="snips">
               <div
-                v-for="(sn, si) in snipsOf(l.name).slice(0, 4)" :key="si"
+                v-for="(sn, si) in snipsOf(l.name).slice(0, allSnips ? undefined : 4)" :key="si"
                 class="snip" :class="{ open: expandSnip === si }"
                 @click="expandSnip = expandSnip === si ? null : si; sfx.blip()"
               >
@@ -197,6 +199,9 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
                 <span v-if="sn.text.length > 120" class="more-hint">{{ expandSnip === si ? '收起 ▴' : '展开全文 ▾' }}</span>
               </div>
             </div>
+            <button v-if="snipsOf(l.name).length > 4" class="ghost small" style="margin-top: 10px" @click="allSnips = !allSnips; sfx.toggle()">
+              {{ allSnips ? '只看前四条 ▴' : `展开全部 ${snipsOf(l.name).length} 条 ▾` }}
+            </button>
           </template>
         </div>
       </transition>
