@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
 import { starSpritePixels } from '../data/starSprites'
+import { STAR_PERSONAS } from '../data/starPersonas'
 import { sfx } from '../lib/sfx'
 
 interface ScoredDetail { palace: string; stars: string[]; delta: number }
@@ -192,7 +193,7 @@ function starList(mains: string): string[] {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="STAR_TIP[st] ?? st"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
+                <span v-for="st in starList(p.mains)" :key="st" class="star" :title="STAR_PERSONAS[st] ? `${STAR_PERSONAS[st].ming}·${STAR_PERSONAS[st].title}：${STAR_PERSONAS[st].hello}` : ''" :data-tip="STAR_TIP[st] ?? st"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
               </template>
               <template v-else>空宫</template>
             </span>

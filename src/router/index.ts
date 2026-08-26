@@ -17,6 +17,8 @@ const router = createRouter({
     { path: '/rules', name: 'rules', component: () => import('../views/RulesView.vue') },
     { path: '/cases', name: 'cases', component: () => import('../views/CasesView.vue') },
     { path: '/oracle', redirect: '/daily' },
+    { path: '/qimen', name: 'qimen', component: () => import('../views/QimenView.vue') },
+    { path: '/map', name: 'map', component: () => import('../views/MapView.vue') },
     { path: '/jiaobei', name: 'jiaobei', component: () => import('../views/JiaobeiView.vue') },
     { path: '/xiaoliuren', name: 'xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },

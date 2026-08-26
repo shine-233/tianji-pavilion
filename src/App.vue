@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
@@ -60,6 +60,8 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
       { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
       { to: '/yanyi', label: '演易', glyph: '䷀' },
       { to: '/story', label: '易道长卷', glyph: '📜' },
+      { to: '/qimen', label: '奇门入门', glyph: '🧭' },
+      { to: '/map', label: '道观地图', glyph: '🗺' },
       { to: '/sages', label: '道长图鉴', glyph: '⛩' },
     ],
   },

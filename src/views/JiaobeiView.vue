@@ -26,13 +26,13 @@ const verdict = ref('')
 
 async function throwOnce(): Promise<void> {
   spinning.value = true
-  sfx.tick()
+  sfx.knock()
   await new Promise((r) => setTimeout(r, 650))
   const t: Toss = { a: rand(), b: rand(), ok: (rand() === 'yang') !== false }
   t.ok = (t.a === 'yang' && t.b === 'yin') || (t.a === 'yin' && t.b === 'yang')
   current.value = t
   spinning.value = false
-  sfx.pop()
+  sfx.knock()
   return new Promise((r) => setTimeout(r, 500))
 }
 

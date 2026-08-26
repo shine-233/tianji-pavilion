@@ -1,4 +1,4 @@
-/** 8-bit 音效：WebAudio 实时合成，零音频素材，状态存 localStorage */
+﻿/** 8-bit 音效：WebAudio 实时合成，零音频素材，状态存 localStorage */
 let ctx: AudioContext | null = null
 
 export function isSoundOn(): boolean {
@@ -74,4 +74,9 @@ export const sfx = {
     noise(0.3, 0.02)
   },
   tick(): void { tone(1400 + Math.random() * 500, 0.018, 'square', 0.008) },
+  knock(): void {
+    tone(170, 0.09, 'triangle', 0.09, 110)
+    noise(0.06, 0.05)
+    tone(340, 0.04, 'square', 0.02, undefined, 0.01)
+  },
 }
