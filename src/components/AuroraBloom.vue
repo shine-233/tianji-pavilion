@@ -9,6 +9,7 @@ import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { LOW_END, dprCap } from '../lib/perf'
 
 const THEME_VARS = ['--gold', '--teal', '--water', '--fire', '--wood', '--gold-bright']
 
@@ -50,7 +51,8 @@ onMounted(() => {
   } catch {
     return // 无 WebGL 环境（测试/极旧设备）直接静默降级
   }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+  // 低端机：DPR 压到 1、光团减半、跳过 bloom 后处理
+  renderer.setPixelRatio(dprCap(1.5))
   renderer.setSize(host.clientWidth, host.clientHeight)
   renderer.domElement.id = 'aurora-canvas'
   host.appendChild(renderer.domElement)
@@ -62,10 +64,11 @@ onMounted(() => {
   // 六团辉光：颜色来自当前主题令牌
   let colors = readThemeColors()
   const orbs: Array<{ sprite: THREE.Sprite; base: THREE.Vector3; phase: number; speed: number }> = []
-  const layout = [
+  const layoutFull = [
     { x: -9, y: 4.5, size: 11 }, { x: 10, y: 3, size: 9 }, { x: -6, y: -5, size: 8 },
     { x: 7, y: -6, size: 10 }, { x: 0, y: 6.5, size: 7.5 }, { x: 13, y: -1, size: 6 },
   ]
+  const layout = LOW_END ? layoutFull.slice(0, 4) : layoutFull
   layout.forEach((cfg, i) => {
     const mat = new THREE.SpriteMaterial({
       map: glowTexture('#ffffff'),
@@ -91,11 +94,13 @@ onMounted(() => {
   }
   recolor()
 
-  // 真实泛光后处理
-  const composer = new EffectComposer(renderer)
-  composer.addPass(new RenderPass(scene, camera))
-  const bloom = new UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 0.85, 0.85, 0.1)
-  composer.addPass(bloom)
+  // 真实泛光后处理（低端机跳过：加法混合本身已有柔光感）
+  let composer: EffectComposer | null = null
+  if (!LOW_END) {
+    composer = new EffectComposer(renderer)
+    composer.addPass(new RenderPass(scene, camera))
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 0.85, 0.85, 0.1))
+  }
 
   function hexToCss(c: THREE.Color): string {
     return '#' + c.getHexString()
@@ -129,22 +134,16 @@ onMounted(() => {
     const w = host.clientWidth
     const h = host.clientHeight
     renderer.setSize(w, h)
-    composer.setSize(w, h)
+    composer?.setSize(w, h)
     camera.aspect = w / h
     camera.updateProjectionMatrix()
+    if (reduced && !disposed) renderFrame() // 减动效：窗口变化后补一帧，避免画面拉伸陈旧
   }
   window.addEventListener('resize', resize)
   cleanupResize = () => window.removeEventListener('resize', resize)
 
   const clock = new THREE.Clock()
-  const tick = (): void => {
-    if (disposed) return
-    if (!reduced) raf = requestAnimationFrame(tick)
-    else if (raf !== -1) {
-      // 减动效：只渲染一帧静置
-      raf = -1
-    }
-    if (document.hidden) return
+  const renderFrame = (): void => {
     const t = clock.getElapsedTime()
     const sy = window.scrollY || 0
     const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
@@ -160,17 +159,45 @@ onMounted(() => {
     camera.position.x = mouse.x * 0.5
     camera.position.y = -mouse.y * 0.35
     camera.lookAt(0, 0, 0)
-    composer.render()
+    if (composer) composer.render()
+    else renderer.render(scene, camera)
+  }
+  const tick = (): void => {
+    if (disposed) return
+    if (!reduced) raf = requestAnimationFrame(tick)
+    else if (raf !== -1) {
+      // 减动效：只渲染一帧静置
+      raf = -1
+    }
+    // 减动效模式下首帧也照常渲染（页面隐藏时浏览器本来就节流）
+    if (document.hidden && !reduced) return
+    renderFrame()
     if (reduced) return // 减动效：只渲染一帧静置
   }
   tick()
-})
 
-onBeforeUnmount(() => {
-  disposed = true
-  cancelAnimationFrame(raf)
-  cleanupResize?.()
-  cleanupTheme?.()
+  const onVisChange = (): void => {
+    // 减动效用户从隐藏标签页回来时补一帧，避免黑屏
+    if (reduced && !document.hidden) renderFrame()
+  }
+  document.addEventListener('visibilitychange', onVisChange)
+
+  onBeforeUnmount(() => {
+    disposed = true
+    cancelAnimationFrame(raf)
+    cleanupResize?.()
+    cleanupTheme?.()
+    document.removeEventListener('visibilitychange', onVisChange)
+    renderer.domElement.remove()
+    composer?.dispose()
+    scene.traverse((o) => {
+      if (o instanceof THREE.Sprite) {
+        o.material.map?.dispose()
+        o.material.dispose()
+      }
+    })
+    renderer.dispose()
+  })
 })
 </script>
 

@@ -5,6 +5,7 @@
  */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
+import { FrameGate, dprCap } from '../lib/perf'
 import { sfx } from '../lib/sfx'
 
 export interface VoyageStop {
@@ -28,6 +29,7 @@ let curve: THREE.CatmullRomCurve3 | null = null
 let pillars: THREE.Mesh[] = []
 let raf = 0
 let disposed = false
+let gate: FrameGate | null = null
 
 let dragging = false
 let lastX = 0
@@ -171,7 +173,7 @@ function animate(): void {
     orb.position.copy(group.localToWorld(p.clone()))
   }
 
-  renderer.render(scene, camera)
+  if (gate?.shouldRender) renderer.render(scene, camera)
 }
 
 function onResize(): void {
@@ -238,7 +240,8 @@ onMounted(() => {
   const el = container.value
   if (!el) return
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(dprCap(2))
+  gate = gate ?? new FrameGate(renderer.domElement)
   renderer.setSize(el.clientWidth, el.clientHeight)
   el.appendChild(renderer.domElement)
   scene = new THREE.Scene()
@@ -268,6 +271,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   disposed = true
   cancelAnimationFrame(raf)
+    gate?.dispose()
   window.removeEventListener('resize', onResize)
   const el = container.value
   if (el) {

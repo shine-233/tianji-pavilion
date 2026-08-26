@@ -43,26 +43,25 @@ function ang(zhi: string): number {
 function pt(zhi: string, r: number): [number, number] {
   return [cx + r * Math.cos(ang(zhi)), cy + r * Math.sin(ang(zhi))]
 }
-/** 两支之间的弧：r 为弧半径，向内弯 */
-function arcPath(a: string, b: string, r: number, bend: number): string {
+/** 两支之间的弧：向内（bend<0）或向外（bend>0）弯 */
+function arcPath(a: string, b: string, bend: number): string {
   const [x1, y1] = pt(a, R)
   const [x2, y2] = pt(b, R)
   const [m1, m2] = pt(a, R + bend)
   const [n1, n2] = pt(b, R + bend)
   const mx = (m1 + n1) / 2
   const my = (m2 + n2) / 2
-  void r
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`
 }
 
 const ARCS: Arc[] = [
-  ...LIUHE.map(([a, b]) => ({ id: `lh${a}${b}`, kind: '六合' as const, a, b, d: arcPath(a, b, R, -46), members: [a, b] })),
+  ...LIUHE.map(([a, b]) => ({ id: `lh${a}${b}`, kind: '六合' as const, a, b, d: arcPath(a, b, -46), members: [a, b] })),
   ...SANHE.flatMap(([a, b, c]) => [
-    { id: `sh${a}${b}`, kind: '三合' as const, a, b, d: arcPath(a, b, R, -78), members: [a, b, c] },
-    { id: `sh${b}${c}`, kind: '三合' as const, a: b, b: c, d: arcPath(b, c, R, -78), members: [a, b, c] },
+    { id: `sh${a}${b}`, kind: '三合' as const, a, b, d: arcPath(a, b, -78), members: [a, b, c] },
+    { id: `sh${b}${c}`, kind: '三合' as const, a: b, b: c, d: arcPath(b, c, -78), members: [a, b, c] },
   ]),
-  ...CHONG.map(([a, b]) => ({ id: `ch${a}${b}`, kind: '相冲' as const, a, b, d: arcPath(a, b, R, 0), members: [a, b] })),
-  ...HAI.map(([a, b]) => ({ id: `hh${a}${b}`, kind: '相害' as const, a, b, d: arcPath(a, b, R, 34), members: [a, b] })),
+  ...CHONG.map(([a, b]) => ({ id: `ch${a}${b}`, kind: '相冲' as const, a, b, d: arcPath(a, b, 0), members: [a, b] })),
+  ...HAI.map(([a, b]) => ({ id: `hh${a}${b}`, kind: '相害' as const, a, b, d: arcPath(a, b, 34), members: [a, b] })),
 ]
 
 const hover = ref<string | null>(null)
@@ -112,7 +111,8 @@ const LEGEND = [
 
 <template>
   <div class="branch-wheel">
-    <svg viewBox="0 0 320 320" class="wheel" role="img" aria-label="十二地支刑冲合害关系盘">
+    <svg viewBox="0 0 320 320" class="wheel" role="group" aria-label="十二地支刑冲合害关系盘，点按地支可钉住它的关系网">
+      <title>十二地支刑冲合害关系盘</title>
       <circle cx="160" cy="160" :r="R + 22" fill="none" stroke="rgba(139,147,167,0.25)" stroke-dasharray="2 6" />
       <g
         v-for="(arc, ai) in ARCS"

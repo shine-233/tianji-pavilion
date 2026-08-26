@@ -6,6 +6,7 @@
  */
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import * as THREE from 'three'
+import { FrameGate, dprCap } from '../lib/perf'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
@@ -27,6 +28,7 @@ let rootGroup: THREE.Group | null = null
 let composer: EffectComposer | null = null
 let raf = 0
 let disposed = false
+let gate: FrameGate | null = null
 
 const GROUPS: Record<string, THREE.Group> = {}
 const PICK_MESHES: THREE.InstancedMesh[] = []
@@ -138,7 +140,8 @@ function build(): void {
   if (!el) return
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setSize(el.clientWidth, el.clientHeight)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(dprCap(2))
+  gate = gate ?? new FrameGate(renderer.domElement)
   el.appendChild(renderer.domElement)
 
   scene = new THREE.Scene()
@@ -442,7 +445,7 @@ function tick(): void {
     camera.position.z += (camZ - camera.position.z) * 0.07
     camera.lookAt(0, 1.4, 0)
   }
-  composer?.render()
+  if (gate?.shouldRender) composer?.render()
 }
 
 function onResize(): void {
@@ -461,6 +464,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   disposed = true
   cancelAnimationFrame(raf)
+    gate?.dispose()
   window.removeEventListener('resize', onResize)
   cleanupFns.forEach((f) => f())
   renderer?.dispose()

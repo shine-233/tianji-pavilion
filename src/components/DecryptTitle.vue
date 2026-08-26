@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /** 标题「解密」入场：字符从随机卦符干支逐位落定为真实文字 */
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{ text: string; speed?: number }>(), { speed: 34 })
 
@@ -8,7 +8,8 @@ const GLYPHS = '☯☰☱☲☳☴☵☶☷✦✧⋆☉甲乙丙丁戊己庚辛�
 const display = ref(props.text)
 let timer: number | null = null
 
-onMounted(() => {
+function run(): void {
+  if (timer !== null) window.clearTimeout(timer)
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     display.value = props.text
     return
@@ -48,6 +49,14 @@ onMounted(() => {
   }
 
   slowTick()
+}
+
+onMounted(run)
+
+// text 动态变化时重新播放解密动画
+watch(() => props.text, () => {
+  display.value = props.text
+  run()
 })
 
 onBeforeUnmount(() => {
