@@ -266,10 +266,13 @@ function lunarInfo(): string {
 
       <div class="card">
         <h2>白话解读 · 悬浮金色词条可看术语通典</h2>
-        <div v-for="sec in interpretations" :key="sec.title" class="interp">
-          <div class="i-title">◆ {{ sec.title }}</div>
-          <p class="i-text"><RichText :text="sec.text" /></p>
-        </div>
+        <details class="fold">
+          <summary>📖 展开 {{ interpretations.length }} 段解读（默认收起）</summary>
+          <div v-for="sec in interpretations" :key="sec.title" class="interp">
+            <div class="i-title">◆ {{ sec.title }}</div>
+            <p class="i-text"><RichText :text="sec.text" /></p>
+          </div>
+        </details>
       </div>
 
       <div class="card">
@@ -338,4 +341,7 @@ function lunarInfo(): string {
   .grid-2 { grid-template-columns: 1fr; }
   .block-detail { padding-left: 8px; }
 }
+.fold summary { cursor: pointer; color: var(--gold-bright); font-family: var(--cute); padding: 4px 2px; }
+.fold[open] summary { margin-bottom: 10px; }
+.fold { border-top: 1px dashed var(--line); padding-top: 8px; }
 </style>

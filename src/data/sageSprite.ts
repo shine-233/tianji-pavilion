@@ -1,4 +1,4 @@
-/** 女道士吉祥物家族：同一套像素骨架，十位角色靠道袍配色与手持法器区分 */
+﻿/** 女道士吉祥物家族：同一套像素骨架，十位角色靠道袍配色与手持法器区分 */
 
 export const TAO_PALETTE: Record<string, string> = {
   K: '#241f31',
@@ -301,7 +301,7 @@ const EYE_CHAR = 'E'
 
 /** 组装某位角色的完整像素列表（发型层 + 主骨架 + 配色替换 + 法器浮层）
  *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人、主题换袍等场景复用骨架 */
-export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>): TaoPixel[] {
+export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>, pose: 'stand' | 'sit' = 'stand'): TaoPixel[] {
   const def = TAOESSES[id] ?? TAOESSES.qingxuan!
   const pal: Record<string, string> = { ...TAO_PALETTE }
   for (const k of Object.keys(def.palette)) {
@@ -330,6 +330,7 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
     })
   })
   ;(TAO_PROPS[def.prop] ?? []).forEach(([x, y, ch]) => {
+    if (pose === 'sit' && y > 17) return
     out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
   })
   ;(TAO_PATCHES[def.id] ?? []).forEach(([x, y, ch]) => {

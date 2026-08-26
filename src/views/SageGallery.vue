@@ -9,6 +9,7 @@ import SageVoxel3D from '../components/SageVoxel3D.vue'
 const router = useRouter()
 
 const selected3d = ref('qingxuan')
+const sit = ref(false)
 
 function pick3d(id: string): void {
   selected3d.value = id
@@ -90,6 +91,7 @@ function goPage(id: string): void {
         卡片下方的去处，就是她的值房。
       </p>
       <button @click="randomPick()">🎲 随缘指派一位</button>
+      <button class="ghost sm" style="margin-left: 10px" @click="sit = !sit; sfx.toggle()">{{ sit ? '🧘 打坐中' : '🚶 站姿' }}</button>
     </div>
 
     <div class="card stage-card">
@@ -99,6 +101,8 @@ function goPage(id: string): void {
       <div class="stage-right">
         <h3 class="gold-t2">立体道长 · 体素建模</h3>
         <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
+        <svg viewBox="0 0 26 29" shape-rendering="crispEdges" style="width:90px;image-rendering:pixelated;margin:6px 0">
+          <rect v-for="(p, i) in buildTaoess(selected3d, undefined, sit ? 'sit' : 'stand')" :key="'s' + i + String(sit)" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
         <div class="chip-row">
           <button
             v-for="id in TAOESS_IDS" :key="id"
