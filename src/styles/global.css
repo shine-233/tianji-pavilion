@@ -420,7 +420,7 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 /* 流星 */
 .shooting-star {
   position: fixed;
-  z-index: 3;
+  z-index: -1;
   width: 130px;
   height: 1.5px;
   background: linear-gradient(90deg, transparent, rgba(var(--acc-rgb), 0.9));
