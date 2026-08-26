@@ -7,6 +7,7 @@ import { ALL_SIGNS, drawSign, hashStr, todayKey, TIER_STYLE, type Sign } from '.
 import { addRecord } from '../lib/records'
 import { sfx } from '../lib/sfx'
 import { sparkle } from '../lib/sparkle'
+import { toast } from '../lib/toast'
 
 const dateKey = todayKey()
 const todaySign = drawSign(dateKey)
@@ -154,18 +155,18 @@ function backToTube(): void {
       <div class="card hours-card">
         <h2>今日时辰 · 黄黑道</h2>
         <div class="hours">
-          <span
+          <button
             v-for="h in hours"
             :key="h.zhi"
             class="hour-chip"
             :class="{ yellow: h.lucky, now: h.zhi === curZhi }"
-            :title="`${h.god} · ${h.note}`"
+            @click="toast(`${h.zhi}时 · ${h.god}：${h.note}`)"
           >
             <b>{{ h.zhi }}时</b>
             <em>{{ h.god }}</em>
-          </span>
+          </button>
         </div>
-        <p class="note">悬停或长按看十二神提示；金字为黄道吉时，描边是当前时辰。</p>
+        <p class="note">点任意时辰看十二神提示；金字为黄道吉时，描边是当前时辰。</p>
       </div>
     </div>
 
@@ -306,18 +307,20 @@ function backToTube(): void {
   border-radius: 10px;
   border: 1px solid var(--line);
   background: rgba(127, 127, 127, 0.06);
-  cursor: help;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
   transition: transform 0.2s ease;
 }
 .hour-chip:hover { transform: translateY(-2px); border-color: var(--card-glow); }
 .hour-chip b { font-family: var(--cute); font-size: 0.9rem; color: var(--fg); }
-.hour-chip em { font-style: normal; font-size: 0.64rem; margin-top: 2px; color: var(--dim); }
+.hour-chip em { font-style: normal; font-size: 0.66rem; margin-top: 2px; color: var(--dim); }
 .hour-chip.yellow em { color: var(--gold-bright); }
 .hour-chip.now::after {
   content: '现在';
   position: absolute;
   top: -9px; right: -6px;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   background: var(--teal);
   border-radius: 999px;
   padding: 1px 6px;

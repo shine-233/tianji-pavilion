@@ -214,7 +214,7 @@ function tapStar(st: string): void {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="chipTip(st)" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
+                <span v-for="st in starList(p.mains)" :key="st" class="star" tabindex="0" :data-tip="chipTip(st)" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -262,7 +262,7 @@ function tapStar(st: string): void {
                   <em v-if="STAR_PERSONAS[st]" class="star-hello">{{ STAR_PERSONAS[st].hello }}</em>
                 </span>
               </span>
-              <span class="sub tip-hint">悬停看释义，点一下让道长替她传话</span>
+              <span class="sub tip-hint">点按或悬停看释义，再点一下让道长替她传话</span>
             </template>
             <b v-else class="gold-t2">空宫（借对宫）</b>
           </p>
@@ -454,8 +454,8 @@ function tapStar(st: string): void {
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
-.star-big:hover::after { opacity: 1; }
-.star:hover::after {
+.star-big:hover::after, .star-big:focus::after { opacity: 1; }
+.star:hover::after, .star:focus::after {
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 8px);

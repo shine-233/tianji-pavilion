@@ -416,7 +416,7 @@ function toggle(i: number): void {
   margin-top: 5px;
 }
 .cg-label {
-  font-size: 0.56rem;
+  font-size: 0.66rem;
   color: var(--teal);
   border: 1px solid rgba(var(--acc2-rgb), 0.35);
   border-radius: 4px;

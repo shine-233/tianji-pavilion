@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 .gua b { font-size: 1.15rem; line-height: 1.1; color: var(--gold-bright); }
-.gua span { font-size: 0.58rem; color: var(--dim); }
+.gua span { font-size: 0.68rem; color: var(--dim); }
 .gua:hover { border-color: var(--gold); box-shadow: 0 0 18px rgba(232, 196, 115, 0.35); }
 .gua.lit {
   border-color: var(--teal);

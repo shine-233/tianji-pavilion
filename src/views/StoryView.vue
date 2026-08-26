@@ -222,6 +222,16 @@ onMounted(() => {
   }
   window.addEventListener('mousemove', onMouse)
 
+  // 触屏没有 mousemove：滚动速度给镜头一点横向摇曳，手机上画面也活
+  let lastScrollY: number | null = null
+  let sway = 0
+  const onTouchSway = (): void => {
+    const y = window.scrollY
+    if (lastScrollY !== null) sway = Math.max(-1, Math.min(1, sway + (y - lastScrollY) * 0.004))
+    lastScrollY = y
+  }
+  window.addEventListener('scroll', onTouchSway, { passive: true })
+
   const resize = (): void => {
     renderer.setSize(host.clientWidth, host.clientHeight)
     camera.aspect = host.clientWidth / host.clientHeight
@@ -289,7 +299,10 @@ onMounted(() => {
     grid.instanceMatrix.needsUpdate = true
 
     stars.rotation.y = p * 0.8
-    camera.position.x += (mx * 0.6 - camera.position.x) * 0.04
+    // 镜头横移 = 鼠标（桌面）+ 滚动进度漂移（全设备）+ 滚速摇曳（触屏）
+    sway *= 0.94
+    const wantX = mx * 0.6 + Math.sin(p * Math.PI * 2) * 0.35 + sway * 0.8
+    camera.position.x += (wantX - camera.position.x) * 0.04
     camera.lookAt(0, 0, 0)
 
     if (gate?.shouldRender) renderer.render(scene, camera)
@@ -313,6 +326,7 @@ onMounted(() => {
     cancelAnimationFrame(raf)
     gate?.dispose()
     window.removeEventListener('mousemove', onMouse)
+    window.removeEventListener('scroll', onTouchSway)
     window.removeEventListener('resize', resize)
     window.removeEventListener('scroll', onScroll)
     renderer.dispose()

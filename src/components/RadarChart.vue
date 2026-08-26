@@ -150,6 +150,6 @@ function toggleWedge(i: number): void {
 .wedge { transition: fill-opacity 0.22s ease; }
 .dot { transition: r 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.22s ease; filter: drop-shadow(0 0 4px rgba(255, 227, 168, 0.6)); }
 .tip-box { fill: rgba(11, 13, 18, 0.88); stroke: rgba(232, 196, 115, 0.45); }
-.tip-name { font-size: 11px; fill: var(--dim); }
+.tip-name { font-size: 12px; fill: var(--dim); }
 .tip-val { font-size: 13px; fill: var(--gold-bright); font-weight: bold; }
 </style>

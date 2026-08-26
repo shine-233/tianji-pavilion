@@ -64,6 +64,6 @@ onBeforeUnmount(() => cancelAnimationFrame(raf))
 <style scoped>
 .ring-wrap { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
 .ring-num { font-family: var(--cute); font-size: 26px; font-weight: bold; fill: var(--gold-bright); }
-.ring-sub { font-size: 11px; fill: var(--dim); }
+.ring-sub { font-size: 12px; fill: var(--dim); }
 .ring-label { color: var(--dim); font-size: 0.8rem; }
 </style>
