@@ -28,25 +28,46 @@ function onDocClick(e: MouseEvent): void {
   if (!t?.closest('.theme-wrap')) showThemes.value = false
 }
 
-const NAV = [
-  { to: '/', label: '山门', glyph: '☯' },
-  { to: '/chart', label: '八字排盘', glyph: '🀄' },
-  { to: '/ziwei', label: '紫微命盘', glyph: '✷' },
-  { to: '/liuyao', label: '六爻纳甲', glyph: '🪙' },
-  { to: '/meihua', label: '梅花易数', glyph: '❄' },
-  { to: '/daily', label: '灵签', glyph: '🎋' },
-  { to: '/almanac', label: '今日黄历', glyph: '📅' },
-  { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
-  { to: '/classics', label: '典籍语料', glyph: '📜' },
-  { to: '/geju', label: '格局辞典', glyph: '⚔' },
-  { to: '/rules', label: '规则库', glyph: '⚖' },
-  { to: '/cases', label: '案例库', glyph: '🗂' },
-  { to: '/yanyi', label: '演易', glyph: '䷀' },
-  { to: '/sages', label: '道长图鉴', glyph: '⛩' },
-  { to: '/settings', label: '设置', glyph: '👘' },
-]
+
 
 const route = useRoute()
+
+/** 导航四簇：算（排盘问命）/ 占（每日速占）/ 游（互动体验）/ 藏（资料库） */
+const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: string; glyph: string }> }> = [
+  {
+    label: '算',
+    items: [
+      { to: '/chart', label: '八字排盘', glyph: '🀄' },
+      { to: '/ziwei', label: '紫微命盘', glyph: '✷' },
+      { to: '/liuyao', label: '六爻纳甲', glyph: '🪙' },
+      { to: '/meihua', label: '梅花易数', glyph: '❄' },
+    ],
+  },
+  {
+    label: '占',
+    items: [
+      { to: '/daily', label: '每日一签', glyph: '🎋' },
+      { to: '/almanac', label: '今日黄历', glyph: '📅' },
+      { to: '/xiaoliuren', label: '小六壬', glyph: '🖐' },
+    ],
+  },
+  {
+    label: '游',
+    items: [
+      { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
+      { to: '/yanyi', label: '演易', glyph: '䷀' },
+      { to: '/sages', label: '道长图鉴', glyph: '⛩' },
+    ],
+  },
+  {
+    label: '占',
+    items: [
+      { to: '/daily', label: '每日一签', glyph: '🎋' },
+      { to: '/almanac', label: '今日黄历', glyph: '📅' },
+      { to: '/xiaoliuren', label: '小六壬', glyph: '🖐' },
+    ],
+  },
+]
 
 const ROUTE_SAGE: Record<string, string> = {
   '/': 'qingxuan',
