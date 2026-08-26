@@ -10,6 +10,7 @@ import JieqiCard from '../components/JieqiCard.vue'
 import YiJiCard from '../components/YiJiCard.vue'
 import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
+import { vTilt } from '../lib/tilt'
 
 const router = useRouter()
 const hoverEle = ref<Element | null>(null)
@@ -214,7 +215,7 @@ function arcPath(i: number, j: number, off: number): string {
     <template v-for="tier in MODULE_TIERS" :key="tier.title">
       <h2 v-reveal>{{ tier.title }} <small class="sub tier-sub">{{ tier.sub }}</small></h2>
       <section class="modules">
-        <a v-for="(m, i) in tier.items" :key="m.to" v-reveal="(i % 4) * 70" class="card module-card hoverable" @click.prevent="go(m.to)">
+        <a v-for="(m, i) in tier.items" :key="m.to" v-reveal="(i % 4) * 70" v-tilt="6" class="card module-card hoverable" :href="'#' + m.to" @click.prevent="go(m.to)">
           <div class="m-glyph">{{ m.glyph }}</div>
           <div class="m-title">{{ m.title }}</div>
           <p class="sub">{{ m.desc }}</p>

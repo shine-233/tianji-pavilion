@@ -60,7 +60,7 @@ defineExpose({ rain })
       >{{ TALISMANS[n % TALISMANS.length]! }}</span>
       <div class="crane" :class="craneClass">
         <span class="crane-bird">🜁</span>
-        <svg class="crane-sage" viewBox="0 0 25 27" shape-rendering="crispEdges">
+        <svg class="crane-sage" viewBox="0 0 25 27">
           <rect v-for="(p, i) in cranePixels" :key="i" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
         </svg>
       </div>

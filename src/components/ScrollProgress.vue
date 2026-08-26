@@ -38,4 +38,8 @@ onBeforeUnmount(() => stop?.())
   box-shadow: 0 0 8px var(--glow);
   transition: width 0.08s linear;
 }
+/* 宽屏有一炷香了，这条细线只留给窄屏，别两根进度条打架 */
+@media (min-width: 901px) {
+  .scroll-progress { display: none; }
+}
 </style>

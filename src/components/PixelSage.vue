@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
-import { buildTaoess, TAOESSES, TAO_TIPS } from '../data/sageSprite'
+import { buildTaoess, buildTaoessHd, TAOESSES, TAO_TIPS } from '../data/sageSprite'
 import { motionOf } from '../data/motionPersonas'
 import { sfx } from '../lib/sfx'
 
@@ -12,6 +12,8 @@ const props = withDefaults(defineProps<{
 
 const def = computed(() => TAOESSES[props.char] ?? TAOESSES.qingxuan!)
 const pixels = computed(() => buildTaoess(def.value.id))
+/** 超采样版：半格密度 + 边缘混色，常驻吉祥物用这份高精渲染 */
+const hdPixels = computed(() => buildTaoessHd(def.value.id))
 const motion = computed(() => motionOf(def.value.id))
 const motionVars = computed(() => ({
   '--bd': `${motion.value.dur}s`,
@@ -25,8 +27,10 @@ const GRID_W = 25
 const GRID_H = 27
 const WIDTH = GRID_W * CELL
 const HEIGHT = GRID_H * CELL
+const SUB = CELL / 2
 
 const eyePixels = computed(() => pixels.value.filter((p) => p.isEye))
+const eyeCells = computed(() => eyePixels.value)
 
 const TIPS = [
   '心静了，卦才准。先坐直，再落子。',
@@ -121,15 +125,15 @@ onBeforeUnmount(() => {
       <span class="orbit-glyph g3">⋆</span>
       <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT">
         <rect
-          v-for="(p, i) in pixels" :key="i"
-          :x="p.x * CELL + 0.4" :y="p.y * CELL + 0.4"
-          :width="CELL - 0.8" :height="CELL - 0.8"
-          :rx="CELL * 0.24"
+          v-for="(p, i) in hdPixels" :key="i"
+          :x="p.x * SUB + 0.18" :y="p.y * SUB + 0.18"
+          :width="SUB - 0.36" :height="SUB - 0.36"
+          :rx="SUB * 0.24"
           :fill="p.fill"
           :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175"
         />
         <rect
-          v-for="(e, i) in eyePixels" :key="'e' + i"
+          v-for="(e, i) in eyeCells" :key="'e' + i"
           class="eyelid" :x="e.x * CELL" :y="e.y * CELL" :width="CELL" :height="CELL"
           :fill="def.palette.H ?? '#34294a'"
         />

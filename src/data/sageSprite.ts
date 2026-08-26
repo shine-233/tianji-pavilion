@@ -1,4 +1,4 @@
-﻿/** 女道士吉祥物家族：同一套像素骨架，十位角色靠道袍配色与手持法器区分 */
+/** 女道士吉祥物家族：同一套像素骨架，十位角色靠道袍配色与手持法器区分 */
 
 export const TAO_PALETTE: Record<string, string> = {
   K: '#241f31',
@@ -409,6 +409,44 @@ export function cardBackPixels(palOverride?: Partial<Record<string, string>>): T
       if (ch === '.') return
       out.push({ x, y, fill: pal[ch] ?? pal.K!, isEye: false })
     })
+  })
+  return out
+}
+
+/** 超采样：把标准精灵细分成半格密度，边缘子格向邻色过渡——形状不变，观感分辨率翻倍 */
+export interface HdPixel {
+  x: number
+  y: number
+  fill: string
+}
+
+function hexMix(a: string, b: string, t: number): string {
+  const pa = parseInt(a.slice(1), 16)
+  const pb = parseInt(b.slice(1), 16)
+  const r = Math.round(((pa >> 16) & 255) * (1 - t) + ((pb >> 16) & 255) * t)
+  const g = Math.round(((pa >> 8) & 255) * (1 - t) + ((pb >> 8) & 255) * t)
+  const bl = Math.round((pa & 255) * (1 - t) + (pb & 255) * t)
+  return '#' + ((r << 16) | (g << 8) | bl).toString(16).padStart(6, '0')
+}
+
+export function buildTaoessHd(id: string): HdPixel[] {
+  const base = buildTaoess(id)
+  const at = new Map<string, string>()
+  base.forEach((p) => at.set(`${p.x},${p.y}`, p.fill))
+  const out: HdPixel[] = []
+  base.forEach((p) => {
+    for (let oy = 0; oy < 2; oy++) {
+      for (let ox = 0; ox < 2; ox++) {
+        let fill = p.fill
+        const nx = ox === 0 ? p.x - 1 : p.x + 1
+        const ny = oy === 0 ? p.y - 1 : p.y + 1
+        const h = at.get(`${nx},${p.y}`)
+        if (h && h !== fill) fill = hexMix(fill, h, 0.3)
+        const v = at.get(`${p.x},${ny}`)
+        if (v && v !== p.fill && v !== fill) fill = hexMix(fill, v, 0.3)
+        out.push({ x: p.x * 2 + ox, y: p.y * 2 + oy, fill })
+      }
+    }
   })
   return out
 }
