@@ -32,6 +32,23 @@ const SUB = CELL / 2
 const eyePixels = computed(() => pixels.value.filter((p) => p.isEye))
 const eyeCells = computed(() => eyePixels.value)
 
+/** 分层摆动：把 HD 像素拆成「发冠 / 身干 / 衣摆」三组，各自相位晃动 → 角色活起来 */
+const layers = computed(() => {
+  const eyeTop = eyeCells.value.length ? Math.min(...eyeCells.value.map((e) => e.y)) : 10
+  const maxY = Math.max(...hdPixels.value.map((p) => p.y))
+  const hairTop = Math.max(0, eyeTop - 12)
+  const hemStart = maxY - 7
+  const hair: typeof hdPixels.value = []
+  const hem: typeof hdPixels.value = []
+  const core: typeof hdPixels.value = []
+  for (const p of hdPixels.value) {
+    if (p.y < hairTop + 6) hair.push(p)
+    else if (p.y >= hemStart && p.fill !== TAOESSES[def.value.id]?.palette?.H) hem.push(p)
+    else core.push(p)
+  }
+  return { hair, hem, core }
+})
+
 const TIPS = [
   '心静了，卦才准。先坐直，再落子。',
   '子时不排盘，不是迷信，是让熬夜的人早点睡。',
@@ -136,21 +153,43 @@ onBeforeUnmount(() => {
       <span class="orbit-glyph g1">{{ def.orbit }}</span>
       <span class="orbit-glyph g2">✦</span>
       <span class="orbit-glyph g3">⋆</span>
-      <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT">
-        <rect
-          v-for="(p, i) in hdPixels" :key="i"
-          :x="p.x * SUB + 0.18" :y="p.y * SUB + 0.18"
-          :width="SUB - 0.36" :height="SUB - 0.36"
-          :rx="SUB * 0.24"
-          :fill="p.fill"
-          :opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)"
-        />
-        <rect
-          v-for="(e, i) in eyeCells" :key="'e' + i"
-          class="eyelid" :x="e.x * CELL" :y="e.y * CELL" :width="CELL" :height="CELL"
-          :fill="def.palette.H ?? '#34294a'"
-        />
-      </svg>
+<svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT">
+<g class="ly-hem">
+<rect
+v-for="(p, i) in layers.hem" :key="'h' + i"
+:x="p.x * SUB + 0.18" :y="p.y * SUB + 0.18"
+:width="SUB - 0.36" :height="SUB - 0.36"
+:rx="SUB * 0.24"
+:fill="p.fill"
+:opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)"
+/>
+</g>
+<g class="ly-core">
+<rect
+v-for="(p, i) in layers.core" :key="'c' + i"
+:x="p.x * SUB + 0.18" :y="p.y * SUB + 0.18"
+:width="SUB - 0.36" :height="SUB - 0.36"
+:rx="SUB * 0.24"
+:fill="p.fill"
+:opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)"
+/>
+</g>
+<g class="ly-hair">
+<rect
+v-for="(p, i) in layers.hair" :key="'f' + i"
+:x="p.x * SUB + 0.18" :y="p.y * SUB + 0.18"
+:width="SUB - 0.36" :height="SUB - 0.36"
+:rx="SUB * 0.24"
+:fill="p.fill"
+:opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)"
+/>
+</g>
+<rect
+v-for="(e, i) in eyeCells" :key="'e' + i"
+class="eyelid" :x="e.x * CELL" :y="e.y * CELL" :width="CELL" :height="CELL"
+:fill="def.palette.H ?? '#34294a'"
+/>
+</svg>
     </button>
   </div>
 </template>
@@ -291,5 +330,20 @@ onBeforeUnmount(() => {
   .sage-corner { right: 8px; bottom: 8px; }
   .sage-sprite { width: 100px; height: auto; }
   .speech-bubble { max-width: 190px; font-size: 0.85rem; }
+}
+
+/* 分层摆动：发冠轻摇、衣摆微飘，身体稳定——像有风从观里穿过 */
+.ly-hair { transform-origin: 50% 92%; animation: ly-hair 4.2s ease-in-out infinite; }
+.ly-hem { transform-origin: 50% 6%; animation: ly-hem 3.6s ease-in-out infinite; }
+@keyframes ly-hair {
+  0%, 100% { transform: rotate(-1.1deg); }
+  50% { transform: rotate(1.3deg) translateY(0.4px); }
+}
+@keyframes ly-hem {
+  0%, 100% { transform: translateX(-0.5px) skewX(-0.6deg); }
+  50% { transform: translateX(0.6px) skewX(0.7deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ly-hair, .ly-hem { animation: none; }
 }
 </style>

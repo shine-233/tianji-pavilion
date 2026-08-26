@@ -175,7 +175,7 @@ function onMouseMove(e: MouseEvent): void {
   ty = e.clientY
   const t = e.target as HTMLElement | null
   ringHot.value = !!t?.closest('a, button, input, select, .tag, .lib-card')
-  if (now - lastTrail < 55 || trailCount > 26) return
+  if (now - lastTrail < 90 || trailCount > 16) return
   lastTrail = now
   const el = document.createElement('span')
   el.className = 'cursor-trail'
@@ -195,7 +195,7 @@ function scheduleShootingStar(): void {
   starTimer = window.setTimeout(() => {
     spawnShootingStar()
     scheduleShootingStar()
-  }, 7000 + Math.random() * 8000)
+  }, 15000 + Math.random() * 14000)
 }
 function spawnShootingStar(): void {
   if (prefersReduced.matches) return
