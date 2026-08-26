@@ -24,6 +24,7 @@ interface QianliCase {
 const master = ref<MasterCase[]>([])
 const qianli = ref<QianliCase[]>([])
 const loading = ref(true)
+const loadErr = ref(false)
 const entered = ref(false)
 
 const tab = ref<'master' | 'qianli'>('master')
@@ -41,14 +42,20 @@ const TIER_LABEL: Record<string, string> = {
 }
 
 onMounted(async () => {
-  const [m, q] = await Promise.all([
-    fetch('./data/classics_master_final.json').then((x) => x.json()),
-    fetch('./data/qianli_cases_v2.json').then((x) => x.json()),
-  ])
-  master.value = m
-  qianli.value = q
-  loading.value = false
-  requestAnimationFrame(() => (entered.value = true))
+  try {
+    const [m, q] = await Promise.all([
+      fetch('./data/classics_master_final.json').then((x) => x.json()),
+      fetch('./data/qianli_cases_v2.json').then((x) => x.json()),
+    ])
+    master.value = m
+    qianli.value = q
+  } catch (e) {
+    console.warn('案例库数据装载失败:', e)
+    loadErr.value = true
+  } finally {
+    loading.value = false
+    requestAnimationFrame(() => (entered.value = true))
+  }
 })
 
 function gan(c: string): string {
@@ -150,8 +157,9 @@ function fmtCtx(ctx: string): string {
     </div>
 
     <div v-if="loading" class="card"><p class="sub">📜 案例库装载中…</p></div>
+    <div v-else-if="loadErr" class="card"><p class="sub">⚠️ 案例库装载失败，请检查网络后刷新重试。</p></div>
 
-    <template v-if="!loading">
+    <template v-if="!loading && !loadErr">
       <!-- 标签页 -->
       <div class="tabs card">
         <button class="tab-btn" :class="{ on: tab === 'master' }" @click="switchTab('master')">典籍互证 · {{ filteredMaster.length }}</button>

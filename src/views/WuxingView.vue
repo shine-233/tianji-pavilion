@@ -46,7 +46,10 @@ function clearChart(): void {
       </p>
     </div>
 
-    <VoxelWuxing :counts="chart ? chart.cnt : null" @select="onSelect" />
+    <div class="sky-stage">
+      <VoxelWuxing :counts="chart ? chart.cnt : null" @select="onSelect" />
+      <div class="cine-overlay" aria-hidden="true"></div>
+    </div>
 
     <div class="grid-2">
       <div class="card">
@@ -112,6 +115,28 @@ function clearChart(): void {
 </template>
 
 <style scoped>
+/* 电影感叠加：暗角 + 轻胶片颗粒，压在 3D 画布上（不挡交互） */
+.sky-stage { position: relative; }
+.cine-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+.cine-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(120% 90% at 50% 42%, transparent 58%, rgba(4, 6, 12, 0.4) 100%);
+  mix-blend-mode: multiply;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cine-overlay { display: none; }
+}
+
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .ele-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
 .tab-btn { flex: 1; font-size: 1.05rem; padding: 8px; }

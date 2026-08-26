@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
 import { buildTaoess, TAOESSES } from '../data/sageSprite'
@@ -29,7 +29,7 @@ const TIPS = [
   '冲者动也。怕变动的人，往往正需要动一动。',
   '《滴天髓》讲：能知衰旺之真机，三命之奥思过半矣。',
   '百分位只是参照系，命盘从不给人贴标签。',
-  '紫微看星宫，八字看禀气，两盘互参，别偏听一边。',
+  '紫微看星曜，八字看禀气，两盘互参，别偏听一边。',
   '今天宜：翻一页《穷通宝鉴》，胜过刷十页短视频。',
   '摇卦之前把问题想清楚，一卦只问一事。',
   '格局无高下，会用的人自有分寸。',
@@ -99,14 +99,14 @@ onBeforeUnmount(() => {
   <div class="sage-corner" :class="{ visible }">
     <transition name="bubble">
       <div v-if="bubbleOpen" class="speech-bubble">
-        <span class="who">{{ def.nameCn }}<i>·</i>{{ def.title }}</span>
+        <span class="who">{{ def.nameCn }}<i>路</i>{{ def.title }}</span>
         {{ typedText }}<span class="caret">▌</span>
       </div>
     </transition>
     <button class="sage-btn" :aria-label="def.nameCn" @click="onClick">
       <span class="orbit-glyph g1">{{ def.orbit }}</span>
       <span class="orbit-glyph g2">✦</span>
-      <span class="orbit-glyph g3">✧</span>
+      <span class="orbit-glyph g3">⋆</span>
       <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT" shape-rendering="crispEdges">
         <rect v-for="(p, i) in pixels" :key="i" :x="p.x * CELL" :y="p.y * CELL" :width="CELL" :height="CELL" :fill="p.fill" />
         <rect

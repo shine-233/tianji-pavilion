@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { drawSign, hashStr, SIGNS, todayKey, TIER_STYLE } from '../data/dailySigns'
 import { addRecord } from '../lib/records'
@@ -12,7 +12,6 @@ const flipped = ref(false)
 const shaking = ref(false)
 const stickFly = ref(false)
 const isRandomPick = ref(false)
-
 
 const tierStyle = computed(() => TIER_STYLE[shown.value.tier])
 

@@ -57,6 +57,7 @@ const STATS = [
 
 const MODULES = [
   { to: '/chart', glyph: '🀄', title: '排盘评分', desc: '四柱翻牌、评分环、七维雷达、大运时间轴，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
+  { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
   { to: '/ziwei', glyph: '✷', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正的连线自己会画出来。', tags: ['三方四正', '生年四化'] },
   { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克。', tags: ['Three.js', '辉光后处理'] },
   { to: '/liuyao', glyph: '⚱', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦自动排好，附白话提示。也可以手动报卦。', tags: ['火珠林法', '京房八宫'] },
@@ -97,7 +98,9 @@ function arcPath(i: number, j: number, off: number): string {
 
 <template>
   <main class="page">
+    <InkFluid />
     <section class="hero card hoverable">
+      <ParticleAltar />
       <div class="hero-left">
         <h1>把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
         <p class="sub hero-sub">
@@ -113,7 +116,7 @@ function arcPath(i: number, j: number, off: number): string {
       <div class="hero-wheel" aria-hidden="true">
         <div class="wheel-ring"></div>
         <div class="wheel-core">☯</div>
-        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" @mouseenter="hoverEle = e; sfx.blip()" @mouseleave="hoverEle = null">
+        <div v-for="(e, i) in SHENG_ORDER" :key="e" class="orbit-ele" :class="[`ele-${e}`, `bg-${e}`, { hov: hoverEle === e }]" :style="{ '--i': i }" role="button" tabindex="0" @mouseenter="hoverEle = e; sfx.blip()" @mouseleave="hoverEle = null" @click="hoverEle = hoverEle === e ? null : e; sfx.blip()" @keydown.enter="hoverEle = e; sfx.blip()">
           {{ e }}
         </div>
         <svg class="wheel-arrows" viewBox="0 0 300 300">
@@ -191,14 +194,14 @@ function arcPath(i: number, j: number, off: number): string {
 </template>
 
 <style scoped>
-.hero { display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
-.hero-left { flex: 1; min-width: 260px; }
+.hero { position: relative; display: flex; gap: 30px; align-items: center; padding: 34px 34px; }
+.hero-left { flex: 1; min-width: 260px; position: relative; z-index: 1; }
 .hero h1 { font-size: 2.15rem; line-height: 1.35; margin-bottom: 14px; }
 .gold-t { color: var(--gold-bright); text-shadow: 0 0 26px rgba(var(--acc-rgb), 0.45); }
 .hero-sub { max-width: 470px; margin-bottom: 20px; }
 .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.hero-wheel { position: relative; width: 300px; height: 320px; flex-shrink: 0; }
+.hero-wheel { position: relative; width: 300px; height: 320px; flex-shrink: 0; z-index: 1; }
 .wheel-ring {
   position: absolute;
   left: 0;

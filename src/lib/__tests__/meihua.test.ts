@@ -31,12 +31,31 @@ describe('梅花易数', () => {
     expect(chartText(c).length).toBe(4)
   })
 
-  it('互卦取234/345爻', () => {
-    // 天风姤：下巽[1,1,0] 上乾[1,1,1] 全爻= [1,1,0,1,1,1]，互卦下=[1,1,0]? 234爻=lines[1..3]=[1,0,1]→离，345爻=lines[2..4]=[0,1,1]→兑
+  it('互卦取234/345爻（天风姤 → 乾为天）', () => {
+    // 姤：下巽[0,1,1] 上乾[1,1,1]，全爻自下而上=[0,1,1,1,1,1]
+    // 234爻=[1,1,1]→乾，345爻=[1,1,1]→乾，互卦为乾为天
     const c = fromNumbers(1, 5, 1) // 上乾下巽 = 姤
     expect(c.upperName).toBe('乾')
     expect(c.lowerName).toBe('巽')
-    expect(c.huLower).toBe('离')
-    expect(c.huUpper).toBe('兑')
+    expect(c.huLower).toBe('乾')
+    expect(c.huUpper).toBe('乾')
+  })
+
+  it('变卦：泽火革初爻动 → 泽山咸', () => {
+    // 革：下离[1,0,1] 上兑[1,1,0]，全爻=[1,0,1,1,1,0]；初爻动翻为[0,0,1|1,1,0]=艮下兑上
+    const c = fromNumbers(2, 3, 1)
+    expect(c.upperName).toBe('兑')
+    expect(c.lowerName).toBe('离')
+    expect(c.changedLower).toBe('艮')
+    expect(c.changedUpper).toBe('兑')
+  })
+
+  it('变卦：地天泰六爻动 → 山天大畜', () => {
+    // 泰：下乾[1,1,1] 上坤[0,0,0]，全爻=[1,1,1,0,0,0]；上爻动翻为[1,1,1|0,0,1]=乾下艮上
+    const c = fromNumbers(8, 1, 6)
+    expect(c.upperName).toBe('坤')
+    expect(c.lowerName).toBe('乾')
+    expect(c.changedLower).toBe('乾')
+    expect(c.changedUpper).toBe('艮')
   })
 })

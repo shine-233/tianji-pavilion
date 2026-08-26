@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DecryptTitle from '../components/DecryptTitle.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'
 
 interface RuleRow {
@@ -53,19 +53,27 @@ const TOPIC_COLORS: Record<string, string> = {
   调候: '#f87171',
 }
 
+const loadErr = ref(false)
+
 onMounted(async () => {
-  const [r, n, t, s] = await Promise.all([
-    fetch('./data/rules_clean_v2.json').then((x) => x.json()),
-    fetch('./data/nvming_rules.json').then((x) => x.json()),
-    fetch('./data/qiongtong_tiaohou_table.json').then((x) => x.json()),
-    fetch('./data/six_relations_rules.json').then((x) => x.json()),
-  ])
-  rules.value = r
-  nv.value = n
-  tiaohou.value = t
-  sixrel.value = Object.values(s)[0] as SixRelRow[]
-  loading.value = false
-  requestAnimationFrame(() => (entered.value = true))
+  try {
+    const [r, n, t, s] = await Promise.all([
+      fetch('./data/rules_clean_v2.json').then((x) => x.json()),
+      fetch('./data/nvming_rules.json').then((x) => x.json()),
+      fetch('./data/qiongtong_tiaohou_table.json').then((x) => x.json()),
+      fetch('./data/six_relations_rules.json').then((x) => x.json()),
+    ])
+    rules.value = r
+    nv.value = n
+    tiaohou.value = t
+    sixrel.value = Object.values(s)[0] as SixRelRow[]
+  } catch (e) {
+    console.warn('规则库数据装载失败:', e)
+    loadErr.value = true
+  } finally {
+    loading.value = false
+    requestAnimationFrame(() => (entered.value = true))
+  }
 })
 
 const topics = computed(() => {
@@ -108,17 +116,24 @@ function toggle(i: number): void {
   openIdx.value = openIdx.value === i ? null : i
 }
 
+/** 主列表一次渲染的条数上限；抽签也从这里取，保证中奖条目一定可见 */
+const RENDER_N = 80
+
+let rollTimer: number | null = null
+
 function lucky(): void {
-  if (rolling.value || filtered.value.length === 0) return
+  const poolN = Math.min(filtered.value.length, RENDER_N)
+  if (rolling.value || poolN === 0) return
   rolling.value = true
   sfx.toggle()
   let ticks = 9 + Math.floor(Math.random() * 4)
-  const iv = window.setInterval(() => {
-    luckyIdx.value = Math.floor(Math.random() * filtered.value.length)
+  rollTimer = window.setInterval(() => {
+    luckyIdx.value = Math.floor(Math.random() * poolN)
     sfx.blip()
     ticks--
     if (ticks <= 0) {
-      window.clearInterval(iv)
+      if (rollTimer !== null) window.clearInterval(rollTimer)
+      rollTimer = null
       rolling.value = false
       sfx.ding()
       openIdx.value = luckyIdx.value
@@ -128,6 +143,11 @@ function lucky(): void {
     }
   }, 90)
 }
+
+onBeforeUnmount(() => {
+  if (rollTimer !== null) window.clearInterval(rollTimer)
+  rollTimer = null
+})
 
 const BOOK_COLORS: Record<string, string> = {
   滴天髓阐微: '#5eead4',
@@ -207,8 +227,9 @@ function moreSr(): void {
     </div>
 
     <div v-if="loading" class="card"><p class="sub">📜 规则库装载中…</p></div>
+    <div v-else-if="loadErr" class="card"><p class="sub">⚠️ 规则库装载失败，请检查网络后刷新重试。</p></div>
 
-    <template v-if="!loading">
+    <template v-if="!loading && !loadErr">
       <!-- 筛选 -->
       <div class="card">
         <h2>主题筛选 <small class="sub">点击主题 / 书名过滤下方条文</small></h2>
@@ -238,7 +259,7 @@ function moreSr(): void {
       <!-- 规则列表 -->
       <transition-group name="rowfade" tag="div" class="r-list" :class="{ loaded: entered }">
         <div
-          v-for="(r, i) in filtered.slice(0, 80)" :key="i"
+          v-for="(r, i) in filtered.slice(0, RENDER_N)" :key="i"
           :id="luckyIdx === i ? 'lucky-rule' : undefined"
           class="r-item" :class="{ open: openIdx === i, lucky: luckyIdx === i }"
           :style="{ transitionDelay: entered ? `${Math.min(i * 18, 360)}ms` : '0ms' }"

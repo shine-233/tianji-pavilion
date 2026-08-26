@@ -114,14 +114,16 @@ export function computeAll(ps: Pillar, rExtra: Extra): Omit<ChartResult, 'zs' | 
   let raw = 0
   let sa = 0
   const dlist: DayunItem[] = []
+  const nowY = new Date().getFullYear()
+  const HORIZON = 25 // 只评估未来 25 年的大运窗口，随时间滑动
   try {
     const yun = rExtra.ec.getYun(rExtra.gender)
     yun.getDaYun().forEach((dy) => {
       const sy = dy.getStartYear()
       const ey = dy.getEndYear()
       if (!sy || !ey) return
-      const a = Math.max(sy, 2026)
-      const cEnd = Math.min(ey, 2051)
+      const a = Math.max(sy, nowY)
+      const cEnd = Math.min(ey, nowY + HORIZON)
       if (cEnd < a) return
       const gz = dy.getGanZhi()
       if (!gz || gz.length < 2) return

@@ -117,7 +117,23 @@ function animate(): void {
   renderer.render(scene, camera)
 }
 
+// 双指捏合缩放
+const activePtrs = new Map<number, { x: number; y: number }>()
+let pinchStartDist = 0
+let pinchStartZ = 0
+function ptrDist(): number {
+  const [a, b] = [...activePtrs.values()]
+  return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0
+}
+
 function onPointerDown(e: PointerEvent): void {
+  activePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  if (activePtrs.size === 2) {
+    dragging = false
+    pinchStartDist = ptrDist()
+    pinchStartZ = camZTarget
+    return
+  }
   dragging = true
   movedPx = 0
   lastX = e.clientX
@@ -125,6 +141,14 @@ function onPointerDown(e: PointerEvent): void {
   ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
 }
 function onPointerMove(e: PointerEvent): void {
+  if (activePtrs.has(e.pointerId)) activePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  if (activePtrs.size >= 2) {
+    const d = ptrDist()
+    if (pinchStartDist > 0 && d > 0) {
+      camZTarget = Math.max(16, Math.min(40, (pinchStartZ * pinchStartDist) / d))
+    }
+    return
+  }
   if (!dragging) return
   const dx = e.clientX - lastX
   const dy = e.clientY - lastY
@@ -135,6 +159,18 @@ function onPointerMove(e: PointerEvent): void {
   targetRotX = Math.max(-0.7, Math.min(0.7, targetRotX + dy * 0.005))
 }
 function onPointerUp(e: PointerEvent): void {
+  activePtrs.delete(e.pointerId)
+  if (activePtrs.size === 1) {
+    const [rest] = [...activePtrs.values()]
+    if (rest) {
+      lastX = rest.x
+      lastY = rest.y
+    }
+    dragging = true
+    movedPx = 99 // 捏合结束不触发拾取
+    return
+  }
+  if (activePtrs.size > 0) return
   if (!dragging) return
   dragging = false
   scheduleIdle()
@@ -212,6 +248,13 @@ watch(() => props.char, (c) => {
   if (TAOESSES[c]) {
     buildModel(c)
     sfx.flip()
+    // 换人运镜：镜头推近再拉回，道长转身一圈入场
+    targetRotY += Math.PI * 2
+    popT = 0
+    camZTarget = 20
+    window.setTimeout(() => {
+      camZTarget = 26
+    }, 520)
   }
 })
 

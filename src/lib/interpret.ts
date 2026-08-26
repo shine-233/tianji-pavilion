@@ -24,6 +24,9 @@ export function interpret(r: ChartResult): Array<{ title: string; text: string }
   // ---------- 十神配置 ----------
   out.push({ title: '十神速写', text: shiShenCopy(r) })
 
+  // ---------- 十神搭配（经典组合检测） ----------
+  out.push({ title: '十神搭配', text: patternCopy(r) })
+
   // ---------- 调候寒燥 ----------
   const cold = ['亥', '子', '丑'].includes(r.ps[1]![1]!)
   const hot = ['巳', '午', '未'].includes(r.ps[1]![1]!)
@@ -114,15 +117,20 @@ function strengthCopy(r: ChartResult): string {
   return base + ' 略偏弱但不至于扶不起来。选平台比拼胆量重要——跟着对的团队，你的输出反而比身旺人更稳。'
 }
 
-/** 十神速写：其余三干的十神角色 + 场景化解读 */
-function shiShenCopy(r: ChartResult): string {
+/** 年月时三干的十神角色计数（地支藏干太细，此处只数天干） */
+function rolesOf(r: ChartResult): Record<string, number> {
   const roles: Record<string, number> = {}
   r.ps.forEach((p, i) => {
     if (i === 2) return
     const s = shiShen(r.dmg, p[0]!)
     roles[s] = (roles[s] ?? 0) + 1
   })
-  // 地支藏干太细，此处只数天干，说明口径即可
+  return roles
+}
+
+/** 十神速写：其余三干的十神角色 + 场景化解读 */
+function shiShenCopy(r: ChartResult): string {
+  const roles = rolesOf(r)
   const parts: string[] = []
   const desc: Record<string, string> = {
     比肩: '平辈分量的自己人——同事、合伙人、也包括跟你抢资源的对手',
@@ -145,6 +153,35 @@ function shiShenCopy(r: ChartResult): string {
     ? `分量最重的是「${top[0]}」——${desc[top[0]]}。它就是你这张盘的日常背景音，习惯了它的存在，就知道哪些事顺手、哪些事别扭。`
     : ''
   return headline + tail
+}
+
+/** 十神搭配：检测古籍里的经典组合，给场景化判词（纯增量文案，不参与评分） */
+function patternCopy(r: ChartResult): string {
+  const roles = rolesOf(r)
+  const has = (...ks: string[]): boolean => ks.some((k) => (roles[k] ?? 0) > 0)
+  const hits: string[] = []
+  if (has('正官', '七杀') && has('正印', '偏印')) {
+    hits.push('【官印相生】压力会自动转化成资历：交给你的难题，最后都长成了你的履历。体制、大平台、考证评职称这条路，你走起来比一般人顺。')
+  }
+  if (has('食神') && has('七杀')) {
+    hits.push('【食神制杀】狠角色遇上了化解它的巧手：压力越大你输出越稳，是危机公关型的结构——越是乱局，越显出你的从容。')
+  }
+  if (has('伤官') && has('正官', '七杀')) {
+    hits.push('【伤官见官】才华与规矩同柱相战。古书断「为祸百端」，翻译过来就一句：别跟制度硬顶。锋芒留着做作品，别用来怼领导。')
+  }
+  if (has('偏印') && has('食神')) {
+    hits.push('【枭印夺食】想得多会卡住表达：方案在脑子里排练一百遍，出手时窗口已经关了。先发六十分版本，再迭代到九十，你会快很多。')
+  }
+  if (has('比肩', '劫财') && has('正财', '偏财')) {
+    hits.push('【比劫夺财】合作与分钱是同一件事的两面。合伙协议、股权比例、账目往来——越是亲近的人，越要提前写清楚。')
+  }
+  if (has('偏财') && has('正财')) {
+    hits.push('【财星双透】财路不止一条是福气，也是注意力陷阱。主攻一条，其余定投，别两头奔波两头空。')
+  }
+  if (!hits.length) {
+    return '年月时三干没有组成教科书式的经典搭配（官印相生、食神制杀这一类）。这不代表盘弱——你的戏不在「组合技」，而在五行流通与调候本身，回看上两段即可。'
+  }
+  return hits.join('\n') + '\n搭配从天干取象，供把玩参考；成色高低仍以格局根气与喜用向背为准。'
 }
 
 /** 紫微段：点名真实星曜而不是套话 */

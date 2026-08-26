@@ -1,8 +1,10 @@
-﻿<script setup lang="ts">
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { analyzeYongshen, buildChart, summarize, tossText, YONGSHEN_MAP, type LiuYaoChart } from '../lib/liuyao'
+import { guaCatalog, GUA_TIP, install, TRI_NATURE } from '../lib/liuyaoExtra'
 import { Lunar } from 'lunar-javascript'
 import { addRecord } from '../lib/records'
+import { ELE_B } from '../lib/constants'
 import { sfx } from '../lib/sfx'
 import { sparkle } from '../lib/sparkle'
 
@@ -88,6 +90,36 @@ function reset(): void {
   tosses.value = []
   currentToss.value = -1
 }
+
+onBeforeUnmount(() => {
+  if (timer !== null) window.clearInterval(timer)
+  timer = null
+})
+
+/* ===== 六十四卦卦库速览 ===== */
+const CATALOG = guaCatalog()
+const libOpen = ref(false)
+const libSel = ref<string | null>(null)
+const libEntry = computed(() => (libSel.value ? CATALOG.find((g) => g.bits === libSel.value) ?? null : null))
+
+function pickLib(bits: string): void {
+  libSel.value = libSel.value === bits ? null : bits
+  sfx.blip()
+}
+
+const libRows = computed(() => {
+  if (!libEntry.value) return []
+  const g = install(libEntry.value.bits, '甲')
+  return g.yaos
+    .slice()
+    .reverse()
+    .map((y) => ({
+      label: `${y.liuqin}·${y.najia}`,
+      wx: ELE_B[y.najia[1]!]!,
+      mark: y.shi ? '世' : y.ying ? '应' : '',
+      yang: y.yang,
+    }))
+})
 </script>
 
 <template>
@@ -187,6 +219,38 @@ function reset(): void {
         <p class="note">以上是把传统断卦的路数翻译成白话，图个参考。真要决断大事，请多问几个人、多想几天。</p>
       </section>
     </template>
+
+    <section class="card lib-card-wrap">
+      <div class="board-head2">
+        <h2 style="margin-bottom: 0">六十四卦卦库 · 不摇卦也能预习</h2>
+        <button class="ghost small" @click="libOpen = !libOpen; sfx.toggle()">{{ libOpen ? '收起卦库 ▴' : '展开卦库 ▾' }}</button>
+      </div>
+      <p class="sub">按京房八宫次序排列。点任意一卦，立刻看它的纳甲、六亲、世应与白话点睛。</p>
+      <div v-if="libOpen" class="lib-grid">
+        <button
+          v-for="(g, gi) in CATALOG" :key="g.bits"
+          v-reveal="(gi % 8) * 25"
+          class="lib-cell"
+          :class="{ on: libSel === g.bits }"
+          @click="pickLib(g.bits)"
+        >
+          <span class="lib-lines"><i v-for="k in 6" :key="k" :class="{ yang: g.bits[6 - k] === '1' }"></i></span>
+          <span class="lib-name">{{ g.name }}</span>
+        </button>
+      </div>
+      <div v-if="libEntry" class="lib-detail">
+        <h3>{{ libEntry.name }}<small>（{{ TRI_NATURE[libEntry.upper] }}上{{ TRI_NATURE[libEntry.lower] }}下 · {{ libEntry.gong }}宫）</small></h3>
+        <p class="lib-tip">「{{ GUA_TIP[libEntry.name] ?? '卦象自明，细品则悟' }}」</p>
+        <div class="lib-yaos">
+          <span v-for="(r, i) in libRows" :key="i" class="lib-yao">
+            <em class="lib-mark">{{ r.mark }}</em>
+            <b :class="`ele-${r.wx}`">{{ r.label }}</b>
+            <span class="lib-glyphs"><i :class="{ yang: r.yang }"></i><i v-if="!r.yang"></i></span>
+          </span>
+        </div>
+        <p class="note">速览以甲日装卦示意；实际问卦时六兽随日干而定，动爻另有说法。</p>
+      </div>
+    </section>
   </main>
 </template>
 
@@ -283,6 +347,60 @@ function reset(): void {
 .yao-cell.moving .yao i { animation: move-pulse 1.6s ease-in-out infinite; }
 @keyframes move-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
 .mk { color: var(--red); font-size: 0.72rem; }
+
+.lib-card-wrap { margin-top: 4px; }
+.board-head2 { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.lib-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: linear-gradient(160deg, var(--card-2), transparent);
+  color: var(--fg);
+  font-family: inherit;
+  font-weight: normal;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.22s ease;
+}
+.lib-cell:hover { transform: translateY(-4px); border-color: rgba(var(--acc-rgb), 0.5); }
+.lib-cell.on { border-color: var(--gold); box-shadow: 0 0 14px rgba(var(--acc-rgb), 0.25); }
+.lib-lines { display: flex; flex-direction: column-reverse; gap: 3px; width: 46px; }
+.lib-lines i { display: block; height: 4px; border-radius: 2px; background: var(--dim); opacity: 0.55; }
+.lib-lines i.yang { background: var(--gold-bright); opacity: 1; box-shadow: 0 0 6px rgba(var(--acc-rgb), 0.5); }
+.lib-lines i:not(.yang) { max-width: 60%; }
+.lib-name { font-size: 0.72rem; color: var(--dim); }
+.lib-cell.on .lib-name { color: var(--gold-bright); }
+
+.lib-detail {
+  margin-top: 16px;
+  border: 1px dashed rgba(var(--acc-rgb), 0.4);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.lib-detail h3 { color: var(--fg); }
+.lib-detail h3 small { font-size: 0.72rem; color: var(--dim); margin-left: 6px; font-weight: normal; }
+.lib-tip { font-family: var(--cute); color: var(--gold-bright); margin: 6px 0 12px; letter-spacing: 0.08em; }
+.lib-yaos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px 18px; margin-bottom: 10px; }
+.lib-yao { display: inline-flex; align-items: center; gap: 8px; font-size: 0.84rem; }
+.lib-mark {
+  font-style: normal;
+  width: 18px;
+  text-align: center;
+  color: var(--gold-bright);
+  font-family: var(--cute);
+}
+.lib-glyphs { display: inline-flex; gap: 4px; margin-left: auto; }
+.lib-glyphs i { width: 20px; height: 5px; border-radius: 2px; background: var(--teal); opacity: 0.85; }
+.lib-glyphs i + i { max-width: 17px; }
 .sy { text-align: center; color: transparent; font-family: var(--cute); }
 .sy.on { color: var(--gold-bright); text-shadow: 0 0 8px rgba(232, 196, 115, 0.6); }
 

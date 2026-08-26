@@ -48,6 +48,11 @@ function taijiTexture(): THREE.CanvasTexture {
   const c = document.createElement('canvas')
   c.width = c.height = 512
   const g = c.getContext('2d')!
+  const cssVar = (name: string, fallback: string): string => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+    return v || fallback
+  }
+  const inkDark = cssVar('--bar', '#232a3a')
   g.fillStyle = '#12151f'
   g.fillRect(0, 0, 512, 512)
   const cx = 256
@@ -65,11 +70,11 @@ function taijiTexture(): THREE.CanvasTexture {
   // 太极
   g.fillStyle = '#e9e4d5'
   g.beginPath(); g.arc(cx, cx, r, Math.PI / 2, Math.PI * 1.5); g.fill()
-  g.fillStyle = 'var(--bar)'
+  g.fillStyle = inkDark
   g.beginPath(); g.arc(cx, cx, r, Math.PI / 2 * 3, Math.PI / 2); g.fill()
   g.fillStyle = '#e9e4d5'
   g.beginPath(); g.arc(cx, cx - r / 2, r / 2, 0, Math.PI * 2); g.fill()
-  g.fillStyle = 'var(--bar)'
+  g.fillStyle = inkDark
   g.beginPath(); g.arc(cx, cx + r / 2, r / 2, 0, Math.PI * 2); g.fill()
   g.fillStyle = '#e8c473'
   g.beginPath(); g.arc(cx, cx - r / 2, 18, 0, Math.PI * 2); g.fill()
@@ -226,7 +231,23 @@ function addKe(a: Element, b: Element): void {
 
 function bindEvents(): void {
   const dom = renderer!.domElement
+  // 双指捏合缩放
+  const activePtrs = new Map<number, { x: number; y: number }>()
+  let pinchStartDist = 0
+  let pinchStartZ = 0
+  const ptrDist = (): number => {
+    const [a, b] = [...activePtrs.values()]
+    return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0
+  }
   const onDown = (ev: PointerEvent): void => {
+    activePtrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+    if (activePtrs.size === 2) {
+      dragging = false
+      pinchStartDist = ptrDist()
+      pinchStartZ = camZ
+      wake()
+      return
+    }
     dragging = true
     moved = 0
     lastX = ev.clientX
@@ -235,6 +256,15 @@ function bindEvents(): void {
     wake()
   }
   const onMove = (ev: PointerEvent): void => {
+    if (activePtrs.has(ev.pointerId)) activePtrs.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+    if (activePtrs.size >= 2) {
+      const d = ptrDist()
+      if (pinchStartDist > 0 && d > 0) {
+        camZ = Math.max(9, Math.min(27, (pinchStartZ * pinchStartDist) / d))
+        wake()
+      }
+      return
+    }
     if (!dragging) return
     const dx = ev.clientX - lastX
     const dy = ev.clientY - lastY
@@ -246,6 +276,18 @@ function bindEvents(): void {
     wake()
   }
   const onUp = (ev: PointerEvent): void => {
+    activePtrs.delete(ev.pointerId)
+    if (activePtrs.size === 1) {
+      const [rest] = [...activePtrs.values()]
+      if (rest) {
+        lastX = rest.x
+        lastY = rest.y
+      }
+      dragging = true
+      moved = 99 // 捏合结束不触发拾取
+      return
+    }
+    if (activePtrs.size > 0) return
     dragging = false
     try { dom.releasePointerCapture(ev.pointerId) } catch { /* noop */ }
     if (moved < 6) pick(ev)
@@ -282,7 +324,26 @@ function pick(ev: PointerEvent): void {
     emit('select', e)
     sfx.pop()
     hint.value = false
+    if (selected) {
+      focusOn(selected)
+    } else {
+      camZ = 17
+      wake()
+    }
   }
+}
+
+/** 镜头聚焦：把选中元素转到镜头正前方并拉近，选中期间暂停自转 */
+function focusOn(e: Element): void {
+  const baseAng = (SHENG_ORDER.indexOf(e) / 5) * Math.PI * 2 - Math.PI / 2
+  const want = Math.PI / 2 - baseAng
+  let delta = (want - targetRotY) % (Math.PI * 2)
+  if (delta > Math.PI) delta -= Math.PI * 2
+  if (delta < -Math.PI) delta += Math.PI * 2
+  targetRotY += delta
+  targetRotX = 0.14
+  camZ = Math.max(12.5, camZ - 3.5)
+  wake()
 }
 
 function wake(): void {
@@ -355,7 +416,7 @@ function tick(): void {
 
   stepBursts(dt)
 
-  if (!dragging && idleTimer === null && rootGroup) targetRotY += dt * 0.12
+  if (!dragging && idleTimer === null && !selected && rootGroup) targetRotY += dt * 0.12
   if (rootGroup) {
     rootGroup.rotation.y += (targetRotY - rootGroup.rotation.y) * 0.09
     rootGroup.rotation.x += (targetRotX - rootGroup.rotation.x) * 0.09
@@ -413,6 +474,7 @@ defineExpose({
     selected = e
     hint.value = false
     wake()
+    focusOn(e)
   },
 })
 </script>
