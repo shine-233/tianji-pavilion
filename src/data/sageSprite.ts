@@ -101,6 +101,20 @@ export const TAO_PROPS: Record<string, PropOverlay> = {
   ],
 }
 
+/** 造型补丁：发型/头饰/佩饰的专属差异像素，让十位道长剪影即可分辨 */
+export const TAO_PATCHES: Record<string, PropOverlay> = {
+  qingxuan: [[7, 2, 'G'], [15, 2, 'G']],
+  danxia: [[7, 4, 'H'], [6, 5, 'H'], [15, 4, 'H'], [16, 5, 'H'], [7, 5, 'G'], [15, 5, 'G']],
+  xinglan: [[4, 16, 'H'], [18, 16, 'H'], [4, 17, 'H'], [18, 17, 'H'], [3, 15, 'H'], [19, 15, 'H']],
+  suwen: [[8, 2, 'Y'], [14, 2, 'Y']],
+  yunji: [[11, 10, 'G']],
+  shuanghua: [[20, 9, 'H'], [21, 10, 'H'], [21, 11, 'H'], [22, 12, 'H']],
+  shouzhuo: [[6, 5, 'Y'], [16, 5, 'Y'], [5, 6, 'Y'], [17, 6, 'Y']],
+  shiyi: [[4, 10, 'G'], [18, 10, 'G']],
+  lingshi: [[8, 1, 'G'], [14, 1, 'G'], [9, 0, 'Q'], [13, 0, 'Q']],
+  meixue: [[12, 1, 'G'], [3, 15, 'H'], [19, 15, 'H'], [3, 16, 'H'], [19, 16, 'H']],
+}
+
 export interface TaoessDef {
   id: string
   nameCn: string
@@ -199,6 +213,9 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
     })
   })
   ;(TAO_PROPS[def.prop] ?? []).forEach(([x, y, ch]) => {
+    out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
+  })
+  ;(TAO_PATCHES[def.id] ?? []).forEach(([x, y, ch]) => {
     out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
   })
   return out
