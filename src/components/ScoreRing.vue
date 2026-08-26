@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{ value: number; max: number; label: string; size?: number }>()
 
@@ -8,9 +8,18 @@ const CIRC = 2 * Math.PI * R
 const shown = ref(0)
 const dash = ref(0)
 let raf = 0
+/** 多实例渐变 ID 防冲突 */
+const uid = `ringGrad-${Math.random().toString(36).slice(2, 8)}`
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function animate(target: number): void {
   cancelAnimationFrame(raf)
+  if (reducedMotion) {
+    shown.value = target
+    dash.value = CIRC * Math.max(0, Math.min(1, target / props.max))
+    return
+  }
   const from = shown.value
   const t0 = performance.now()
   const dur = 900
@@ -27,6 +36,7 @@ function animate(target: number): void {
 
 onMounted(() => animate(props.value))
 watch(() => props.value, (v) => animate(v))
+onBeforeUnmount(() => cancelAnimationFrame(raf))
 </script>
 
 <template>
@@ -35,11 +45,11 @@ watch(() => props.value, (v) => animate(v))
       <circle cx="65" cy="65" :r="R" fill="none" stroke="var(--bar)" stroke-width="10" />
       <circle
         cx="65" cy="65" :r="R" fill="none"
-        stroke="url(#ringGrad)" stroke-width="10" stroke-linecap="round"
+        :stroke="`url(#${uid})`" stroke-width="10" stroke-linecap="round"
         :stroke-dasharray="`${dash} ${CIRC}`" transform="rotate(-90 65 65)"
       />
       <defs>
-        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient :id="uid" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#5eead4" />
           <stop offset="100%" stop-color="#e8c473" />
         </linearGradient>

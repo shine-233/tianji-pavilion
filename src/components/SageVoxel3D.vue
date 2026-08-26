@@ -302,4 +302,7 @@ onBeforeUnmount(() => {
   pointer-events: none;
   white-space: nowrap;
 }
+@media (max-width: 560px) {
+  .sv-stage { height: 264px; }
+}
 </style>

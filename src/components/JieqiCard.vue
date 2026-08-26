@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * 今日节气牌：从 lunar-javascript 取当前节气与农历，翻牌入场。
- * 纯展示组件，任何页面可挂。
+ * 点击可翻回背面再翻回来；键盘同样可操作。
  */
 import { computed, onMounted, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
@@ -20,6 +20,11 @@ const ELE_OF_JQ: Record<string, string> = {
 }
 
 const ele = computed(() => ELE_OF_JQ[jieqi.value] ?? '')
+
+function flipCard(): void {
+  flipped.value = !flipped.value
+  sfx.flip()
+}
 
 onMounted(() => {
   const lunar = Solar.fromDate(new Date()).getLunar()
@@ -58,15 +63,19 @@ onMounted(() => {
   jqDays.value = Math.floor((now - prevTime) / 86400000)
   lunarText.value = `${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`
 
-  window.setTimeout(() => {
-    flipped.value = true
-    sfx.flip()
-  }, 500 + Math.random() * 600)
+  window.setTimeout(() => (flipped.value = true), 500 + Math.random() * 600)
 })
 </script>
 
 <template>
-  <div v-if="jieqi" class="jq-card" :class="{ flipped }" @click="sfx.pop()">
+  <div
+    v-if="jieqi"
+    class="jq-card" :class="{ flipped }"
+    role="button" tabindex="0" aria-label="今日节气牌，点按翻面"
+    @click="flipCard"
+    @keydown.enter.prevent="flipCard"
+    @keydown.space.prevent="flipCard"
+  >
     <div class="jq-face front">
       <span class="jq-label">今日节气</span>
       <span class="jq-dot">✦</span>
@@ -113,4 +122,5 @@ onMounted(() => {
 .jq-card.flipped .back { transform: rotateY(360deg); }
 .jq-name { font-family: var(--cute); font-size: 1.5rem; color: var(--gold-bright); text-shadow: 0 0 16px rgba(232,196,115,0.45); }
 .jq-ele { font-size: 0.85rem; }
+.jq-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 16px; }
 </style>

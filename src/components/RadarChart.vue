@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sfx } from '../lib/sfx'
 
 export interface RadarItem { name: string; score: number; max: number }
@@ -12,9 +12,15 @@ const R = 105
 const progress = ref(0)
 const hover = ref<number | null>(null)
 let raf = 0
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function animateTo(target: number): void {
   cancelAnimationFrame(raf)
+  if (reducedMotion) {
+    progress.value = target
+    return
+  }
   const from = progress.value
   const t0 = performance.now()
   const step = (t: number): void => {
@@ -27,6 +33,7 @@ function animateTo(target: number): void {
 }
 onMounted(() => animateTo(1))
 watch(() => props.items, () => { progress.value = 0.05; animateTo(1) })
+onBeforeUnmount(() => cancelAnimationFrame(raf))
 
 const N = computed(() => props.items.length)
 

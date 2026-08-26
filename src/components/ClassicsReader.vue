@@ -87,9 +87,9 @@ function go(delta: number): void {
   sfx.tick()
 }
 
-/** 术语高亮：把命理关键词描金 */
+/** 术语高亮：把命理关键词描金（全量词库，长词优先避免截断匹配） */
 const TERM_RE = new RegExp(
-  `(${Object.keys(GLOSSARY).sort((a, b) => b.length - a.length).slice(0, 60).join('|')})`,
+  `(${Object.keys(GLOSSARY).sort((a, b) => b.length - a.length).join('|')})`,
   'g',
 )
 const highlighted = computed(() => {
@@ -107,11 +107,11 @@ const highlighted = computed(() => {
       </select>
       <span v-if="chapters.length" class="note">共 {{ chapters.length }} 段</span>
       <span class="spacer"></span>
-      <button class="ghost mini" :disabled="highlight === false" @click="highlight = !highlight; sfx.blip()">
+      <button class="ghost mini" :class="{ off: !highlight }" @click="highlight = !highlight; sfx.blip()">
         {{ highlight ? '✨ 高亮开' : '高亮关' }}
       </button>
-      <button class="ghost mini" @click="fontSize = Math.max(13, fontSize - 1); sfx.tick()">A-</button>
-      <button class="ghost mini" @click="fontSize = Math.min(26, fontSize + 1); sfx.tick()">A+</button>
+      <button class="ghost mini" :disabled="fontSize <= 13" @click="fontSize = Math.max(13, fontSize - 1); sfx.tick()">A-</button>
+      <button class="ghost mini" :disabled="fontSize >= 26" @click="fontSize = Math.min(26, fontSize + 1); sfx.tick()">A+</button>
     </div>
 
     <p v-if="loading" class="sub">📜 从藏经阁搬书…</p>
@@ -119,7 +119,7 @@ const highlighted = computed(() => {
 
     <template v-else>
       <h3 class="ch-title">{{ cur.title }}</h3>
-      <article class="body" :style="{ fontSize: fontSize + 'px' }">
+      <article class="body" tabindex="0" :style="{ fontSize: fontSize + 'px' }">
         <template v-for="(seg, i) in (highlight ? highlighted : cur.body.split(TERM_RE).map((t) => ({ text: t, term: null })))" :key="i">
           <mark v-if="seg.term" class="term-hit">{{ seg.text }}</mark>
           <template v-else>{{ seg.text }}</template>
@@ -131,7 +131,7 @@ const highlighted = computed(() => {
         <span class="note">{{ chapter + 1 }} / {{ chapters.length }}</span>
         <button class="ghost" :disabled="chapter >= chapters.length - 1" @click="go(1)">下一段 →</button>
       </div>
-      <p class="note">金色词为术语通典收录词条——点右上角 ⌘ 跳转可查释义。</p>
+      <p class="note">金色词收录在术语通典里，把鼠标悬上去或点一下就能看释义。</p>
     </template>
   </div>
 </template>
@@ -160,6 +160,8 @@ const highlighted = computed(() => {
   padding: 16px 18px;
   white-space: pre-wrap;
 }
+.body:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.mini.off { color: var(--dim); }
 .term-hit {
   background: rgba(var(--acc-rgb), 0.16);
   color: var(--gold-bright);

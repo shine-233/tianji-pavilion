@@ -9,24 +9,29 @@ function onScroll(): void {
 }
 function top(): void {
   sfx.toggle()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
 }
 
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
 onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
   <transition name="fab-pop">
-    <button v-if="show" class="to-top" title="回到顶部" @click="top()">☝</button>
+    <button v-if="show" class="to-top" title="回到顶部" aria-label="回到顶部" @click="top()">☝</button>
   </transition>
 </template>
 
 <style scoped>
+/* 常驻道长吉祥物占了右下角，回顶按钮放左下角互不打架 */
 .to-top {
   position: fixed;
-  right: 20px;
-  bottom: 96px;
+  left: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
   z-index: 1100;
   width: 42px;
   height: 42px;
@@ -39,6 +44,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 .fab-pop-leave-active { transition: all 0.2s ease; }
 .fab-pop-enter-from, .fab-pop-leave-to { opacity: 0; transform: translateY(14px) scale(0.8); }
 @media (max-width: 600px) {
-  .to-top { right: 10px; bottom: 88px; }
+  .to-top { left: 10px; bottom: calc(14px + env(safe-area-inset-bottom)); }
 }
 </style>

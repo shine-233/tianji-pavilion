@@ -27,6 +27,43 @@ const history = ref<Array<{ sign: Sign; q: string; ts: number }>>([])
 
 const tierStyle = computed(() => TIER_STYLE[shown.value.tier])
 
+/** 集签册：抽到过的签存进浏览器，凑齐全套 */
+const COLLECT_KEY = 'bs-sign-collected'
+function loadCollected(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem(COLLECT_KEY) ?? '[]') as number[]
+  } catch {
+    return []
+  }
+}
+const collected = ref<number[]>(loadCollected())
+const collectedSet = computed(() => new Set(collected.value))
+function markCollected(no: number): void {
+  if (!collected.value.includes(no)) {
+    collected.value = [...collected.value, no]
+    try {
+      localStorage.setItem(COLLECT_KEY, JSON.stringify(collected.value))
+    } catch { /* noop */ }
+  }
+}
+
+/** 签卡来源：今日 / 随手 / 从册子里回看 */
+type PickKind = 'daily' | 'random' | 'album'
+const pickKind = ref<PickKind>('daily')
+const kindLabel = computed(() =>
+  pickKind.value === 'random' ? '随手签' : pickKind.value === 'album' ? '册中回看' : '今日首签',
+)
+
+function openFromAlbum(no: number): void {
+  if (!collectedSet.value.has(no)) return
+  const s = ALL_SIGNS.find((x) => x.no === no)
+  if (!s) return
+  sfx.flip()
+  shown.value = s
+  pickKind.value = 'album'
+  revealed.value = true
+}
+
 /** 生成式卦印：由签号决定六根爻的阴阳，每支签一枚独一无二的印章 */
 const sealBars = computed(() => {
   const no = shown.value.no
@@ -55,6 +92,8 @@ function shakeTube(): void {
       stickFly.value = false
       shown.value = ALL_SIGNS[hashStr(String(Date.now())) % ALL_SIGNS.length]!
       isRandomPick.value = true
+      pickKind.value = 'random'
+      markCollected(shown.value.no)
       revealed.value = true
       sfx.ding()
       sparkle(window.innerWidth / 2, window.innerHeight * 0.42, 14)
@@ -80,6 +119,8 @@ function showToday(): void {
   sfx.flip()
   shown.value = todaySign
   isRandomPick.value = false
+  pickKind.value = 'daily'
+  markCollected(todaySign.no)
   revealed.value = true
 }
 
@@ -155,7 +196,7 @@ function backToTube(): void {
       <div v-else class="sign-wrap">
         <article class="sign-card" :class="{ flipping: true }">
           <header class="head">
-            <span class="no">{{ isRandomPick ? '随手签' : '今日首签' }} · 第 {{ shown.no }} 签</span>
+            <span class="no">{{ kindLabel }} · 第 {{ shown.no }} 签</span>
             <b class="tier" :style="{ color: tierStyle.color }">{{ tierStyle.label }}</b>
           </header>
           <svg class="seal" viewBox="0 0 32 52" aria-hidden="true">
@@ -184,6 +225,28 @@ function backToTube(): void {
     <section class="card v-reveal">
       <h2>小六壬 · 掐指速断</h2>
       <XiaoLiuren />
+    </section>
+
+    <!-- 集签册：抽到过的签点亮入册 -->
+    <section v-reveal class="card">
+      <h2>集签册 · 已集 {{ collected.length }} / {{ ALL_SIGNS.length }}</h2>
+      <div class="album">
+        <button
+          v-for="s in ALL_SIGNS"
+          :key="s.no"
+          class="slot"
+          :class="{
+            got: collectedSet.has(s.no),
+            today: s.no === todaySign.no,
+            on: revealed && shown.no === s.no,
+          }"
+          :title="collectedSet.has(s.no) ? `第${s.no}签 · ${s.tier}` : '尚未抽到'"
+          @click="openFromAlbum(s.no)"
+        >
+          <b>{{ collectedSet.has(s.no) ? s.no : '·' }}</b>
+        </button>
+      </div>
+      <p class="note">抽到过的签自动入册，点亮的随时翻出来重读；今日首签点开即入册。什么时候集齐六十支，梅雪大概会请你喝茶。</p>
     </section>
 
     <section v-if="history.length > 1" class="card v-reveal">
@@ -362,6 +425,30 @@ function backToTube(): void {
 .asked { margin-top: 8px; }
 
 .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+
+.album { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 7px; margin-top: 10px; }
+.slot {
+  aspect-ratio: 3 / 4;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: rgba(127, 127, 127, 0.05);
+  color: var(--dim);
+  font-family: var(--cute);
+  font-size: 0.86rem;
+  cursor: default;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.slot.got {
+  border-color: rgba(232, 196, 115, 0.55);
+  color: var(--gold-bright);
+  background: linear-gradient(160deg, var(--card-2), var(--card));
+  box-shadow: inset 0 0 12px var(--glow);
+  cursor: pointer;
+}
+.slot.got:hover { transform: translateY(-4px) rotate(-2deg); }
+.slot.today { border-style: dashed; border-color: var(--teal); }
+.slot.on { transform: scale(1.08); border-color: var(--gold-bright); z-index: 2; }
 .dd span { padding: 9px 12px; border-radius: 9px; font-size: 0.82rem; line-height: 1.7; }
 .dd b { display: inline-block; margin-right: 8px; font-family: var(--cute); font-size: 0.9rem; }
 .do { background: rgba(94, 234, 212, 0.08); border: 1px solid rgba(94, 234, 212, 0.25); }

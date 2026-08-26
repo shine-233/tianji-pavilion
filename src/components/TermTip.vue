@@ -6,6 +6,8 @@ import { sfx } from '../lib/sfx'
 const props = defineProps<{ k: string }>()
 const open = ref(false)
 let hideTimer = 0
+/** 触屏上 mouseenter 会先于 click 合成触发，用指针类型拦一下防"闪现即关" */
+let lastPointerType = 'mouse'
 
 function enter(): void {
   window.clearTimeout(hideTimer)
@@ -15,17 +17,31 @@ function enter(): void {
 function leave(): void {
   hideTimer = window.setTimeout(() => (open.value = false), 120)
 }
-function tap(e: Event): void {
-  e.preventDefault()
-  e.stopPropagation()
+function tap(): void {
+  if (lastPointerType === 'touch' && open.value) {
+    open.value = false
+    return
+  }
   if (!open.value) sfx.blip()
   open.value = !open.value
+}
+function onPointDown(e: PointerEvent): void {
+  lastPointerType = e.pointerType
 }
 </script>
 
 <template>
   <span class="term-wrap">
-    <span class="term" @mouseenter="enter" @mouseleave="leave" @click="tap">{{ props.k }}</span>
+    <span
+      class="term" role="button" tabindex="0"
+      :aria-expanded="open"
+      @pointerdown="onPointDown"
+      @mouseenter="enter" @mouseleave="leave"
+      @click="tap"
+      @keydown.enter.prevent="tap"
+      @keydown.space.prevent="tap"
+      @keydown.esc="open = false"
+    >{{ props.k }}</span>
     <transition name="term-pop">
       <span v-if="open && lookup(props.k)" class="tip" @mouseenter="enter" @mouseleave="leave">
         <i class="cat">{{ { 基础: '基础', 十神: '十神', 格局: '格局', 神煞: '神煞', 紫微: '紫微' }[lookup(props.k)!.cat] }}</i>
@@ -46,6 +62,7 @@ function tap(e: Event): void {
   transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 .term:hover { text-shadow: 0 0 12px rgba(232, 196, 115, 0.6); }
+.term:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
 
 .tip {
   position: absolute;

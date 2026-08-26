@@ -29,6 +29,12 @@
   --bar-bg: var(--bar);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   --topbar-bg: rgba(11, 13, 18, 0.82);
+  /* 全站通用氛围变量：辉光色 / 卡片悬停描边 / 主按钮渐变对与墨字 */
+  --glow: rgba(232, 196, 115, 0.55);
+  --card-glow: rgba(232, 196, 115, 0.45);
+  --btn-a: #e8c473;
+  --btn-b: #caa14f;
+  --btn-ink: #201804;
   --serif: 'Noto Serif SC', 'Songti SC', SimSun, serif;
   --cute: 'ZCOOL KuaiLe', var(--serif);
   --par-x: 0;
@@ -62,6 +68,11 @@
   --bar-bg: #dbe3ea;
   --shadow: 0 10px 26px rgba(42, 54, 68, 0.12);
   --topbar-bg: rgba(238, 241, 244, 0.88);
+  --glow: rgba(58, 110, 165, 0.35);
+  --card-glow: rgba(58, 110, 165, 0.4);
+  --btn-a: #3a6ea5;
+  --btn-b: #2d5a8a;
+  --btn-ink: #ffffff;
 }
 
 /* ---- 朱砂符箓：深绛底 · 朱砂主色 ---- */
@@ -91,6 +102,11 @@
   --bar-bg: #40232a;
   --shadow: 0 10px 30px rgba(20, 6, 8, 0.5);
   --topbar-bg: rgba(24, 11, 13, 0.85);
+  --glow: rgba(255, 122, 92, 0.5);
+  --card-glow: rgba(255, 122, 92, 0.45);
+  --btn-a: #ff7a5c;
+  --btn-b: #d95a40;
+  --btn-ink: #2a1008;
 }
 
 /* ---- 松烟水墨：宣纸浅色 · 墨色主调 ---- */
@@ -120,6 +136,11 @@
   --bar-bg: #dedbd0;
   --shadow: 0 10px 24px rgba(58, 58, 52, 0.14);
   --topbar-bg: rgba(240, 238, 230, 0.9);
+  --glow: rgba(74, 85, 104, 0.32);
+  --card-glow: rgba(74, 85, 104, 0.4);
+  --btn-a: #4a5568;
+  --btn-b: #333d4d;
+  --btn-ink: #f6f4ec;
 }
 
 /* ---- 紫霄星穹：深紫底 · 霓虹辅色 ---- */
@@ -149,6 +170,11 @@
   --bar-bg: #2c2350;
   --shadow: 0 10px 30px rgba(8, 4, 20, 0.5);
   --topbar-bg: rgba(14, 10, 29, 0.85);
+  --glow: rgba(201, 176, 255, 0.5);
+  --card-glow: rgba(201, 176, 255, 0.45);
+  --btn-a: #c9b0ff;
+  --btn-b: #9d7fe0;
+  --btn-ink: #1c1233;
 }
 
 /* ---- 青梅烟雨：墨绿底 · 梅黄点染 ---- */
@@ -178,6 +204,11 @@
   --bar-bg: #22382a;
   --shadow: 0 10px 30px rgba(4, 10, 6, 0.45);
   --topbar-bg: rgba(11, 19, 14, 0.85);
+  --glow: rgba(255, 215, 110, 0.5);
+  --card-glow: rgba(159, 216, 187, 0.45);
+  --btn-a: #ffd76e;
+  --btn-b: #e0b84e;
+  --btn-ink: #1d1608;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -557,3 +588,31 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) {
   .theme-fx, [data-theme] .theme-fx::before, [data-theme] .theme-fx::after { animation: none !important; }
 }
+
+/* 轻量 toast */
+.toast-host {
+  position: fixed;
+  top: calc(64px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast-item {
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--gold);
+  color: var(--fg);
+  font-family: var(--cute);
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  max-width: min(86vw, 420px);
+  text-align: center;
+}
+.toast-item.out { opacity: 0; transform: translateY(-8px); transition: all 0.24s ease; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }

@@ -17,6 +17,7 @@ import { clearHistory, HistoryItem, loadHistory, saveHistory } from '../lib/hist
 import { loadPool, percentile, poolReady, runChart } from '../lib/runtime'
 import { sfx } from '../lib/sfx'
 import { Solar } from 'lunar-javascript'
+import { toast } from '../lib/toast'
 
 const dt = ref('2002-10-26')
 const tm = ref('10:15')
@@ -27,6 +28,8 @@ const poolN = ref(0)
 const selftesting = ref(false)
 const selftestOut = ref<string>('')
 const historyList = ref<HistoryItem[]>(loadHistory())
+/** 三维山河图选中的大运步序：与下方时间轴双向联动 */
+const voyageSel = ref<number | null>(null)
 
 onMounted(async () => {
   try {
@@ -40,12 +43,13 @@ onMounted(async () => {
 function calc(): void {
   const dtp = dt.value.split('-').map(Number)
   const tmp = tm.value.split(':').map(Number)
-  if (dtp.length < 3 || tmp.length < 2) return alert('请填写完整日期与时间')
-  if (tmp[0] === 23) return alert('晚子时(23:00后)因换日流派争议暂不支持')
-  if (gender.value === 0) return alert('女命百分位池建设中，暂只支持男命')
+  if (dtp.length < 3 || tmp.length < 2) return toast('日期和时间都填一下再排')
+  if (tmp[0] === 23) return toast('晚子时（23 点后）涉及换日流派之争，暂不支持，见谅')
+  if (gender.value === 0) return toast('女命百分位池还在攒样本，目前只能算男命盘')
   sfx.gong()
   result.value = runChart(dtp[0]!, dtp[1]!, dtp[2]!, tmp[0]!, tmp[1]!, gender.value)
   openBlock.value = 0
+  voyageSel.value = null
   window.dispatchEvent(new CustomEvent('sage-say', { detail: `盘面出来了。日主${result.value.dmg}，先看七维雷达再听我细说。` }))
 
   const p = percentile(result.value.tot)
@@ -112,8 +116,8 @@ const blocks = computed(() => {
   ]
 })
 
-const radarItems = computed(() =>
-  blocks.value.map((b) => ({ name: b.name, score: b.score, max: b.max })),
+const wxColor: Record<string, string> = { 木: 'wood', 火: 'fire', 土: 'earth', 金: 'metal', 水: 'water' }
+const radarItems = computed(() =>  blocks.value.map((b) => ({ name: b.name, score: b.score, max: b.max })),
 )
 
 const pctlText = computed(() => {
@@ -227,6 +231,20 @@ function lunarInfo(): string {
         </div>
       </div>
 
+      <div v-reveal class="card">
+        <h2>五行气数 · 八个字各归各行</h2>
+        <div class="wx-bars">
+          <div v-for="e in (['木', '火', '土', '金', '水'] as const)" :key="e" class="wx-row">
+            <span class="cute" :class="`ele-${e}`">{{ e }}</span>
+            <div class="bar wx-bar">
+              <i :style="{ width: ((result.cnt[e] ?? 0) / 8) * 100 + '%', background: `var(--${wxColor[e]})` }" />
+            </div>
+            <b class="wx-n">{{ result.cnt[e] ?? 0 }} 字</b>
+          </div>
+        </div>
+        <p class="note">八个字里五行各占几份，一眼看出哪里厚、哪里薄。缺的那行未必是坏事，但通常是命里要补的功课。</p>
+      </div>
+
       <div class="card">
         <h2>分项明细 · 点击展开说明</h2>
         <div v-for="(b, i) in blocks" :key="b.name" class="block-row" @click="openBlock = openBlock === i ? null : i; sfx.blip()">
@@ -242,7 +260,7 @@ function lunarInfo(): string {
 
       <div class="card">
         <h2>大运时间轴 · 未来 25 年评估窗口</h2>
-        <DayunTimeline :items="result.dlist" />
+        <DayunTimeline :items="result.dlist" :active-index="voyageSel" />
       </div>
 
       <div class="card" v-reveal>
@@ -261,7 +279,10 @@ function lunarInfo(): string {
           十年一步化作连绵山峦：山势越高这步运越顺，金色光点正沿你的运途巡回。
           点击任意山峰，下方时间轴会同步定位到那十年。
         </p>
-        <DayunVoyage3D :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))" />
+        <DayunVoyage3D
+          :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))"
+          @select="(i: number) => (voyageSel = voyageSel === i ? null : i)"
+        />
       </div>
 
       <div class="card">
@@ -295,6 +316,14 @@ function lunarInfo(): string {
 </template>
 
 <style scoped>
+.wx-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.wx-row { display: grid; grid-template-columns: 1.6em 1fr 3.2em; align-items: center; gap: 12px; }
+.wx-row .cute { font-size: 1.05rem; }
+.wx-bar { margin: 0; height: 12px; border-radius: 6px; background: var(--bar-bg); }
+.wx-bar i { transform-origin: left; animation: wxgrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes wxgrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.wx-n { font-size: 0.8rem; color: var(--dim); text-align: right; }
+
 .form-row { display: grid; grid-template-columns: 1.4fr 1fr 0.7fr auto; gap: 12px; align-items: end; }
 .btn-cell { display: flex; gap: 8px; padding-bottom: 1px; }
 .presets { margin: 12px 0 8px; font-size: 0.82rem; color: var(--dim); }

@@ -1,12 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { DayunItem } from '../lib/engine'
 import { sfx } from '../lib/sfx'
 
-const props = defineProps<{ items: DayunItem[] }>()
+const props = defineProps<{ items: DayunItem[]; activeIndex?: number | null }>()
 const shown = ref(false)
 const active = ref<number | null>(null)
-onMounted(() => window.setTimeout(() => (shown.value = true), 200))
+let showTimer = 0
+onMounted(() => {
+  showTimer = window.setTimeout(() => (shown.value = true), 200)
+})
+onBeforeUnmount(() => window.clearTimeout(showTimer))
+
+/** 三维山河图点选山峰时同步定位到那十年 */
+watch(() => props.activeIndex, (i) => {
+  if (typeof i === 'number' && i >= 0) active.value = i
+})
 
 function colorOf(fin: number): string {
   return fin >= 0.6 ? 'var(--teal)' : fin >= 0.3 ? 'var(--amber)' : '#f87171'
@@ -25,7 +34,10 @@ function pick(i: number): void {
         v-for="(dy, i) in props.items" :key="i"
         class="tl-node" :class="{ on: shown, sel: active === i }"
         :style="{ transitionDelay: `${i * 90}ms` }"
+        role="button" tabindex="0"
         @click="pick(i)"
+        @keydown.enter.prevent="pick(i)"
+        @keydown.space.prevent="pick(i)"
       >
         <div class="gz" :style="{ color: colorOf(dy.fin) }">{{ dy.gz }}</div>
         <div class="win">{{ dy.window }}</div>
@@ -36,7 +48,7 @@ function pick(i: number): void {
     <transition name="pop">
       <div v-if="active !== null && props.items[active]" class="detail">
         {{ props.items[active]!.gz }} 大运 · {{ props.items[active]!.window }} ·
-        亲和度 {{ props.items[active]!.fin.toFixed(2) }} ——
+        亲和度 {{ props.items[active]!.fin.toFixed(2)}}，
         {{ props.items[active]!.fin >= 0.6 ? '顺风行舟，宜进取开拓' : props.items[active]!.fin >= 0.3 ? '平缓守成，稳中求进' : '逆水寒滩，宜守不宜攻' }}
       </div>
     </transition>
@@ -57,6 +69,7 @@ function pick(i: number): void {
   padding: 8px 4px;
 }
 .tl-node:hover { background: rgba(255, 255, 255, 0.04); }
+.tl-node:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
 .tl-node.sel { background: rgba(232, 196, 115, 0.08); outline: 1px solid rgba(232, 196, 115, 0.35); }
 .tl-node.on { opacity: 1; transform: none; }
 .tl-line { position: absolute; left: 0; right: 0; top: 58px; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 8%, var(--line) 92%, transparent); }

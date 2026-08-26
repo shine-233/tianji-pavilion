@@ -3,6 +3,8 @@ import type { Directive } from 'vue'
 /** v-tilt：鼠标跟随 3D 倾斜（建模感互动），可选最大角度 */
 export const vTilt: Directive<HTMLElement, number | undefined> = {
   mounted(el, binding) {
+    // 触屏跳过：模拟 mousemove 会让卡片点一下就歪着卡住，且干扰滚动
+    if (window.matchMedia('(pointer: coarse)').matches) return
     const max = binding.value ?? 9
     el.style.transition = 'transform 0.18s ease-out'
     el.style.willChange = 'transform'

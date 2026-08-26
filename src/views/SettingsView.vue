@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { applyTheme, THEMES, themeId } from '../data/themes'
 import { isSoundOn, sfx, toggleSound } from '../lib/sfx'
 import { clearHistory } from '../lib/history'
@@ -7,8 +7,27 @@ import { clearRecords, loadRecords } from '../lib/records'
 
 const current = themeId
 const soundOn = ref(isSoundOn())
-const recordCount = ref(loadRecords().length)
+const records = ref(loadRecords())
 const cleared = ref(false)
+
+const KIND_META: Record<string, { icon: string; label: string }> = {
+  liuyao: { icon: '🪙', label: '六爻' },
+  meihua: { icon: '❄', label: '梅花' },
+  sign: { icon: '🎋', label: '灵签' },
+}
+
+function fmtTime(ts: number): string {
+  const d = new Date(ts)
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** 最近在前面，最多展示 12 条 */
+const recent = computed(() => records.value.slice(0, 12))
+
+function refresh(): void {
+  records.value = loadRecords()
+}
 
 function pick(id: string): void {
   applyTheme(id)
@@ -23,7 +42,7 @@ function doClear(): void {
   if (!window.confirm('确定清空全部占卜记录？这一步没法撤销。')) return
   clearRecords()
   clearHistory()
-  recordCount.value = 0
+  refresh()
   cleared.value = true
   window.setTimeout(() => (cleared.value = false), 2200)
 }
@@ -64,15 +83,28 @@ function doClear(): void {
     </section>
 
     <section v-reveal="100" class="card">
-      <h2>声音与记录</h2>
-      <div class="row-actions">
+      <h2>占卜手账 · {{ records.length }} 条</h2>
+      <div v-if="records.length === 0" class="sub empty-line">
+        手账还是空的。去摇一卦、抽支签，回来就有得翻了。
+      </div>
+      <ul v-else class="ledger">
+        <li v-for="r in recent" :key="r.ts" class="ledger-row" :style="{ '--i': 0 }">
+          <span class="lg-icon">{{ KIND_META[r.kind]?.icon ?? '☯' }}</span>
+          <span class="lg-main">
+            <b>{{ r.title }}</b>
+            <small>{{ r.detail }}</small>
+          </span>
+          <span class="lg-time">{{ fmtTime(r.ts) }}</span>
+        </li>
+      </ul>
+      <div class="row-actions" style="margin-top: 12px">
         <button class="ghost" @click="onToggleSound">{{ soundOn ? '🔊 音效已开' : '🔇 音效已关' }}</button>
-        <button class="ghost danger" @click="doClear">🗑 清空全部占卜记录（{{ recordCount }} 条）</button>
+        <button class="ghost danger" @click="doClear">🗑 清空全部记录</button>
         <transition name="pop">
           <span v-if="cleared" class="tag teal">已清空</span>
         </transition>
       </div>
-      <p class="note">占卜记录只写在你这台电脑的浏览器里（localStorage），清了就是真没了。</p>
+      <p class="note">手账只写在这台电脑的浏览器里（localStorage），清了就是真没了。</p>
     </section>
 
     <section v-reveal="180" class="card">
@@ -148,6 +180,26 @@ function doClear(): void {
 
 .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .danger:hover { border-color: var(--red); color: var(--red); }
+
+.ledger { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.ledger-row {
+  display: grid;
+  grid-template-columns: 2em 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(127, 127, 127, 0.05);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.ledger-row:hover { border-color: var(--card-glow); transform: translateX(4px); }
+.lg-icon { font-size: 1.1rem; }
+.lg-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lg-main b { font-family: var(--cute); font-weight: normal; font-size: 0.92rem; }
+.lg-main small { color: var(--dim); font-size: 0.74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg-time { color: var(--dim); font-size: 0.72rem; white-space: nowrap; }
+.empty-line { padding: 8px 0; }
 
 .pop-enter-active, .pop-leave-active { transition: all 0.3s ease; }
 .pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.8); }

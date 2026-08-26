@@ -191,7 +191,13 @@ const libRows = computed(() => {
           <span class="tag">旬空 {{ chart.xunkong.join('、') }}</span>
         </div>
         <transition-group name="row-in" tag="div" class="gua-board">
-          <div v-for="l in [...chart.lines].reverse()" :key="l.pos" class="gua-row" :style="{ '--i': 6 - l.pos }">
+          <div
+            v-for="l in [...chart.lines].reverse()"
+            :key="l.pos"
+            class="gua-row"
+            :class="{ hit: l.liuqin === verdict.v.liuqin }"
+            :style="{ '--i': 6 - l.pos }"
+          >
             <span class="beast">{{ l.beast }}</span>
             <span class="lq">{{ l.liuqin }}</span>
             <span class="gz ele-text" :data-e="l.element">{{ l.najia }}</span>
@@ -333,6 +339,16 @@ const libRows = computed(() => {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   font-size: 0.88rem;
+}
+.gua-row.hit {
+  background: var(--glow);
+  border-left: 3px solid var(--gold-bright);
+  animation: hit-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.5s;
+}
+@keyframes hit-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
 }
 .row-in-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--i) * 0.09s); }
 .row-in-enter-from { opacity: 0; transform: translateY(-14px); }
