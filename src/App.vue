@@ -51,6 +51,7 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
       { to: '/ziwei', label: '紫微命盘', glyph: '紫' },
       { to: '/liuyao', label: '六爻纳甲', glyph: '爻' },
       { to: '/meihua', label: '梅花易数', glyph: '梅' },
+      { to: '/shuzi', label: '数字能量', glyph: '数' },
     ],
   },
   {
@@ -59,6 +60,7 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
       { to: '/daily', label: '每日一签', glyph: '签' },
       { to: '/almanac', label: '今日黄历', glyph: '历' },
       { to: '/xiaoliuren', label: '小六壬', glyph: '掌' },
+      { to: '/jiaobei', label: '杯筊问事', glyph: '筊' },
     ],
   },
   {

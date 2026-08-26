@@ -351,6 +351,8 @@ function arcPath(i: number, j: number, off: number): string {
 .m-title { font-family: var(--cute); color: var(--gold-bright); font-size: 1.08rem; margin-bottom: 7px; }
 .m-go { position: absolute; right: 16px; bottom: 12px; color: var(--teal); font-size: 0.78rem; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease; transform: translateX(-6px); }
 .module-card:hover .m-go { opacity: 1; transform: none; }
+.module-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.module-card:focus-visible .m-go { opacity: 1; transform: none; }
 
 .center-note { text-align: center; margin-top: 8px; }
 
