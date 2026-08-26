@@ -1,4 +1,4 @@
-/** 六爻装卦引擎（卦库速览与独立摇卦用）：京房八宫查表实现，与主模块 buildChart 体系并存 */
+/** 六爻装卦引擎：京房八宫查表实现。全站唯一的纳甲/六亲/六兽表，主引擎 buildChart 也走这里 */
 import { ELE_B } from './constants'
 import type { Element } from './constants'
 
@@ -83,6 +83,8 @@ export interface InstalledGua {
   name: string
   gong: Trigram
   gongWuxing: Element
+  /** 八宫中的位次 0..7：本宫/一世…游魂/归魂 */
+  idx: number
   yaos: InstalledYao[]
 }
 
@@ -100,7 +102,7 @@ function relTo(gongWx: Element, lineWx: Element): string {
   return '克我'
 }
 
-const LIUSHOU_SEQ = ['青龙', '朱雀', '勾陈', '腾蛇', '白虎', '玄武']
+const LIUSHOU_SEQ = ['青龙', '朱雀', '勾陈', '螣蛇', '白虎', '玄武']
 
 function liushouStart(dayGan: string): number {
   if ('甲乙'.includes(dayGan)) return 0
@@ -136,7 +138,12 @@ export function install(bits: string, dayGan: string): InstalledGua {
       ying: Math.abs(i + 1 - shiPos) === 3,
     })
   }
-  return { name: entry.name, gong: entry.gong, gongWuxing, yaos }
+  return { name: entry.name, gong: entry.gong, gongWuxing, idx: entry.idx, yaos }
+}
+
+/** 由六位二进制（自下而上）查卦名，未知卦返回空串 */
+export function nameFromBits(bits: string): string {
+  return GUA_MAP[bits]?.name ?? ''
 }
 
 export type CoinResult = 6 | 7 | 8 | 9
