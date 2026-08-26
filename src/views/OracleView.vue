@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import { hourGods, randomSign, signOfDay, type Sign } from '../data/oracleData'
 import { sfx } from '../lib/sfx'
+import XiaoLiuren from '../components/XiaoLiuren.vue'
 
 const d = new Date()
 const daily = signOfDay(d.getFullYear(), d.getMonth() + 1, d.getDate())
@@ -114,6 +115,11 @@ const gradeClass = computed(() => (drawn.value ? LEVEL_CLASS[drawn.value.level] 
         <p v-if="question.trim()" class="asked sub">所问：「{{ question.trim() }}」</p>
       </div>
     </transition>
+
+    <div class="card">
+      <h2>小六壬 · 掐指速断</h2>
+      <XiaoLiuren />
+    </div>
 
     <div v-if="history.length > 1" class="card">
       <h2>本次所抽</h2>

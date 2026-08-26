@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
 import Palette from './components/Palette.vue'
 import TransitionVeil from './components/TransitionVeil.vue'
+import TalismanEgg from './components/TalismanEgg.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
@@ -40,6 +41,7 @@ const NAV = [
   { to: '/geju', label: '格局辞典', glyph: '⚔' },
   { to: '/rules', label: '规则库', glyph: '⚖' },
   { to: '/cases', label: '案例库', glyph: '🗂' },
+  { to: '/yanyi', label: '演易', glyph: '䷀' },
   { to: '/sages', label: '道长图鉴', glyph: '⛩' },
   { to: '/settings', label: '设置', glyph: '👘' },
 ]
@@ -64,6 +66,9 @@ const ROUTE_SAGE: Record<string, string> = {
   '/sages': 'qingxuan',
 }
 const sageChar = computed(() => ROUTE_SAGE[route.path] ?? 'qingxuan')
+
+/** 切页轻响，让导航有"翻页"的实感 */
+watch(() => route.path, () => sfx.tick())
 
 let lastTrail = 0
 let trailCount = 0
@@ -267,6 +272,7 @@ onBeforeUnmount(() => {
   </div>
 
   <PixelSage :key="sageChar" :char="sageChar" />
+  <TalismanEgg />
 </template>
 
 <style scoped>

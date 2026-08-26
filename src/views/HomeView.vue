@@ -8,6 +8,8 @@ import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
 import YiJiCard from '../components/YiJiCard.vue'
+import InkFluid from '../components/InkFluid.vue'
+import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
 
 const router = useRouter()
