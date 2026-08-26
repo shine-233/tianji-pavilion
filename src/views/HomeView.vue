@@ -8,7 +8,6 @@ import BaguaCompass from '../components/BaguaCompass.vue'
 import GanzhiClock from '../components/GanzhiClock.vue'
 import JieqiCard from '../components/JieqiCard.vue'
 import YiJiCard from '../components/YiJiCard.vue'
-import InkFluid from '../components/InkFluid.vue'
 import ParticleAltar from '../components/ParticleAltar.vue'
 import { sfx } from '../lib/sfx'
 
@@ -88,34 +87,34 @@ const MODULE_TIERS: Array<{ title: string; sub: string; items: ModuleDef[] }> = 
     title: '先算一算 · 三十秒出结果',
     sub: '不填资料不纠结，今天的事今天问',
     items: [
-      { to: '/daily', glyph: '🎋', title: '每日一签', desc: '按日期固定一签，全天不变。附十二时辰吉凶，出门前扫一眼。', tags: ['每日同签', '黄黑道'] },
-      { to: '/almanac', glyph: '📅', title: '今日黄历', desc: '宜忌、吉时、幸运色，老黄历翻新页。当参考，别当圣旨。', tags: ['宜忌', '吉时'] },
-      { to: '/xiaoliuren', glyph: '🖐', title: '小六壬', desc: '心里想事随口报数，指尖点过六宫落定吉凶。诸葛马前课，最快的一种。', tags: ['掐指一算', '报数起课'] },
-      { to: '/oracle', glyph: '❀', title: '轻卜抽签', desc: '摇签筒跪抽一签，配古诗签文。图个心境，也图个彩头。', tags: ['签诗', '仪式感'] },
+      { to: '/daily', glyph: '签', title: '每日一签', desc: '按日期固定一签，全天不变。附十二时辰吉凶，出门前扫一眼。', tags: ['每日同签', '黄黑道'] },
+      { to: '/almanac', glyph: '历', title: '今日黄历', desc: '宜忌、吉时、幸运色，老黄历翻新页。当参考，别当圣旨。', tags: ['宜忌', '吉时'] },
+      { to: '/xiaoliuren', glyph: '掌', title: '小六壬', desc: '心里想事随口报数，指尖点过六宫落定吉凶。诸葛马前课，最快的一种。', tags: ['掐指一算', '报数起课'] },
+      { to: '/oracle', glyph: '卜', title: '轻卜抽签', desc: '摇签筒跪抽一签，配古诗签文。图个心境，也图个彩头。', tags: ['签诗', '仪式感'] },
     ],
   },
   {
     title: '排盘问命 · 正主在这儿',
     sub: '输入生辰，引擎离线全算，规则全部公开',
     items: [
-      { to: '/chart', glyph: '🀄', title: '八字排盘', desc: '四柱翻牌、评分环、七维雷达、大运长河，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
-      { to: '/ziwei', glyph: '✷', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正连线自己画，大限标到每一宫。', tags: ['三方四正', '生年四化'] },
-      { to: '/liuyao', glyph: '⚱', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦、六亲六兽自动排好，附白话用神分析。', tags: ['火珠林法', '京房八宫'] },
-      { to: '/meihua', glyph: '❄', title: '梅花易数', desc: '万物皆可起卦：报两个数、报个时间，体用互变断吉凶。邵雍的老玩法。', tags: ['数字起卦', '体用生克'] },
+      { to: '/chart', glyph: '八', title: '八字排盘', desc: '四柱翻牌、评分环、七维雷达、大运长河，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
+      { to: '/ziwei', glyph: '紫', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正连线自己画，大限标到每一宫。', tags: ['三方四正', '生年四化'] },
+      { to: '/liuyao', glyph: '爻', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦、六亲六兽自动排好，附白话用神分析。', tags: ['火珠林法', '京房八宫'] },
+      { to: '/meihua', glyph: '梅', title: '梅花易数', desc: '万物皆可起卦：报两个数、报个时间，体用互变断吉凶。邵雍的老玩法。', tags: ['数字起卦', '体用生克'] },
     ],
   },
   {
     title: '再逛逛 · 玩点大的',
     sub: '体验区和资料库都在这儿，慢慢翻',
     items: [
-      { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克爆粒子花。', tags: ['Three.js', '辉光后处理'] },
-      { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
-      { to: '/sages', glyph: '⛩', title: '道长图鉴', desc: '观里十位当值女道士的名册，点一下会跟你搭话，还能随缘指派。', tags: ['吉祥物', '彩蛋'] },
-      { to: '/memory', glyph: '🎴', title: '卦象记忆', desc: '八卦翻牌配对小游戏，几步配完，八卦长相顺便记牢。', tags: ['小游戏', '记八卦'] },
-      { to: '/classics', glyph: '📜', title: '典籍语料', desc: '章节检索加主题密度条形图，看看每部古书到底在讲什么。', tags: ['语料库', '主题密度'] },
-      { to: '/geju', glyph: '⚔', title: '格局辞典', desc: '49 个特殊格局，五部书互证，原文书摘和源流年代都在。', tags: ['五书互证', '源流谱系'] },
-      { to: '/rules', glyph: '⚖', title: '规则库', desc: '799 条清洗过的规则，调候速查、女命章法、六亲断语分栏可查。', tags: ['全部公开', '条件-结论'] },
-      { to: '/cases', glyph: '🗂', title: '案例库', desc: '千里命稿 166 例加标注案例 2,037 例，按置信度筛着看。', tags: ['千里命稿', '标注体系'] },
+      { to: '/wuxing', glyph: '五', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克爆粒子花。', tags: ['Three.js', '辉光后处理'] },
+      { to: '/yanyi', glyph: '演', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
+      { to: '/sages', glyph: '鉴', title: '道长图鉴', desc: '观里十位当值女道士的名册，点一下会跟你搭话，还能随缘指派。', tags: ['吉祥物', '彩蛋'] },
+      { to: '/memory', glyph: '忆', title: '卦象记忆', desc: '八卦翻牌配对小游戏，几步配完，八卦长相顺便记牢。', tags: ['小游戏', '记八卦'] },
+      { to: '/classics', glyph: '卷', title: '典籍语料', desc: '章节检索加主题密度条形图，看看每部古书到底在讲什么。', tags: ['语料库', '主题密度'] },
+      { to: '/geju', glyph: '格', title: '格局辞典', desc: '49 个特殊格局，五部书互证，原文书摘和源流年代都在。', tags: ['五书互证', '源流谱系'] },
+      { to: '/rules', glyph: '规', title: '规则库', desc: '799 条清洗过的规则，调候速查、女命章法、六亲断语分栏可查。', tags: ['全部公开', '条件-结论'] },
+      { to: '/cases', glyph: '案', title: '案例库', desc: '千里命稿 166 例加标注案例 2,037 例，按置信度筛着看。', tags: ['千里命稿', '标注体系'] },
     ],
   },
 ]
@@ -149,21 +148,19 @@ function arcPath(i: number, j: number, off: number): string {
 
 <template>
   <main class="page">
-    <InkFluid />
     <section class="hero card hoverable">
       <ParticleAltar />
       <div class="hero-left" @mouseleave="heroGlowOff">
-        <h1 ref="heroTitle" @mousemove="heroGlow">把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
-        <h1 class="reveal-ghost" aria-hidden="true" :style="{ '--mx': `${gx}px`, '--my': `${gy}px` }">把命理摊开来<br />做成看得见规则的样子</h1>
-        <h1 class="reveal-ghost" aria-hidden="true" :style="{ '--mx': `${gx}px`, '--my': `${gy}px` }">把命理摊开来<br />做成看得见规则的样子</h1>
+         <h1 ref="heroTitle" @mousemove="heroGlow">把命理摊开来<br />做成<b class="gold-t">看得见规则</b>的样子</h1>
+         <h1 class="reveal-ghost" aria-hidden="true" :style="{ '--mx': `${gx}px`, '--my': `${gy}px` }">把命理摊开来<br />做成看得见规则的样子</h1>
         <p class="sub hero-sub">
           子平八字 × 紫微斗数的量化研究工程。权重公开、数据公开、连引擎算得不准的地方也公开——
           每一分都能复核，每条断语都能溯源。
         </p>
         <div class="hero-btns">
           <button v-magnetic @click="go('/chart')">☯ 立即排盘</button>
-          <button v-magnetic="0.22" class="ghost" @click="go('/wuxing')">🌌 五行 3D 天穹</button>
-          <button v-magnetic="0.22" class="ghost" @click="go('/liuyao')">⚱ 摇一卦</button>
+          <button v-magnetic="0.22" class="ghost" @click="go('/wuxing')">五 五行 3D 天穹</button>
+          <button v-magnetic="0.22" class="ghost" @click="go('/liuyao')">爻 摇一卦</button>
         </div>
       </div>
       <div class="hero-wheel" aria-hidden="true">
@@ -318,7 +315,7 @@ function arcPath(i: number, j: number, off: number): string {
   position: absolute;
   right: -6px;
   bottom: -6px;
-  width: 74px;
+  width: 78px;
   image-rendering: pixelated;
   animation: sage-float 4.2s ease-in-out infinite;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));

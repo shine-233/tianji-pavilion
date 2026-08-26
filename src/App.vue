@@ -401,7 +401,19 @@ onBeforeUnmount(() => {
 }
 .nav-link:hover { color: var(--gold-bright); background: rgba(232, 196, 115, 0.07); text-decoration: none; }
 .nav-link.router-link-exact-active { color: var(--btn-ink); background: linear-gradient(140deg, var(--btn-a), var(--btn-b)); font-weight: bold; }
-.nav-link .glyph { margin-right: 4px; font-size: 0.78rem; }
+.nav-link .glyph {
+  margin-right: 5px;
+  font-size: 0.68rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35em;
+  height: 1.35em;
+  border: 1px solid rgba(var(--acc-rgb), 0.4);
+  border-radius: 4px;
+  color: var(--gold);
+  line-height: 1;
+}
 
 .tools { display: flex; gap: 6px; }
 .snd { padding: 7px 11px; border-radius: 9px; }

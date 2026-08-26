@@ -235,7 +235,7 @@ function talkStage(): void {
 .g-card:hover { transform: translateY(-5px); border-color: rgba(var(--acc-rgb), 0.45); }
 .g-card.talking { border-color: var(--teal); }
 .g-svg {
-  width: 106px;
+  width: 104px;
   image-rendering: pixelated;
   animation: g-bob var(--bd, 3.6s) ease-in-out var(--bdel, 0s) infinite;
   filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.42));
