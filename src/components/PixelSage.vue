@@ -55,11 +55,21 @@ const typedText = ref('')
 let typeTimer: number | null = null
 let closeTimer: number | null = null
 let chatterTimer: number | null = null
+let greetTimer: number | null = null
+let showTimer: number | null = null
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function say(text: string): void {
   if (typeTimer !== null) window.clearInterval(typeTimer)
   if (closeTimer !== null) window.clearTimeout(closeTimer)
   bubbleOpen.value = true
+  if (reducedMotion) {
+    // 减动效：整句直接呈现，不做打字机
+    typedText.value = text
+    closeTimer = window.setTimeout(() => (bubbleOpen.value = false), 6000)
+    return
+  }
   typedText.value = ''
   let i = 0
   typeTimer = window.setInterval(() => {
@@ -83,7 +93,8 @@ function onClick(event: MouseEvent): void {
 
 watch(() => props.char, () => {
   if (!props.greet) return
-  window.setTimeout(() => say(def.value.hello), 500)
+  if (greetTimer !== null) window.clearTimeout(greetTimer)
+  greetTimer = window.setTimeout(() => say(def.value.hello), 500)
 })
 
 function onSageSay(e: Event): void {
@@ -92,8 +103,8 @@ function onSageSay(e: Event): void {
 }
 
 onMounted(() => {
-  window.setTimeout(() => (visible.value = true), 500)
-  if (props.greet) window.setTimeout(() => say(def.value.hello), 1500)
+  showTimer = window.setTimeout(() => (visible.value = true), 500)
+  if (props.greet) greetTimer = window.setTimeout(() => say(def.value.hello), 1500)
   chatterTimer = window.setInterval(() => {
     if (!bubbleOpen.value && document.visibilityState === 'visible') say(TIPS[Math.floor(Math.random() * TIPS.length)]!)
   }, 46000)
@@ -104,6 +115,8 @@ onBeforeUnmount(() => {
   if (typeTimer !== null) window.clearInterval(typeTimer)
   if (closeTimer !== null) window.clearTimeout(closeTimer)
   if (chatterTimer !== null) window.clearInterval(chatterTimer)
+  if (greetTimer !== null) window.clearTimeout(greetTimer)
+  if (showTimer !== null) window.clearTimeout(showTimer)
   window.removeEventListener('sage-say', onSageSay)
 })
 </script>
@@ -130,7 +143,7 @@ onBeforeUnmount(() => {
           :width="SUB - 0.36" :height="SUB - 0.36"
           :rx="SUB * 0.24"
           :fill="p.fill"
-          :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175"
+          :opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)"
         />
         <rect
           v-for="(e, i) in eyeCells" :key="'e' + i"

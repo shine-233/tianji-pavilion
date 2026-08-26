@@ -320,7 +320,7 @@ onBeforeUnmount(() => {
       :style="{ '--dur': `${p.dur}s`, '--delay': `${p.delay}s`, '--bob': `${p.bobDur}s` }"
     >
 <svg viewBox="0 0 26 29">
-<rect v-for="(px, i) in buildTaoess(p.char)" :key="i" :x="px.x + 0.06" :y="px.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="px.fill" :opacity="0.93 + ((px.x * 7 + px.y * 13) % 5) * 0.0175" />
+<rect v-for="(px, i) in buildTaoess(p.char)" :key="i" :x="px.x + 0.06" :y="px.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="px.fill" :opacity="(px.op ?? 1) * (0.93 + ((px.x * 7 + px.y * 13) % 5) * 0.0175)" />
       </svg>
       <i>{{ (TAOESS_IDS.indexOf(p.char) + 1) }}</i>
     </span>

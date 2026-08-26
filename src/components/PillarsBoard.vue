@@ -168,7 +168,7 @@ function toggle(i: number): void {
           </svg>
 <svg class="back-sprite maiden" viewBox="0 0 26 29">
 <rect v-for="(q, qi) in backPixelsOf(i)" :key="qi"
-:x="q.x + 0.06" :y="q.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="q.fill" :opacity="0.93 + ((q.x * 7 + q.y * 13) % 5) * 0.0175" />
+:x="q.x + 0.06" :y="q.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="q.fill" :opacity="(q.op ?? 1) * (0.93 + ((q.x * 7 + q.y * 13) % 5) * 0.0175)" />
           </svg>
           <span class="back-word">{{ ['天', '机', '阁', '签'][i] }}</span>
         </div>

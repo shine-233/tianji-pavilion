@@ -131,10 +131,10 @@ function talkStage(): void {
         <h3 class="gold-t2">立体道长 · 体素建模</h3>
         <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
 <svg
-  viewBox="0 0 26 29" style="width:90px;margin:6px 0"
-  :class="`g-svg motion-${motionOf(selected3d).mode}`" :style="gMotion(selected3d)"
+viewBox="0 0 26 29" style="width:90px;margin:6px 0"
+:class="`g-svg motion-${motionOf(selected3d).mode}`" :style="gMotion(selected3d)"
 >
-<rect v-for="(p, i) in buildTaoess(selected3d, undefined, stance)" :key="'s' + i + String(sit)" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
+<rect v-for="(p, i) in buildTaoess(selected3d, undefined, stance)" :key="'s' + i + String(sit)" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)" />
         </svg>
         <div class="chip-row">
           <button
@@ -153,7 +153,7 @@ function talkStage(): void {
       <div v-if="spotDef" class="card spot-card">
         <div class="spot-inner">
 <svg viewBox="0 0 26 29" class="spot-svg">
-<rect v-for="(p, i) in buildTaoess(spotDef.id)" :key="i" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
+<rect v-for="(p, i) in buildTaoess(spotDef.id)" :key="i" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)" />
           </svg>
           <div>
             <h3 class="gold-t2">{{ spotDef.nameCn }}<small>· {{ spotDef.title }}</small></h3>
@@ -178,7 +178,7 @@ function talkStage(): void {
           viewBox="0 0 26 29" class="g-svg"
           :class="`motion-${motionOf(en.def.id).mode}`" :style="gMotion(en.def.id)"
         >
-          <rect v-for="(p, pi) in en.pixels" :key="pi" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
+          <rect v-for="(p, pi) in en.pixels" :key="pi" :x="p.x + 0.06" :y="p.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="(p.op ?? 1) * (0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175)" />
         </svg>
         <span class="orbit">{{ en.def.orbit }}</span>
         <span class="g-name">{{ en.def.nameCn }}<i>·</i>{{ en.def.title }}</span>

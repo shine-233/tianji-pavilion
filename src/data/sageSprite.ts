@@ -309,9 +309,87 @@ export interface TaoPixel {
   y: number
   fill: string
   isEye: boolean
+  /** 叠加透明度：细节着色层用，渲染端与抖动系数相乘 */
+  op?: number
 }
 
 const EYE_CHAR = 'E'
+
+/** 矩阵翻倍：每个字符扩成 2×2（分辨率 ×4） */
+function doubleMatrix(rows: string[]): string[] {
+  const out: string[] = []
+  for (const r of rows) {
+    const line = [...r].map((c) => (c === '.' ? '.' : c + c)).join('')
+    out.push(line, line)
+  }
+  return out
+}
+
+/**
+ * 程序化细节着色（在 2× 网格上）：
+ * 眼神光 + 眉弓、发丝高光、道袍侧褶与下摆阴影。全部按邻域自动推导，调色无关。
+ */
+function applyDetail(px: TaoPixel[]): TaoPixel[] {
+  const out = px.slice()
+  const at = new Map<string, number>()
+  px.forEach((p, i) => at.set(`${p.x},${p.y}`, i))
+
+  // —— 眼睛：按行聚类，每行最右一粒加眼神光；上方两行压出眉弓 ——
+  const eyes = px.filter((p) => p.isEye)
+  if (eyes.length) {
+    const eyeTop = Math.min(...eyes.map((e) => e.y))
+    // 每一行眼睛的连续段（段=一只眼睛）
+    const byRow = new Map<number, number[]>()
+    for (const e of eyes) {
+      if (!byRow.has(e.y)) byRow.set(e.y, [])
+      byRow.get(e.y)!.push(e.x)
+    }
+    for (const [y, xs] of byRow) {
+      xs.sort((a, b) => a - b)
+      // 切成连续段，每段最右一粒加眼神光
+      let runStart = 0
+      for (let i = 0; i <= xs.length; i++) {
+        const isBreak = i === xs.length || (i > 0 && xs[i]! - xs[i - 1]! > 1)
+        if (!isBreak) continue
+        const rx = xs[i - 1]!
+        out.push({ x: rx, y, fill: '#ffffff', isEye: false, op: 0.42 })
+        // 眉弓只画在最上一行的段上方
+        if (y === eyeTop) {
+          for (let j = runStart; j < i; j++) {
+            const k = `${xs[j]},${y - 2}`
+            const idx = at.get(k)
+            if (idx !== undefined) out[idx] = { ...out[idx]!, op: 0.16 }
+          }
+        }
+        runStart = i
+      }
+    }
+    // 发丝高光：眼睛以上的头发区，斜向撒白色细点
+    for (let i = 0; i < out.length; i++) {
+      const p = out[i]!
+      if (p.isEye || p.op !== undefined) continue
+      if (p.y >= eyeTop - 1 || p.y < 2) continue
+      if ((p.x * 3 + p.y * 5) % 11 === 0) {
+        out[i] = { ...p, fill: '#ffffff', op: 0.14 }
+      }
+    }
+  }
+
+  // —— 道袍：下摆压暗 + 竖向褶皱（以头部以下、法器以外的身体像素为界） ——
+  const eyeBottom = eyes.length ? Math.max(...eyes.map((e) => e.y)) : 8
+  const bodyPx = out.filter((p) => p.y > eyeBottom + 4 && !p.op)
+  if (bodyPx.length > 20) {
+    const maxY = Math.max(...bodyPx.map((p) => p.y))
+    const minX = Math.min(...bodyPx.map((p) => p.x))
+    for (let i = 0; i < out.length; i++) {
+      const p = out[i]!
+      if (p.op !== undefined || p.isEye || p.y <= eyeBottom + 4) continue
+      if (p.y >= maxY - 1 && p.fill !== TAO_PALETTE.K) out[i] = { ...p, op: 0.85 }
+      else if ((p.x - minX) % 9 === 4 && p.y > maxY - 16) out[i] = { ...p, op: 0.9 }
+    }
+  }
+  return out
+}
 
 /** 组装某位角色的完整像素列表（发型层 + 主骨架 + 配色替换 + 法器浮层）
  *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人、主题换袍等场景复用骨架 */
@@ -334,23 +412,37 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
   const hairId = TAO_HAIR_ASSIGN[id] ?? 'none'
   const hairDef = TAO_HAIRS[hairId]
   const custom = !!hairDef && hairDef.rows.length > 0
-  const baseRows = custom ? TAO_BASE_SPRITE.slice(4) : [...TAO_BASE_SPRITE]
-  const hairRows = custom ? layerRows(baseRows, hairDef!.rows, hairDef!.dy) : baseRows
+  let baseRows = custom ? TAO_BASE_SPRITE.slice(4) : [...TAO_BASE_SPRITE]
+  baseRows = custom ? layerRows(baseRows, hairDef!.rows, hairDef!.dy) : baseRows
 
-  hairRows.forEach((row, y) => {
+  // 角色专属补丁（主星拟人等）
+  const patch = TAO_PATCHES[id] ?? []
+  const patchGrid = baseRows.map((r) => r.split(''))
+  patch.forEach(([x, y, ch]) => {
+    if (patchGrid[y]) patchGrid[y]![x] = ch
+  })
+
+  // 分辨率 ×2：整张网格翻倍后再上色
+  const grid2x = doubleMatrix(patchGrid.map((r) => r.join('')))
+  grid2x.forEach((row, y) => {
     row.split('').forEach((ch, x) => {
       if (ch === '.') return
       out.push({ x: x + 1, y, fill: pal[ch] ?? TAO_PALETTE.K!, isEye: ch === EYE_CHAR })
     })
   })
+
+  // 法器：坐标与网格同步翻倍（每格变 2×2），坐姿过滤在翻倍前判断
   ;(TAO_PROPS[def.prop] ?? []).forEach(([x, y, ch]) => {
     if (pose === 'sit' && y > 17) return
-    out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
+    const fill = pal[ch] ?? ch
+    for (const dy of [0, 1]) {
+      for (const dx of [0, 1]) {
+        out.push({ x: x * 2 + dx + 1, y: y * 2 + dy, fill, isEye: false })
+      }
+    }
   })
-  ;(TAO_PATCHES[def.id] ?? []).forEach(([x, y, ch]) => {
-    out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
-  })
-  return out
+
+  return applyDetail(out)
 }
 
 /** 行叠加：over 覆盖 base（dy 可为负向上扩展），'.' 不遮蔽 */
