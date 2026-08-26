@@ -5,6 +5,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import App from '../App.vue'
 import HomeView from '../views/HomeView.vue'
 import { vReveal } from '../lib/reveal'
+import { vMagnetic, vCountup } from '../lib/motion'
 
 const ROUTES = [
   { path: '/', component: HomeView },
@@ -58,6 +59,8 @@ describe('smoke: app mounts on every lightweight route', () => {
       const app = createApp(defineComponent({ render: () => h(App) }))
       app.use(router)
       app.directive('reveal', vReveal)
+      app.directive('magnetic', vMagnetic)
+      app.directive('countup', vCountup)
       app.config.errorHandler = (err) => errors.push(err)
       router.push(path)
       await router.isReady()

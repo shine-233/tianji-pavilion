@@ -297,7 +297,11 @@ function starList(mains: string): string[] {
 }
 .palace:hover { transform: translateY(-3px); border-color: rgba(232, 196, 115, 0.5); box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
 .palace.ming { border-color: rgba(232, 196, 115, 0.55); background: linear-gradient(160deg, #26221a, #17151f); }
-.palace.sel { outline: 2px solid var(--teal); }
+.palace.sel { outline: 2px solid var(--teal); animation: palace-pulse 1.8s ease-in-out infinite; }
+@keyframes palace-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(94, 234, 212, 0); }
+  50% { box-shadow: 0 0 16px rgba(94, 234, 212, 0.4); }
+}
 .p-name { color: var(--dim); font-size: 0.72rem; display: flex; justify-content: space-between; align-items: center; gap: 4px; }
 .limit-tag {
   font-style: normal;

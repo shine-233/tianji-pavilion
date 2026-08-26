@@ -49,12 +49,12 @@ function copyQuote(): void {
 }
 
 const STATS = [
-  { num: '21,912', label: '同龄男命全量百分位池', sub: '2001–2005 年出生，每一盘都是逐个复算的' },
-  { num: '7 部', label: '典籍数字化语料', sub: '滴天髓、三命通会、穷通宝鉴等，整本入库' },
-  { num: '~100万', label: '古籍校对字数', sub: '按章节统计过主题密度，不是拍脑袋' },
-  { num: '2,037', label: '案例自动标注入库', sub: '带置信度，教学样本单独分层' },
-  { num: '49 个', label: '特殊格局谱系', sub: '五部书互相印证，源流都标了年代' },
-  { num: 'ρ=-0.059', label: '引擎×古典断语一致性', sub: '120 例双通道核对，结论：不显著' },
+  { n: 21912 as number | null, pre: '', suf: '', label: '同龄男命全量百分位池', sub: '2001–2005 年出生，每一盘都是逐个复算的' },
+  { n: 7, pre: '', suf: ' 部', label: '典籍数字化语料', sub: '滴天髓、三命通会、穷通宝鉴等，整本入库' },
+  { n: 100, pre: '~', suf: '万', label: '古籍校对字数', sub: '按章节统计过主题密度，不是拍脑袋' },
+  { n: 2037, pre: '', suf: '', label: '案例自动标注入库', sub: '带置信度，教学样本单独分层' },
+  { n: 49, pre: '', suf: ' 个', label: '特殊格局谱系', sub: '五部书互相印证，源流都标了年代' },
+  { n: null, pre: '', suf: '', text: 'ρ=-0.059', label: '引擎×古典断语一致性', sub: '120 例双通道核对，结论：不显著' },
 ]
 
 /** 模块按人气梯队分三区：速占日活 → 排盘主力 → 体验与研究（一个不少） */
@@ -135,9 +135,9 @@ function arcPath(i: number, j: number, off: number): string {
           每一分都能复核，每条断语都能溯源。
         </p>
         <div class="hero-btns">
-          <button @click="go('/chart')">☯ 立即排盘</button>
-          <button class="ghost" @click="go('/wuxing')">🌌 五行 3D 天穹</button>
-          <button class="ghost" @click="go('/liuyao')">⚱ 摇一卦</button>
+          <button v-magnetic @click="go('/chart')">☯ 立即排盘</button>
+          <button v-magnetic="0.22" class="ghost" @click="go('/wuxing')">🌌 五行 3D 天穹</button>
+          <button v-magnetic="0.22" class="ghost" @click="go('/liuyao')">⚱ 摇一卦</button>
         </div>
       </div>
       <div class="hero-wheel" aria-hidden="true">
@@ -177,7 +177,12 @@ function arcPath(i: number, j: number, off: number): string {
 
     <section v-reveal class="stats">
       <div v-for="(s, i) in STATS" :key="s.label" v-reveal="i * 60" class="card stat-card hoverable">
-        <div class="big-num">{{ s.num }}</div>
+          <div class="big-num">
+            <template v-if="s.n != null">
+              <span v-countup="s.n">{{ s.n.toLocaleString('en-US') }}</span><span v-if="s.pre">{{ s.pre }}</span><span>{{ s.suf }}</span>
+            </template>
+            <template v-else>{{ s.text }}</template>
+          </div>
         <div class="stat-label">{{ s.label }}</div>
         <div class="note">{{ s.sub }}</div>
       </div>

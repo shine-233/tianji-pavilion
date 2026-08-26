@@ -236,7 +236,9 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
         <transition-group name="rowfade" tag="div" class="ch-list">
           <div
             v-for="(c, i) in filtered.slice(0, 60)" :key="c.book + c.chapter"
-            class="ch-item" :class="{ open: openChapter === i }"
+            class="ch-item"
+            v-tilt="5"
+            :class="{ open: openChapter === i }"
             @click="toggleChapter(i)"
           >
             <div class="ch-head">

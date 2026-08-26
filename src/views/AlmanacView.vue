@@ -5,6 +5,56 @@ import { sfx } from '../lib/sfx'
 
 const offset = ref(0)
 
+/** ===== 月历总览 ===== */
+const calBase = ref(new Date())
+interface DayCell {
+  date: Date
+  day: number
+  inMonth: boolean
+  isToday: boolean
+  isPicked: boolean
+  level: 'good' | 'bad' | 'flat'
+}
+const calCells = computed<DayCell[]>(() => {
+  const base = calBase.value
+  const y = base.getFullYear()
+  const m = base.getMonth()
+  const firstDow = new Date(y, m, 1).getDay()
+  const start = new Date(y, m, 1 - firstDow)
+  const todayMid = new Date(new Date().toDateString()).getTime()
+  const pickedMid = new Date(new Date(Date.now() + offset.value * 86400000).toDateString()).getTime()
+  const cells: DayCell[] = []
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
+    const l = Solar.fromDate(d).getLunar()
+    const yi = l.getDayYi() as string[]
+    const ji = l.getDayJi() as string[]
+    let level: DayCell['level'] = 'flat'
+    if (ji.includes('诸事不宜')) level = 'bad'
+    else if (yi.includes('诸事可行')) level = 'good'
+    else if (yi.length >= 9) level = 'good'
+    else if (ji.length >= 6) level = 'bad'
+    cells.push({
+      date: d,
+      day: d.getDate(),
+      inMonth: d.getMonth() === m,
+      isToday: d.getTime() === todayMid,
+      isPicked: d.getTime() === pickedMid,
+      level,
+    })
+  }
+  return cells
+})
+function calShift(n: number): void {
+  sfx.blip()
+  calBase.value = new Date(calBase.value.getFullYear(), calBase.value.getMonth() + n, 1)
+}
+function pickDay(c: DayCell): void {
+  sfx.blip()
+  const mid = new Date(new Date().toDateString()).getTime()
+  offset.value = Math.round((c.date.getTime() - mid) / 86400000)
+}
+
 /** lunar-javascript 无官方类型，这里按用到的 API 手写最小接口 */
 interface LunarTimeLike {
   getGanZhi(): string
@@ -214,6 +264,31 @@ function backToday(): void {
       </Transition>
       <button class="ghost nav" @click="backToday">回到今天</button>
       <button class="ghost nav" @click="step(1)">后一天 →</button>
+    </section>
+
+    <!-- 月历总览：整月吉凶速览，点选任意一天 -->
+    <section v-reveal="60" class="card cal-card">
+      <div class="cal-head">
+        <h2>{{ calBase.getFullYear() }} 年 {{ calBase.getMonth() + 1 }} 月</h2>
+        <div class="cal-nav">
+          <button class="ghost" @click="calShift(-1)">‹ 上月</button>
+          <button class="ghost" @click="calShift(1)">下月 ›</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        <span v-for="w in ['日', '一', '二', '三', '四', '五', '六']" :key="'w' + w" class="cal-week">{{ w }}</span>
+        <button
+          v-for="(c, i) in calCells"
+          :key="i"
+          class="cal-cell"
+          :class="[c.level, { out: !c.inMonth, today: c.isToday, picked: c.isPicked }]"
+          @click="pickDay(c)"
+        >
+          <b>{{ c.day }}</b>
+          <i class="dot" />
+        </button>
+      </div>
+      <p class="note">绿点宜事多、红点忌事多、灰点平常——老黄历的粗略气象，图个参考。点任意一天看详情。</p>
     </section>
 
     <section v-reveal="120" class="cols">
@@ -472,4 +547,36 @@ function backToday(): void {
 @media (prefers-reduced-motion: reduce) {
   .moon, .jq, .hour-chip.live::after { animation: none; }
 }
+
+.cal-card { overflow: hidden; }
+.cal-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cal-nav { display: flex; gap: 6px; }
+.cal-nav button { padding: 6px 12px; font-size: 0.8rem; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 12px; }
+.cal-week { text-align: center; font-size: 0.7rem; color: var(--dim); padding: 4px 0; }
+.cal-cell {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(127, 127, 127, 0.05);
+  color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background 0.2s ease;
+}
+.cal-cell b { font-size: 0.86rem; }
+.cal-cell .dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; background: var(--dim); opacity: 0.45; }
+.cal-cell.good .dot { background: var(--teal); opacity: 1; box-shadow: 0 0 6px var(--teal); }
+.cal-cell.bad .dot { background: var(--red); opacity: 1; }
+.cal-cell:hover { transform: translateY(-3px) scale(1.04); border-color: var(--card-glow); z-index: 2; }
+.cal-cell.out { opacity: 0.32; }
+.cal-cell.today { border-color: var(--gold); }
+.cal-cell.picked { background: var(--glow); border-color: var(--gold); transform: scale(1.06); }
+@media (max-width: 560px) {
+  .cal-cell { min-height: 38px; border-radius: 8px; }
+  .cal-cell b { font-size: 0.74rem; }
+}
+
 </style>

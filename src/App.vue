@@ -6,6 +6,7 @@ import Palette from './components/Palette.vue'
 import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
+import ScrollProgress from './components/ScrollProgress.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
@@ -213,6 +214,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <ScrollProgress />
+  <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
     <RouterLink to="/" class="brand" @click="onBrandClick()">
       <span class="logo" :class="{ wiggle: brandClicks > 0 }">☯</span>
@@ -308,6 +311,27 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* 胶片噪点：给整站一层纸感/颗粒质感（不拦截交互，低透明度） */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 1400;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 1.1s steps(4) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1.4%); }
+  50% { transform: translate(1.6%, -1%); }
+  75% { transform: translate(-1%, -1.8%); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+}
+
 .topbar {
   position: sticky;
   top: 0;
