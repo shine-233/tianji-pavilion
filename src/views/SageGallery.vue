@@ -98,6 +98,17 @@ function gMotion(id: string): Record<string, string> {
     '--bdel': `${m.delay}s`,
   }
 }
+
+/** 点立体道长：她本尊弹一下，下方小卡片冒气泡，角标那位也跟着捎话 */
+function talkStage(): void {
+  const id = selected3d.value
+  const def = TAOESSES[id]
+  talking.value = id
+  if (bubbleTimer.value !== null) window.clearTimeout(bubbleTimer.value)
+  bubbleTimer.value = window.setTimeout(() => (talking.value = null), 3600)
+  sfx.pop()
+  if (def) window.dispatchEvent(new CustomEvent('sage-say', { detail: `${def.nameCn}：「${def.hello}」` }))
+}
 </script>
 
 <template>
@@ -114,7 +125,7 @@ function gMotion(id: string): Record<string, string> {
 
     <div class="card stage-card">
       <div class="stage-left">
-        <SageVoxel3D :char="selected3d" />
+        <SageVoxel3D :char="selected3d" @pick="talkStage" />
       </div>
       <div class="stage-right">
         <h3 class="gold-t2">立体道长 · 体素建模</h3>

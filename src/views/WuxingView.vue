@@ -16,6 +16,8 @@ const selected = ref<Element>('木')
 const chart = ref<ChartResult | null>(null)
 const lastHistory = ref<HistoryItem | null>(loadHistory()[0] ?? null)
 
+const voxel = ref<InstanceType<typeof VoxelWuxing> | null>(null)
+
 function onSelect(e: Element): void {
   selected.value = e
 }
@@ -23,6 +25,9 @@ function onSelect(e: Element): void {
 function pick(e: Element): void {
   selected.value = e
   sfx.blip()
+  // 页签与 3D 双向联动：点档案聚焦天穹同款元素，再赏一朵粒子花
+  voxel.value?.selectExternal(e)
+  voxel.value?.triggerBurst(e)
 }
 
 function recount(): void {
@@ -49,7 +54,7 @@ function clearChart(): void {
     </div>
 
     <div class="sky-stage">
-      <VoxelWuxing :counts="chart ? chart.cnt : null" @select="onSelect" />
+      <VoxelWuxing ref="voxel" :counts="chart ? chart.cnt : null" @select="onSelect" />
       <div class="cine-overlay" aria-hidden="true"></div>
     </div>
 

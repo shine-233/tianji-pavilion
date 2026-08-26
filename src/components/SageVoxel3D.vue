@@ -188,6 +188,7 @@ function raycastPick(e: PointerEvent): void {
   if (hit.length) {
     sfx.pop()
     popT = 0
+    emit('pick', props.char)
   }
 }
 function onWheel(e: WheelEvent): void {

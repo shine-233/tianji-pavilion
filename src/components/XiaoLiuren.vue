@@ -29,6 +29,13 @@ const result = ref<number | null>(null)
 const walking = ref(false)
 const walkIdx = ref(0)
 
+/** 点任意宫位：起课前先听道长讲讲这宫是啥意思 */
+function peekGong(g: { name: Gong; judge: string; tip: string }): void {
+  if (walking.value) return
+  sfx.blip()
+  window.dispatchEvent(new CustomEvent('sage-say', { detail: `${g.name}（${g.judge}）：${g.tip}` }))
+}
+
 /** 点数路径：每一步经过的宫序号 */
 function stepsFor(a: number, b: number, c: number): number[] {
   const path: number[] = []
@@ -53,7 +60,7 @@ async function cast(e?: MouseEvent): Promise<void> {
   let nums: [number, number, number]
   const lunar = Solar.fromDate(new Date()).getLunar()
   if (mode.value === 'auto') {
-    nums = [Math.abs(lunar.getMonth()), lunar.getDay(), ((new Date().getHours() + 1) % 24) >> 1 || 12]
+    nums = [Math.abs(lunar.getMonth()), lunar.getDay(), (((new Date().getHours() + 1) % 24) >> 1) + 1]
   } else if (mode.value === 'one') {
     const n = parseNum(oneNum.value)
     nums = [n, n, n]
@@ -121,6 +128,7 @@ const todayText = computed(() => {
           v-for="(g, i) in GONGS" :key="g.name"
           class="gong" :class="{ hot: walking && walkIdx === i, done: !walking && result === i }"
           :style="{ '--i': i }"
+          @click="peekGong(g)"
         >
           <b>{{ g.name }}</b>
           <span class="judge" :class="{ good: g.judge === '吉', mid: g.judge === '小吉' }">{{ g.judge }}</span>
