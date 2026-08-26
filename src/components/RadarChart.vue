@@ -78,6 +78,12 @@ function onWedge(i: number): void {
   hover.value = i
   sfx.tick()
 }
+
+/** 点按固定/取消：触屏没有 hover */
+function toggleWedge(i: number): void {
+  hover.value = hover.value === i ? null : i
+  sfx.tick()
+}
 </script>
 
 <template>
@@ -91,6 +97,7 @@ function onWedge(i: number): void {
       class="wedge"
       @mouseenter="onWedge(i)"
       @mouseleave="hover = null"
+      @click="toggleWedge(i)"
     />
     <polygon v-for="(ring, i) in rings" :key="i" :points="ring.pts" fill="none" stroke="#262d40" stroke-width="1" pointer-events="none" />
     <line v-for="(sp, i) in spokes" :key="'l' + i" :x1="CX" :y1="CY" :x2="sp[0]" :y2="sp[1]" stroke="#262d40" stroke-width="1" pointer-events="none" />
@@ -110,6 +117,7 @@ function onWedge(i: number): void {
       class="lbl" :class="{ hot: hover === i }"
       @mouseenter="onWedge(i)"
       @mouseleave="hover = null"
+      @click="toggleWedge(i)"
     >
       {{ lb.name }} <tspan class="val">{{ lb.score }}</tspan>
     </text>

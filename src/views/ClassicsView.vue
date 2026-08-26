@@ -156,7 +156,8 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
       <!-- 八大主题 × 七书 密度矩阵 -->
       <div class="card hoverable">
         <h2>八大主题密度矩阵 <small class="sub">单位：每万字命中次数 · 点击书名筛选下方章节</small></h2>
-        <table class="matrix" @mouseleave="hovCol = null">
+        <div class="matrix-scroll">
+          <table class="matrix" @mouseleave="hovCol = null">
           <thead>
             <tr>
               <th>典籍 \ 主题</th>
@@ -191,6 +192,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
             </tr>
           </tbody>
         </table>
+        </div>
         <p class="note" style="margin-top: 10px">
           读法示例：《滴天髓阐微》旺衰密度 103.5 次/万字，是典型"讲原理"的书；
           《千里命稿》十神密度 94.9，因为它几乎每段都在用十神语言写实例。
@@ -276,6 +278,8 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .stat { display: flex; align-items: baseline; gap: 7px; }
 .stat .big-num { font-size: 1.9rem; }
 
+.matrix-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.matrix { min-width: 640px; }
 .matrix th, .matrix td { padding: 7px 8px; transition: background 0.2s ease; }
 
 .book-profile { border-color: rgba(var(--acc-rgb), 0.4); }
