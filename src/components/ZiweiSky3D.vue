@@ -388,5 +388,5 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   pointer-events: none;
 }
-@media (max-width: 700px) { .zs-wrap { height: 320px; } }
+@media (max-width: 720px) { .zs-wrap { height: 320px; } }
 </style>

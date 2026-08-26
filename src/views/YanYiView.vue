@@ -356,7 +356,7 @@ const pFinal = computed(() => sp(0.85, 1))
 .fallback { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 .fb-card { padding: 18px 20px; }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .rail { display: none; }
   .cap { font-size: 14px; }
 }

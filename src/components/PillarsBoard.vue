@@ -426,7 +426,7 @@ function toggle(i: number): void {
 .divider { height: 1px; background: var(--line); margin: 7px 12px; }
 .dim { color: var(--dim); }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .pillars { gap: 7px; }
   .face { min-height: 168px; padding: 9px 4px 8px; }
   .big-gan { font-size: 1.5rem; }

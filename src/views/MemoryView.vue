@@ -249,7 +249,7 @@ onBeforeUnmount(stopTimer)
 .win-card { max-width: 380px; text-align: center; }
 .win-card h2 { color: var(--gold-bright); }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .m-grid { gap: 7px; }
   .face.front b { font-size: 1.55rem; }
   .face.front em { font-size: 0.6rem; }

@@ -449,7 +449,7 @@ const libRows = computed(() => {
 .meter-val[data-c='平'] { color: var(--amber); }
 .meter-val[data-c='弱'] { color: var(--red); }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .gua-row { grid-template-columns: 3em 3em 4em 1fr 2em; gap: 6px; font-size: 0.8rem; }
   .coin { width: 54px; height: 54px; }
 }

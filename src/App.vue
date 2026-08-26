@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
@@ -47,30 +47,30 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
   {
     label: '算',
     items: [
-      { to: '/chart', label: '八字排盘', glyph: '🀄' },
-      { to: '/ziwei', label: '紫微命盘', glyph: '✷' },
-      { to: '/liuyao', label: '六爻纳甲', glyph: '🪙' },
-      { to: '/meihua', label: '梅花易数', glyph: '❄' },
+      { to: '/chart', label: '八字排盘', glyph: '八' },
+      { to: '/ziwei', label: '紫微命盘', glyph: '紫' },
+      { to: '/liuyao', label: '六爻纳甲', glyph: '爻' },
+      { to: '/meihua', label: '梅花易数', glyph: '梅' },
     ],
   },
   {
     label: '占',
     items: [
-      { to: '/daily', label: '每日一签', glyph: '🎋' },
-      { to: '/almanac', label: '今日黄历', glyph: '📅' },
-      { to: '/xiaoliuren', label: '小六壬', glyph: '🖐' },
+      { to: '/daily', label: '每日一签', glyph: '签' },
+      { to: '/almanac', label: '今日黄历', glyph: '历' },
+      { to: '/xiaoliuren', label: '小六壬', glyph: '掌' },
     ],
   },
   {
     label: '游',
     items: [
-      { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
+      { to: '/wuxing', label: '五行天穹', glyph: '五' },
       { to: '/yanyi', label: '演易', glyph: '䷀' },
-      { to: '/story', label: '易道长卷', glyph: '📜' },
-      { to: '/qimen', label: '奇门入门', glyph: '🧭' },
-      { to: '/map', label: '道观地图', glyph: '🗺' },
-      { to: '/sages', label: '道长图鉴', glyph: '⛩' },
-      { to: '/memory', label: '卦象记忆', glyph: '🎴' },
+      { to: '/story', label: '易道长卷', glyph: '卷' },
+      { to: '/qimen', label: '奇门入门', glyph: '奇' },
+      { to: '/map', label: '道观地图', glyph: '观' },
+      { to: '/sages', label: '道长图鉴', glyph: '鉴' },
+      { to: '/memory', label: '卦象记忆', glyph: '忆' },
     ],
   },
 ]
@@ -544,7 +544,7 @@ onBeforeUnmount(() => {
   to { transform: rotate(4deg) scaleY(0.97); }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .topbar { flex-wrap: wrap; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); }
   .nav { order: 3; width: 100%; }
   .name small { display: none; }

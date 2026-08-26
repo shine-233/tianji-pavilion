@@ -393,7 +393,7 @@ function backToTube(): void {
 .big-btn { font-size: 1rem; }
 .hint { margin-top: 12px; }
 
-.sign-wrap { width: 100%; max-width: 480px; margin: 0 auto; }
+.sign-wrap { width: 100%; max-width: 560px; margin: 0 auto; }
 .sign-card {
   position: relative;
   background:
@@ -461,7 +461,7 @@ function backToTube(): void {
 .dont { background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.25); }
 .dont b { color: var(--red); }
 
-@media (max-width: 800px) {
+@media (max-width: 720px) {
   .grid-top { grid-template-columns: 1fr; }
   .tube-wrap { height: 128px; }
   .tube { width: 88px; height: 108px; }

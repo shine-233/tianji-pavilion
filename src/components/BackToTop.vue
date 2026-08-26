@@ -43,7 +43,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 .fab-pop-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .fab-pop-leave-active { transition: all 0.2s ease; }
 .fab-pop-enter-from, .fab-pop-leave-to { opacity: 0; transform: translateY(14px) scale(0.8); }
-@media (max-width: 600px) {
+@media (max-width: 560px) {
   .to-top { left: 10px; bottom: calc(14px + env(safe-area-inset-bottom)); }
 }
 </style>

@@ -168,7 +168,7 @@ function clearChart(): void {
 .gz-map { display: flex; flex-wrap: wrap; gap: 3px; }
 .advice { margin-top: 10px; line-height: 1.9; }
 
-@media (max-width: 800px) {
+@media (max-width: 720px) {
   .grid-2 { grid-template-columns: 1fr; }
 }
 </style>

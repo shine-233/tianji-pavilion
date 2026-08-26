@@ -321,7 +321,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .pop-enter-from { opacity: 0; transform: translateY(-8px); }
 .pop-leave-active { display: none; }
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .search-row { flex-direction: column; }
   .stats { gap: 14px; }
 }

@@ -564,5 +564,5 @@ defineExpose({
 .ln { width: 22px; height: 2px; display: inline-block; }
 .ln.gold { background: linear-gradient(90deg, #e8c473, #ffe3a8); box-shadow: 0 0 6px rgba(232, 196, 115, 0.8); }
 .ln.red { background: repeating-linear-gradient(90deg, #f87171 0 4px, transparent 4px 7px); }
-@media (max-width: 640px) { .vx-canvas { height: 380px; } }
+@media (max-width: 720px) { .vx-canvas { height: 380px; } }
 </style>

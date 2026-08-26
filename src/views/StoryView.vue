@@ -476,7 +476,7 @@ onBeforeUnmount(() => {
   transition: opacity 0.5s ease;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .story { height: 620vh; }
   .panel { left: 20px; right: 60px; width: auto; }
   .rail { right: 14px; }

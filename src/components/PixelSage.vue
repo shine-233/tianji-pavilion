@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
 import { buildTaoess, TAOESSES, TAO_TIPS } from '../data/sageSprite'
@@ -270,7 +270,7 @@ onBeforeUnmount(() => {
 .bubble-enter-from { opacity: 0; transform: translateY(10px) scale(0.85); }
 .bubble-leave-to { opacity: 0; transform: scale(0.9); }
 
-@media (max-width: 600px) {
+@media (max-width: 560px) {
   .sage-corner { right: 8px; bottom: 8px; }
   .sage-sprite { width: 100px; height: auto; }
   .speech-bubble { max-width: 190px; font-size: 0.85rem; }

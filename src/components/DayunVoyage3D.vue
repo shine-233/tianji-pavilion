@@ -360,5 +360,5 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   pointer-events: none;
 }
-@media (max-width: 700px) { .dv-wrap { height: 300px; } }
+@media (max-width: 720px) { .dv-wrap { height: 300px; } }
 </style>

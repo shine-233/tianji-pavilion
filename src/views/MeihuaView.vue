@@ -209,7 +209,7 @@ function reroll(): void {
 
 .related { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .trig-row { gap: 10px; }
   .trig { min-width: 108px; padding: 14px 10px; }
 }

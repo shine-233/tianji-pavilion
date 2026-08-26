@@ -101,13 +101,13 @@ function onPointDown(e: PointerEvent): void {
 .tip p { font-size: 0.78rem; line-height: 1.95; color: var(--fg); }
 .src { display: block; text-align: right; font-size: 0.66rem; color: var(--dim); margin-top: 4px; }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .tip { width: 224px; left: auto; right: -40px; transform: none; }
 }
 
 .term-pop-enter-active { transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .term-pop-enter-from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.94); }
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .term-pop-enter-from { transform: translateY(6px) scale(0.94); }
 }
 .term-pop-leave-active { transition: all 0.15s ease; }

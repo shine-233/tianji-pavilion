@@ -369,7 +369,7 @@ function lunarInfo(): string {
 .pop-enter-from { opacity: 0; transform: translateY(-8px); }
 .pop-leave-active { display: none; }
 
-@media (max-width: 800px) {
+@media (max-width: 720px) {
   .form-row { grid-template-columns: 1fr 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
   .block-detail { padding-left: 8px; }

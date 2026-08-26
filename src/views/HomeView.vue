@@ -356,7 +356,7 @@ function arcPath(i: number, j: number, off: number): string {
 
 .center-note { text-align: center; margin-top: 8px; }
 
-@media (max-width: 800px) {
+@media (max-width: 720px) {
   .hero { flex-direction: column; }
   .hero-wheel { transform: scale(0.82); margin: -20px 0; }
   .play-grid, .time-grid { grid-template-columns: 1fr; }
