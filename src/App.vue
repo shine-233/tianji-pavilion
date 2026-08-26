@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
@@ -7,7 +7,6 @@ import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
 import ScrollProgress from './components/ScrollProgress.vue'
-import ThemeFlair from './components/ThemeFlair.vue'
 import AuroraBloom from './components/AuroraBloom.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
