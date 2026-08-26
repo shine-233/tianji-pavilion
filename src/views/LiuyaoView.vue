@@ -1,5 +1,9 @@
 <script setup lang="ts">
+<<<<<<< Updated upstream
 import { computed, onBeforeUnmount, ref } from 'vue'
+=======
+import { computed, ref } from 'vue'
+>>>>>>> Stashed changes
 import { analyzeYongshen, buildChart, summarize, tossText, YONGSHEN_MAP, type LiuYaoChart } from '../lib/liuyao'
 import { guaCatalog, GUA_TIP, install, TRI_NATURE } from '../lib/liuyaoExtra'
 import { Lunar } from 'lunar-javascript'
