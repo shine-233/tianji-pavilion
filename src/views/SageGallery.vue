@@ -103,6 +103,7 @@ function goPage(id: string): void {
         <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
         <svg viewBox="0 0 26 29" shape-rendering="crispEdges" style="width:90px;image-rendering:pixelated;margin:6px 0">
           <rect v-for="(p, i) in buildTaoess(selected3d, undefined, sit ? 'sit' : 'stand')" :key="'s' + i + String(sit)" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
+        </svg>
         <div class="chip-row">
           <button
             v-for="id in TAOESS_IDS" :key="id"
