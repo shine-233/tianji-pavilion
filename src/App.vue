@@ -8,6 +8,7 @@ import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
 import ScrollProgress from './components/ScrollProgress.vue'
 import ThemeFlair from './components/ThemeFlair.vue'
+import AuroraBloom from './components/AuroraBloom.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import ThemeDecor from './components/ThemeDecor.vue'
@@ -59,15 +60,8 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
     items: [
       { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
       { to: '/yanyi', label: '演易', glyph: '䷀' },
+      { to: '/story', label: '易道长卷', glyph: '📜' },
       { to: '/sages', label: '道长图鉴', glyph: '⛩' },
-    ],
-  },
-  {
-    label: '占',
-    items: [
-      { to: '/daily', label: '每日一签', glyph: '🎋' },
-      { to: '/almanac', label: '今日黄历', glyph: '📅' },
-      { to: '/xiaoliuren', label: '小六壬', glyph: '🖐' },
     ],
   },
 ]
@@ -217,6 +211,7 @@ onBeforeUnmount(() => {
 
 <template>
   <ScrollProgress />
+  <AuroraBloom />
   <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
     <RouterLink to="/" class="brand" @click="onBrandClick()">

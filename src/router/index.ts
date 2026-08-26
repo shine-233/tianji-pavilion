@@ -19,6 +19,7 @@ const router = createRouter({
     { path: '/oracle', redirect: '/daily' },
     { path: '/xiaoliuren', name: 'xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
+    { path: '/story', name: 'story', component: () => import('../views/StoryView.vue') },
     { path: '/yanyi', name: 'yanyi', component: () => import('../views/YanYiView.vue') },
     { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },
