@@ -47,4 +47,33 @@ describe('ziweiScore 分值边界', () => {
       expect(detail).toHaveLength(4)
     }
   })
+
+  it('多星同宫时 mains 以空格分词，评分明细 stars 为完整星名', () => {
+    // 扫多年盘：凡多星宫必有分隔，明细不得出现单字断裂
+    let sawMulti = false
+    for (let y = 1990; y <= 2005 && !sawMulti; y++) {
+      const zc = chartFor(y, 6, 15, 10)
+      for (const p of zc.palaces) {
+        if (p.mains.includes(' ')) {
+          sawMulti = true
+          const words = p.mains.split(/\s+/)
+          expect(words.length).toBeGreaterThanOrEqual(2)
+          for (const w of words) expect(MAIN_SET.has(w)).toBe(true)
+        }
+      }
+    }
+    expect(sawMulti).toBe(true)
+    const { detail } = ziweiScore(chartFor(1997, 10, 22, 3))
+    for (const d of detail) {
+      for (const s of d.stars) {
+        expect(s.length).toBeGreaterThanOrEqual(2)
+        expect(MAIN_SET.has(s)).toBe(true)
+      }
+    }
+  })
 })
+
+const MAIN_SET = new Set([
+  '紫微', '天机', '太阳', '武曲', '天同', '廉贞', '天府',
+  '太阴', '贪狼', '巨门', '天相', '天梁', '七杀', '破军',
+])

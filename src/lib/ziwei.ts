@@ -36,14 +36,15 @@ export function ziweiChart(lunar: {
   let z = (2 + bs - 1) % 12
   z = bo % 2 === 1 ? ((z - bo) % 12 + 144) % 12 : (z + bo) % 12
   const tf = (4 - z + 144) % 12
-  const mains: string[] = Array.from({ length: 12 }, () => '')
-  mains[z] += '紫微'
-  if (tf !== z) mains[tf] += '天府'
+  const mainsArr: string[][] = Array.from({ length: 12 }, () => [])
+  mainsArr[z]!.push('紫微')
+  if (tf !== z) mainsArr[tf]!.push('天府')
   ;[['天机', 1], ['太阳', 3], ['武曲', 4], ['天同', 5], ['廉贞', 8]].forEach(([nm, o]) => {
-    mains[(z - (o as number) + 144) % 12] += nm as string
+    mainsArr[(z - (o as number) + 144) % 12]!.push(nm as string)
   })
-  ;['太阴', '贪狼', '巨门', '天相', '天梁', '七杀'].forEach((nm, k) => { mains[(tf + k + 1) % 12] += nm })
-  mains[(tf + 10) % 12] += '破军'
+  ;['太阴', '贪狼', '巨门', '天相', '天梁', '七杀'].forEach((nm, k) => { mainsArr[(tf + k + 1) % 12]!.push(nm) })
+  mainsArr[(tf + 10) % 12]!.push('破军')
+  const mains: string[] = mainsArr.map((a) => a.join(' '))
   const extras: Set<string>[] = Array.from({ length: 12 }, () => new Set<string>())
   const lc = BR.indexOf(LPOS[YG]!)
   extras[lc].add('禄存'); extras[(lc + 1) % 12].add('擎羊'); extras[(lc + 11) % 12].add('陀罗')
@@ -105,7 +106,7 @@ export function ziweiScore(zc: ZiweiChart): { score: number; detail: Array<{ pal
       else if (x.endsWith('忌')) d -= 1.2
     })
     sc += d
-    detail.push({ palace: p.name, stars: [...p.mains], delta: Math.round(d * 10) / 10 })
+    detail.push({ palace: p.name, stars: p.mains.split(/\s+/).filter(Boolean), delta: Math.round(d * 10) / 10 })
   })
   return { score: Math.max(0, Math.min(10, ((sc + 6) / 14) * 10)), detail }
 }
