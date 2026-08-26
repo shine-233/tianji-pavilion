@@ -75,6 +75,15 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
       { to: '/memory', label: '卦象记忆', glyph: '忆' },
     ],
   },
+  {
+    label: '藏',
+    items: [
+      { to: '/classics', label: '典籍', glyph: '书' },
+      { to: '/geju', label: '格局谱', glyph: '局' },
+      { to: '/rules', label: '规则库', glyph: '规' },
+      { to: '/cases', label: '命例库', glyph: '例' },
+    ],
+  },
 ]
 
 const ROUTE_SAGE: Record<string, string> = {
@@ -264,6 +273,7 @@ onBeforeUnmount(() => {
     </nav>
     <div class="top-actions">
     <Palette />
+      <RouterLink to="/settings" class="gear" title="设置与记录" @click="sfx.blip()">⚙</RouterLink>
       <div class="theme-wrap">
         <button class="ghost theme-btn" title="换一套皮肤" @click.stop="showThemes = !showThemes; sfx.toggle()">🎨</button>
         <transition name="pop">
@@ -425,6 +435,16 @@ onBeforeUnmount(() => {
 
 .tools { display: flex; gap: 6px; }
 .snd { padding: 7px 11px; border-radius: 9px; }
+
+/* 设置入口：齿轮常驻顶栏，设置页不再只能手敲地址进 */
+.gear {
+  color: var(--dim);
+  font-size: 1.05rem;
+  padding: 7px 9px;
+  border-radius: 9px;
+  transition: all 0.2s ease;
+}
+.gear:hover { color: var(--gold-bright); background: rgba(232, 196, 115, 0.07); text-decoration: none; rotate: 45deg; }
 
 .footer {
   text-align: center;

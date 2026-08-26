@@ -49,6 +49,37 @@ export const TAO_BASE_SPRITE = [
   '.....KKKK..KKKK........',
 ]
 
+/** B 帧：手绘呼吸变体——发髻与发梢左偏（风从头上来），裙摆向右回扫，与 A 帧交替成待机动画 */
+export const TAO_BASE_SPRITE_B = [
+  '.........KKK...........',
+  '........KHHHK..........',
+  '........KhGhK..........',
+  '.........KGK...........',
+  '.......KHHHHHHHK.......',
+  '......KHHHHHHHHHK......',
+  '.....KHHHHHHHHHHK......',
+  '...KKKHHHHHHHHHHHKK....',
+  '..KHHHHHHHHHHHHHHHK....',
+  '.KHHHHHHHHHHHHHHHHHK...',
+  '...KHHSSSSSSSSSSSHHK...',
+  '...KHSSSSSSSSSSSSSHK...',
+  '...KHSSESSSSSSSESSHK...',
+  '...KHSSSSSSSSSSSSSHK...',
+  '...KHSBSSSSSSSSSBSHK...',
+  '.....KSSSSSKKSSSSSK....',
+  '.....KWRRRRRRRRWK.....',
+  '....KSWRRRWWRRRWSK....',
+  '....KDRRRWWWWRRRDK....',
+  '.....KDRRWWWWRRDK.....',
+  '.....KDRYYYYYYRDK.....',
+  '....KDRRRRRRRRRRDK.....',
+  '....KDRRRRRRRRRRRDK...',
+  '...KDDRRRRRRRRRRRDDK...',
+  '.....KDDRRRRRRDDK.....',
+  '.....KOOK..KOOK........',
+  '.....KKKK..KKKK........',
+]
+
 /** 法器浮层：[x, y, 字母]，叠加在主骨架上 */
 export type PropOverlay = Array<[number, number, string]>
 
@@ -393,7 +424,7 @@ function applyDetail(px: TaoPixel[]): TaoPixel[] {
 
 /** 组装某位角色的完整像素列表（发型层 + 主骨架 + 配色替换 + 法器浮层）
  *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人、主题换袍等场景复用骨架 */
-export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>, pose: 'stand' | 'sit' | 'sword' = 'stand'): TaoPixel[] {
+export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>, pose: 'stand' | 'sit' | 'sword' = 'stand', frame: 'a' | 'b' = 'a'): TaoPixel[] {
   const def = TAOESSES[id] ?? TAOESSES.qingxuan!
   const pal: Record<string, string> = { ...TAO_PALETTE }
   for (const k of Object.keys(def.palette)) {
@@ -412,7 +443,8 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
   const hairId = TAO_HAIR_ASSIGN[id] ?? 'none'
   const hairDef = TAO_HAIRS[hairId]
   const custom = !!hairDef && hairDef.rows.length > 0
-  let baseRows = custom ? TAO_BASE_SPRITE.slice(4) : [...TAO_BASE_SPRITE]
+  const skeleton = frame === 'b' ? TAO_BASE_SPRITE_B : TAO_BASE_SPRITE
+  let baseRows = custom ? skeleton.slice(4) : [...skeleton]
   baseRows = custom ? layerRows(baseRows, hairDef!.rows, hairDef!.dy) : baseRows
 
   // 角色专属补丁（主星拟人等）
@@ -523,8 +555,8 @@ function hexMix(a: string, b: string, t: number): string {
   return '#' + ((r << 16) | (g << 8) | bl).toString(16).padStart(6, '0')
 }
 
-export function buildTaoessHd(id: string, palOverride?: Partial<Record<string, string>>, pose?: 'stand' | 'sit' | 'sword'): HdPixel[] {
-  const base = buildTaoess(id, palOverride, pose)
+export function buildTaoessHd(id: string, palOverride?: Partial<Record<string, string>>, pose?: 'stand' | 'sit' | 'sword', frame: 'a' | 'b' = 'a'): HdPixel[] {
+  const base = buildTaoess(id, palOverride, pose, frame)
   const at = new Map<string, string>()
   base.forEach((p) => at.set(`${p.x},${p.y}`, p.fill))
   const out: HdPixel[] = []

@@ -24,6 +24,12 @@ const ROUTES = [
   { path: '/sages', component: () => import('../views/SageGallery.vue') },
   { path: '/yanyi', component: () => import('../views/YanYiView.vue') },
   { path: '/settings', component: () => import('../views/SettingsView.vue') },
+  { path: '/qimen', component: () => import('../views/QimenView.vue') },
+  { path: '/map', component: () => import('../views/MapView.vue') },
+  { path: '/shuzi', component: () => import('../views/ShuziView.vue') },
+  { path: '/jiaobei', component: () => import('../views/JiaobeiView.vue') },
+  { path: '/xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
+  { path: '/memory', component: () => import('../views/MemoryView.vue') },
 ]
 
 const SAFE_ROUTES: Array<[string, string]> = [
@@ -34,6 +40,12 @@ const SAFE_ROUTES: Array<[string, string]> = [
   ['/almanac', '历'],
   ['/meihua', '梅花'],
   ['/ziwei', '紫微'],
+  ['/qimen', '奇门'],
+  ['/map', '地图'],
+  ['/shuzi', '数字'],
+  ['/jiaobei', '筊'],
+  ['/xiaoliuren', '小六壬'],
+  ['/memory', '卦象'],
 ]
 
 function makeRouter(): ReturnType<typeof createRouter> {
@@ -87,8 +99,9 @@ describe('smoke: app mounts on every lightweight route', () => {
       import('../views/CasesView.vue'),
       import('../views/WuxingView.vue'),
       import('../views/SageGallery.vue'),
+      import('../views/StoryView.vue'),
     ])
-    expect(mods).toHaveLength(7)
+    expect(mods).toHaveLength(8)
     for (const m of mods) expect(m.default).toBeTruthy()
   })
 })

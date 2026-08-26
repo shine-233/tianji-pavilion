@@ -1,8 +1,8 @@
 <script setup lang="ts">
-/** 古籍原文阅读器：按需拉取 txt，客户端切章，字号可调，术语高亮 */
-import { computed, onMounted, ref, watch } from 'vue'
+/** 古籍原文阅读器：按需拉取 txt，客户端切章，字号可调，术语高亮+点词看释义 */
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sfx } from '../lib/sfx'
-import { GLOSSARY } from '../lib/glossary'
+import { GLOSSARY, lookup } from '../lib/glossary'
 
 const BOOKS = [
   { id: 'ziping', name: '子平真诠评注', file: './classics/ziping.txt', size: '81K' },
@@ -97,6 +97,57 @@ const highlighted = computed(() => {
   const parts = cur.value.body.split(TERM_RE)
   return parts.map((p) => ({ text: p, term: GLOSSARY[p] ? p : null }))
 })
+
+/** 点词释义：全阅读器共用一枚浮层，fixed 定位 + 视口夹取，避免被滚动容器裁掉 */
+interface TipState { name: string; left: number; top: number }
+const tip = ref<TipState | null>(null)
+let lastPointerType = 'mouse'
+const TIP_W = () => (document.documentElement.clientWidth <= 720 ? 224 : 264)
+
+function openTip(el: HTMLElement, name: string): void {
+  const entry = lookup(name)
+  if (!entry) return
+  const r = el.getBoundingClientRect()
+  const w = TIP_W()
+  const vw = document.documentElement.clientWidth
+  const left = Math.max(8, Math.min(vw - w - 8, r.left + r.width / 2 - w / 2))
+  // 词在屏幕上部时气泡朝下弹，其余朝上
+  const top = r.top < 190 ? r.bottom + 10 : Math.max(10, r.top - 168)
+  if (!tip.value) sfx.tick()
+  tip.value = { name, left, top }
+}
+function closeTip(): void {
+  tip.value = null
+}
+function onMarkEnter(e: MouseEvent): void {
+  if (lastPointerType === 'touch') return
+  const el = e.currentTarget as HTMLElement
+  const name = (el.dataset.term ?? '').trim()
+  if (name) openTip(el, name)
+}
+function onMarkTap(e: Event): void {
+  const el = e.currentTarget as HTMLElement
+  const name = (el.dataset.term ?? '').trim()
+  if (!name) return
+  if (tip.value?.name === name) { closeTip(); return }
+  openTip(el, name)
+}
+function onBodyScroll(): void {
+  if (tip.value) closeTip()
+}
+function onDocPointerDown(e: PointerEvent): void {
+  lastPointerType = e.pointerType
+  const t = e.target as HTMLElement | null
+  if (tip.value && !t?.closest('.term-hit') && !t?.closest('.term-pop')) closeTip()
+}
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocPointerDown, true)
+  document.addEventListener('scroll', onBodyScroll, true)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocPointerDown, true)
+  document.removeEventListener('scroll', onBodyScroll, true)
+})
 </script>
 
 <template>
@@ -121,17 +172,37 @@ const highlighted = computed(() => {
       <h3 class="ch-title">{{ cur.title }}</h3>
       <article class="body" tabindex="0" :style="{ fontSize: fontSize + 'px' }">
         <template v-for="(seg, i) in (highlight ? highlighted : cur.body.split(TERM_RE).map((t) => ({ text: t, term: null })))" :key="i">
-          <mark v-if="seg.term" class="term-hit">{{ seg.text }}</mark>
+          <mark
+            v-if="seg.term" class="term-hit" role="button" tabindex="0"
+            :data-term="seg.text"
+            aria-haspopup="dialog"
+            @mouseenter="onMarkEnter" @mouseleave="closeTip"
+            @click.stop="onMarkTap"
+            @keydown.enter.prevent="onMarkTap($event)"
+            @keydown.esc="closeTip"
+          >{{ seg.text }}</mark>
           <template v-else>{{ seg.text }}</template>
         </template>
       </article>
+
+      <transition name="tipfade">
+        <div
+          v-if="tip && lookup(tip.name)" class="reader-tip" role="dialog"
+          :style="{ left: `${tip.left}px`, top: `${tip.top}px`, width: `${TIP_W()}px` }"
+          @mouseleave="closeTip"
+        >
+          <b class="t-name">{{ tip.name }}</b>
+          <p>{{ lookup(tip.name)!.text }}</p>
+          <em class="src">—— {{ lookup(tip.name)!.src }}</em>
+        </div>
+      </transition>
 
       <div class="pager">
         <button class="ghost" :disabled="chapter === 0" @click="go(-1)">← 上一段</button>
         <span class="note">{{ chapter + 1 }} / {{ chapters.length }}</span>
         <button class="ghost" :disabled="chapter >= chapters.length - 1" @click="go(1)">下一段 →</button>
       </div>
-      <p class="note">金色词收录在术语通典里，把鼠标悬上去或点一下就能看释义。</p>
+      <p class="note">金色词都收在术语通典里——悬停或点一下，释义就弹出来。</p>
     </template>
   </div>
 </template>
@@ -167,7 +238,30 @@ const highlighted = computed(() => {
   color: var(--gold-bright);
   border-radius: 4px;
   padding: 0 2px;
+  cursor: help;
+  transition: background 0.2s ease, text-shadow 0.2s ease;
 }
+.term-hit:hover, .term-hit:focus-visible { background: rgba(var(--acc-rgb), 0.3); text-shadow: 0 0 12px rgba(232, 196, 115, 0.6); outline: none; }
+.term-hit:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+/* 共用释义浮层：fixed 定位，不随滚动容器裁切 */
+.reader-tip {
+  position: fixed;
+  z-index: 1200;
+  background: linear-gradient(160deg, #20263a, #161a28);
+  border: 1px solid rgba(232, 196, 115, 0.45);
+  border-radius: 12px;
+  padding: 11px 14px 9px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+.reader-tip .t-name { display: block; font-family: var(--cute); color: var(--gold-bright); font-size: 0.95rem; margin-bottom: 5px; }
+.reader-tip p { font-size: 0.78rem; line-height: 1.95; color: var(--fg); margin: 0; }
+.reader-tip .src { display: block; text-align: right; font-size: 0.66rem; color: var(--dim); margin-top: 4px; }
+.tipfade-enter-active { transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.tipfade-leave-active { transition: all 0.12s ease; }
+.tipfade-enter-from { opacity: 0; transform: translateY(6px) scale(0.96); }
+.tipfade-leave-to { opacity: 0; }
 
 .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; }
 </style>

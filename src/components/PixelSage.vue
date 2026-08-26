@@ -13,7 +13,10 @@ const props = withDefaults(defineProps<{
 const def = computed(() => TAOESSES[props.char] ?? TAOESSES.qingxuan!)
 const pixels = computed(() => buildTaoess(def.value.id))
 /** 超采样版：半格密度 + 边缘混色，常驻吉祥物用这份高精渲染 */
-const hdPixels = computed(() => buildTaoessHd(def.value.id))
+/** 双帧呼吸：A/B 骨架交替（B 帧是手绘的偏摆变体），配合分层摆动 = 待机活物感 */
+const frame = ref<'a' | 'b'>('a')
+const hdPixels = computed(() => buildTaoessHd(def.value.id, undefined, undefined, frame.value))
+let frameTimer: number | null = null
 const motion = computed(() => motionOf(def.value.id))
 const motionVars = computed(() => ({
   '--bd': `${motion.value.dur}s`,
@@ -125,6 +128,11 @@ onMounted(() => {
   chatterTimer = window.setInterval(() => {
     if (!bubbleOpen.value && document.visibilityState === 'visible') say(TIPS[Math.floor(Math.random() * TIPS.length)]!)
   }, 46000)
+  // 双帧呼吸：640ms 交替，页面隐藏时停（省电）
+  frameTimer = window.setInterval(() => {
+    if (document.hidden) return
+    frame.value = frame.value === 'a' ? 'b' : 'a'
+  }, 640)
   window.addEventListener('sage-say', onSageSay)
 })
 
@@ -134,6 +142,7 @@ onBeforeUnmount(() => {
   if (chatterTimer !== null) window.clearInterval(chatterTimer)
   if (greetTimer !== null) window.clearTimeout(greetTimer)
   if (showTimer !== null) window.clearTimeout(showTimer)
+  if (frameTimer !== null) window.clearInterval(frameTimer)
   window.removeEventListener('sage-say', onSageSay)
 })
 </script>
