@@ -176,13 +176,20 @@ export interface TaoPixel {
 
 const EYE_CHAR = 'E'
 
-/** 组装某位角色的完整像素列表（主骨架 + 配色替换 + 法器浮层） */
-export function buildTaoess(id: string): TaoPixel[] {
+/** 组装某位角色的完整像素列表（主骨架 + 配色替换 + 法器浮层）
+ *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人等场景复用骨架 */
+export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>): TaoPixel[] {
   const def = TAOESSES[id] ?? TAOESSES.qingxuan!
   const pal: Record<string, string> = { ...TAO_PALETTE }
   for (const k of Object.keys(def.palette)) {
     const v = def.palette[k]
     if (v) pal[k] = v
+  }
+  if (palOverride) {
+    for (const k of Object.keys(palOverride)) {
+      const v = palOverride[k]
+      if (v) pal[k] = v
+    }
   }
   const out: TaoPixel[] = []
   TAO_BASE_SPRITE.forEach((row, y) => {

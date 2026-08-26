@@ -4,6 +4,7 @@ import ZiweiSky3D from '../components/ZiweiSky3D.vue'
 import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
+import { starSpritePixels } from '../data/starSprites'
 import { sfx } from '../lib/sfx'
 
 interface ScoredDetail { palace: string; stars: string[]; delta: number }
@@ -191,7 +192,7 @@ function starList(mains: string): string[] {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="STAR_TIP[st] ?? st">{{ st }}</span>
+                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="STAR_TIP[st] ?? st"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -221,7 +222,17 @@ function starList(mains: string): string[] {
         <div v-if="sel !== null && zc.palaces[sel]" class="card">
           <h2>{{ zc.palaces[sel]!.name }}详情 · {{ zc.palaces[sel]!.ganzhi }}</h2>
           <p style="margin-bottom: 8px">
-            主星：<b class="gold-t2">{{ zc.palaces[sel]!.mains || '空宫（借对宫）' }}</b>
+            主星：
+            <template v-if="zc.palaces[sel]!.mains">
+              <span
+                v-for="st in starList(zc.palaces[sel]!.mains)" :key="'d' + st"
+                class="star-big" :data-tip="STAR_TIP[st] ?? st"
+              >
+                <svg class="star-face big" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>
+                <b class="gold-t2">{{ st }}</b>
+              </span>
+            </template>
+            <b v-else class="gold-t2">空宫（借对宫）</b>
           </p>
           <div style="margin-bottom: 10px">
             辅煞：
@@ -334,7 +345,47 @@ function starList(mains: string): string[] {
 }
 .p-gz { color: var(--teal); font-size: 0.68rem; opacity: 0.75; }
 .p-mains { font-family: var(--cute); color: var(--gold-bright); font-size: 0.98rem; line-height: 1.3; min-height: 1.3em; text-shadow: 0 0 14px rgba(232,196,115,0.35); }
-.star { position: relative; cursor: help; margin-right: 4px; }
+.star { position: relative; cursor: help; margin-right: 4px; display: inline-flex; align-items: center; gap: 2px; }
+.star-face {
+  width: 15px;
+  height: 16px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 5px rgba(var(--acc-rgb), 0.55));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.star:hover .star-face { transform: translateY(-2px) scale(1.18); }
+.star-big {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+  cursor: help;
+}
+.star-face.big { width: 42px; height: 46px; border: 1px solid rgba(var(--acc-rgb), 0.35); border-radius: 9px; background: rgba(127, 127, 127, 0.05); padding: 3px; }
+.star-big::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 210px;
+  white-space: normal;
+  background: linear-gradient(160deg, var(--card-2), var(--panel));
+  border: 1px solid rgba(var(--acc-rgb), 0.45);
+  border-radius: 9px;
+  padding: 7px 11px;
+  font-size: 0.74rem;
+  line-height: 1.85;
+  color: var(--fg);
+  z-index: 80;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.star-big:hover::after { opacity: 1; }
 .star:hover::after {
   content: attr(data-tip);
   position: absolute;

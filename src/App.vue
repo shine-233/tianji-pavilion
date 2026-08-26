@@ -274,8 +274,7 @@ onBeforeUnmount(() => {
 
   <TransitionVeil />
 
-  <ThemeFlair />
-
+  
   <!-- 一炷香：滚动进度 -->
   <div class="incense" aria-hidden="true">
     <div class="incense-ash"></div>

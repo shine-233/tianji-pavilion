@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+﻿import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
@@ -17,6 +17,7 @@ const router = createRouter({
     { path: '/rules', name: 'rules', component: () => import('../views/RulesView.vue') },
     { path: '/cases', name: 'cases', component: () => import('../views/CasesView.vue') },
     { path: '/oracle', redirect: '/daily' },
+    { path: '/jiaobei', name: 'jiaobei', component: () => import('../views/JiaobeiView.vue') },
     { path: '/xiaoliuren', name: 'xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
     { path: '/story', name: 'story', component: () => import('../views/StoryView.vue') },

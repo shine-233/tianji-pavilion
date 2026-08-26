@@ -4,7 +4,7 @@ import { ELE_B, ELE_S, Element, nayinOf } from '../lib/constants'
 import { THEME_SPRITE_PALS } from '../data/themes'
 import { currentThemeId } from '../lib/themes'
 import { Pillar, shiShen } from '../lib/engine'
-import { cardBackPixels } from '../data/sageSprite'
+import { buildTaoess } from '../data/sageSprite'
 import { ELEMENT_SPIRITS, spritePixels, ZODIAC_SPRITES } from '../data/pillarSprites'
 import { sfx } from '../lib/sfx'
 
@@ -33,10 +33,17 @@ onMounted(() => {
 })
 onBeforeUnmount(() => themeObs?.disconnect())
 
-const backPixels = computed(() => {
+/** 牌背女道士：年月日时四张牌各由一位当值女道士看管，袍色随主题 */
+const BACK_MAIDENS = ['qingxuan', 'danxia', 'xinglan', 'suwen']
+
+const backPal = computed(() => {
   const pal = THEME_SPRITE_PALS[THEME_PAL_MAP[liveTheme.value] ?? liveTheme.value] ?? THEME_SPRITE_PALS.xuan!
-  return cardBackPixels({ R: pal.R, D: pal.D, Y: pal.Y })
+  return { R: pal.R, D: pal.D, Y: pal.Y }
 })
+
+function backPixelsOf(i: number) {
+  return buildTaoess(BACK_MAIDENS[i % BACK_MAIDENS.length]!, backPal.value)
+}
 
 /** 主题专属牌背纹样：每套皮肤的卡背都是独一份 */
 const BACK_PATTERNS: Record<string, string> = {
@@ -140,9 +147,9 @@ function toggle(i: number): void {
               :x="[11, 49, 49, 11][gi]" :y="[14, 14, 78, 78][gi]"
               class="corner-gua">{{ g }}</text>
           </svg>
-          <svg class="back-sprite" viewBox="0 0 13 18" shape-rendering="crispEdges">
-            <rect v-for="(q, qi) in backPixels" :key="qi"
-              :x="q.x" :y="q.y" width="1.02" height="1.02" :fill="q.fill" />
+          <svg class="back-sprite maiden" viewBox="0 0 26 29" shape-rendering="crispEdges">
+            <rect v-for="(q, qi) in backPixelsOf(i)" :key="qi"
+              :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" />
           </svg>
           <span class="back-word">{{ ['天', '机', '阁', '签'][i] }}</span>
         </div>
