@@ -57,18 +57,43 @@ const STATS = [
   { num: 'ρ=-0.059', label: '引擎×古典断语一致性', sub: '120 例双通道核对，结论：不显著' },
 ]
 
-const MODULES = [
-  { to: '/chart', glyph: '🀄', title: '排盘评分', desc: '四柱翻牌、评分环、七维雷达、大运时间轴，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
-  { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
-  { to: '/ziwei', glyph: '✷', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正的连线自己会画出来。', tags: ['三方四正', '生年四化'] },
-  { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克。', tags: ['Three.js', '辉光后处理'] },
-  { to: '/liuyao', glyph: '⚱', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦自动排好，附白话提示。也可以手动报卦。', tags: ['火珠林法', '京房八宫'] },
-  { to: '/oracle', glyph: '❀', title: '轻卜抽签', desc: '每日一签摇签筒，十二时辰黄黑道查吉时。不填资料，图个心境。', tags: ['每日同签', '黄黑道'] },
-  { to: '/classics', glyph: '📜', title: '典籍语料', desc: '章节检索加主题密度条形图，看看每部古书到底在讲什么。', tags: ['语料库', '主题密度'] },
-  { to: '/geju', glyph: '⚔', title: '格局辞典', desc: '49 个特殊格局，五部书互证，原文书摘和源流年代都在。', tags: ['五书互证', '源流谱系'] },
-  { to: '/rules', glyph: '⚖', title: '规则库', desc: '799 条清洗过的规则，调候速查、女命章法、六亲断语分栏可查。', tags: ['全部公开', '条件-结论'] },
-  { to: '/cases', glyph: '🗂', title: '案例库', desc: '千里命稿 166 例加标注案例 2,037 例，按置信度筛着看。', tags: ['千里命稿', '标注体系'] },
-  { to: '/sages', glyph: '⛩', title: '道长图鉴', desc: '观里十位当值女道士的名册，点一下会跟你搭话，还能随缘指派。', tags: ['吉祥物', '彩蛋'] },
+/** 模块按人气梯队分三区：速占日活 → 排盘主力 → 体验与研究（一个不少） */
+interface ModuleDef { to: string; glyph: string; title: string; desc: string; tags: string[] }
+
+const MODULE_TIERS: Array<{ title: string; sub: string; items: ModuleDef[] }> = [
+  {
+    title: '先算一算 · 三十秒出结果',
+    sub: '不填资料不纠结，今天的事今天问',
+    items: [
+      { to: '/daily', glyph: '🎋', title: '每日一签', desc: '按日期固定一签，全天不变。附十二时辰吉凶，出门前扫一眼。', tags: ['每日同签', '黄黑道'] },
+      { to: '/almanac', glyph: '📅', title: '今日黄历', desc: '宜忌、吉时、幸运色，老黄历翻新页。当参考，别当圣旨。', tags: ['宜忌', '吉时'] },
+      { to: '/xiaoliuren', glyph: '🖐', title: '小六壬', desc: '心里想事随口报数，指尖点过六宫落定吉凶。诸葛马前课，最快的一种。', tags: ['掐指一算', '报数起课'] },
+      { to: '/oracle', glyph: '❀', title: '轻卜抽签', desc: '摇签筒跪抽一签，配古诗签文。图个心境，也图个彩头。', tags: ['签诗', '仪式感'] },
+    ],
+  },
+  {
+    title: '排盘问命 · 正主在这儿',
+    sub: '输入生辰，引擎离线全算，规则全部公开',
+    items: [
+      { to: '/chart', glyph: '🀄', title: '八字排盘', desc: '四柱翻牌、评分环、七维雷达、大运长河，输入生辰一键出全套。', tags: ['v5 引擎', '与 Python 版对齐'] },
+      { to: '/ziwei', glyph: '✷', title: '紫微命盘', desc: '安星即算。十二宫点哪看哪，三方四正连线自己画，大限标到每一宫。', tags: ['三方四正', '生年四化'] },
+      { to: '/liuyao', glyph: '⚱', title: '六爻问卦', desc: '三枚铜钱摇六次，纳甲装卦、六亲六兽自动排好，附白话用神分析。', tags: ['火珠林法', '京房八宫'] },
+      { to: '/meihua', glyph: '❄', title: '梅花易数', desc: '万物皆可起卦：报两个数、报个时间，体用互变断吉凶。邵雍的老玩法。', tags: ['数字起卦', '体用生克'] },
+    ],
+  },
+  {
+    title: '再逛逛 · 玩点大的',
+    sub: '体验区和资料库都在这儿，慢慢翻',
+    items: [
+      { to: '/wuxing', glyph: '🌌', title: '五行天穹', desc: '体素搭出来的五行太极台，能拖能转能缩放，点一下看生克爆粒子花。', tags: ['Three.js', '辉光后处理'] },
+      { to: '/yanyi', glyph: '🌊', title: '推演长卷', desc: '往下滚，看八字怎么从一团混沌之气一步步长成四柱，一镜到底。', tags: ['滚动叙事', '七幕'] },
+      { to: '/sages', glyph: '⛩', title: '道长图鉴', desc: '观里十位当值女道士的名册，点一下会跟你搭话，还能随缘指派。', tags: ['吉祥物', '彩蛋'] },
+      { to: '/classics', glyph: '📜', title: '典籍语料', desc: '章节检索加主题密度条形图，看看每部古书到底在讲什么。', tags: ['语料库', '主题密度'] },
+      { to: '/geju', glyph: '⚔', title: '格局辞典', desc: '49 个特殊格局，五部书互证，原文书摘和源流年代都在。', tags: ['五书互证', '源流谱系'] },
+      { to: '/rules', glyph: '⚖', title: '规则库', desc: '799 条清洗过的规则，调候速查、女命章法、六亲断语分栏可查。', tags: ['全部公开', '条件-结论'] },
+      { to: '/cases', glyph: '🗂', title: '案例库', desc: '千里命稿 166 例加标注案例 2,037 例，按置信度筛着看。', tags: ['千里命稿', '标注体系'] },
+    ],
+  },
 ]
 
 function shengTarget(e: Element): Element {
@@ -158,16 +183,18 @@ function arcPath(i: number, j: number, off: number): string {
       </div>
     </section>
 
-    <h2 v-reveal>模块导览 · 九个功能间间相通</h2>
-    <section class="modules">
-      <a v-for="(m, i) in MODULES" :key="m.to" v-reveal="(i % 3) * 80" class="card module-card hoverable" @click.prevent="go(m.to)">
-        <div class="m-glyph">{{ m.glyph }}</div>
-        <div class="m-title">{{ m.title }}</div>
-        <p class="sub">{{ m.desc }}</p>
-        <div><span v-for="t in m.tags" :key="t" class="tag gold">{{ t }}</span></div>
-        <div class="m-go">进去看看 →</div>
-      </a>
-    </section>
+    <template v-for="tier in MODULE_TIERS" :key="tier.title">
+      <h2 v-reveal>{{ tier.title }} <small class="sub tier-sub">{{ tier.sub }}</small></h2>
+      <section class="modules">
+        <a v-for="(m, i) in tier.items" :key="m.to" v-reveal="(i % 4) * 70" class="card module-card hoverable" @click.prevent="go(m.to)">
+          <div class="m-glyph">{{ m.glyph }}</div>
+          <div class="m-title">{{ m.title }}</div>
+          <p class="sub">{{ m.desc }}</p>
+          <div><span v-for="t in m.tags" :key="t" class="tag gold">{{ t }}</span></div>
+          <div class="m-go">进去看看 →</div>
+        </a>
+      </section>
+    </template>
 
     <section v-reveal class="time-grid">
       <div class="card clock-card">
@@ -273,6 +300,7 @@ function arcPath(i: number, j: number, off: number): string {
 .clock-card :deep(.clock-wrap) { width: 100%; }
 
 .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.tier-sub { font-size: 0.78rem; margin-left: 10px; letter-spacing: 0.05em; }
 .module-card { cursor: pointer; position: relative; display: block; color: var(--fg); }
 .module-card:hover { text-decoration: none; }
 .m-glyph { font-size: 1.7rem; margin-bottom: 8px; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }

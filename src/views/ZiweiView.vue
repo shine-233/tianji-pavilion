@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DecryptTitle from '../components/DecryptTitle.vue'
+import ZiweiSky3D from '../components/ZiweiSky3D.vue'
 import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
@@ -15,6 +16,7 @@ const zc = ref<ZiweiChart | null>(null)
 const scored = ref<Scored | null>(null)
 const pillars = ref<string[]>([])
 const sel = ref<number | null>(null)
+const skyMode = ref(false)
 
 const PALACE_MEANING: Record<string, string> = {
   命宫: '自我禀赋、格局层次与一生总纲。',
@@ -162,9 +164,19 @@ function starList(mains: string): string[] {
           <span class="tag teal">三方四正 {{ scored.score.toFixed(1) }} / 10</span>
           <span class="tag">大限{{ zc.forward ? '顺行' : '逆行' }} · 起限看宫角数字</span>
           <span class="sub sihua">四化：{{ Object.entries(zc.siHua).map(([s, h]) => s + h).join(' · ') }}</span>
+          <button class="ghost sky-toggle" style="margin-left: auto" @click="skyMode = !skyMode; sfx.toggle()">
+            {{ skyMode ? '⬚ 回到平面盘' : '🌌 升入星空' }}
+          </button>
         </div>
 
-        <div class="ziwei-grid">
+        <ZiweiSky3D
+          v-if="skyMode"
+          :palaces="zc.palaces"
+          :ming-index="zc.mingIndex"
+          :selected="sel"
+          @select="pickPalace"
+        />
+        <div v-else class="ziwei-grid">
           <button
             v-for="(p, i) in zc.palaces"
             :key="i"

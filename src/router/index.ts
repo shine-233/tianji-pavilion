@@ -17,6 +17,7 @@ const router = createRouter({
     { path: '/rules', name: 'rules', component: () => import('../views/RulesView.vue') },
     { path: '/cases', name: 'cases', component: () => import('../views/CasesView.vue') },
     { path: '/oracle', redirect: '/daily' },
+    { path: '/xiaoliuren', name: 'xiaoliuren', component: () => import('../views/XiaoLiurenView.vue') },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
     { path: '/yanyi', name: 'yanyi', component: () => import('../views/YanYiView.vue') },
     { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue') },

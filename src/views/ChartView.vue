@@ -6,6 +6,7 @@ import RadarChart from '../components/RadarChart.vue'
 import ScoreRing from '../components/ScoreRing.vue'
 import DayunTimeline from '../components/DayunTimeline.vue'
 import DayunRiver from '../components/DayunRiver.vue'
+import DayunVoyage3D from '../components/DayunVoyage3D.vue'
 import ShareButton from '../components/ShareButton.vue'
 import RichText from '../components/RichText.vue'
 import BranchWheel from '../components/BranchWheel.vue'
@@ -187,7 +188,10 @@ function lunarInfo(): string {
     <template v-if="result">
       <div class="card">
         <h2>四柱八字 · 点击卡片听翻牌声</h2>
-        <PillarsBoard :ps="result.ps" />
+        <PillarsBoard :ps="result.ps" :hide="result.hide" />
+        <p v-if="result.kong" class="note" style="margin-top: 8px; text-align: center">
+          日柱旬空：<b class="tag red">{{ result.kong }}</b> —— 旬空之支力量打折，吉神空亡减福、凶煞空亡减凶
+        </p>
         <p class="sub" style="margin-top: 10px">
           日主 <b class="ele" :class="`ele-${ganEle(result.ps[2])}`">{{ result.ps[2][0] }}</b>，
           同党占比 r={{ result.r.toFixed(2) }}，喜用参考：
@@ -249,6 +253,15 @@ function lunarInfo(): string {
       <div v-if="result.dlist.length" class="card" v-reveal>
         <h2>命运长河 · 顺逆一望便知</h2>
         <DayunRiver :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))" />
+      </div>
+
+      <div v-if="result.dlist.length" class="card" v-reveal>
+        <h2>大运山河 · 三维巡游</h2>
+        <p class="sub" style="margin: -4px 0 10px">
+          十年一步化作连绵山峦：山势越高这步运越顺，金色光点正沿你的运途巡回。
+          点击任意山峰，下方时间轴会同步定位到那十年。
+        </p>
+        <DayunVoyage3D :stops="result.dlist.map((d) => ({ gz: d.gz, window: d.window, fin: d.fin }))" />
       </div>
 
       <div class="card">

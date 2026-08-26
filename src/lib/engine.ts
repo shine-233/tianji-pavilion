@@ -38,6 +38,8 @@ export interface ChartResult {
   mingGong?: string
   shenGong?: string
   ziweiDetail?: Array<{ palace: string; stars: string[]; delta: number }>
+  hide?: string[][]
+  kong?: string
 }
 
 interface Extra { ec: { getYun(gender: number): { getDaYun(): Array<{ getStartYear(): number; getEndYear(): number; getGanZhi(): string }> } }; gender: number }

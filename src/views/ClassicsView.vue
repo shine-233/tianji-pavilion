@@ -2,6 +2,7 @@
 import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onMounted, ref } from 'vue'
 import { sfx } from '../lib/sfx'
+import ClassicsReader from '../components/ClassicsReader.vue'
 
 interface CorpusMap {
   topics: string[]
@@ -217,6 +218,12 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
           <p class="note">最长三章：{{ bookProfile.longest.map((c) => `${c.chapter}（${Number(c.chars).toLocaleString()}字）`).join(' · ') }}</p>
         </div>
       </transition>
+
+      <div class="card hoverable">
+        <h2>原文阅读 · 藏经阁开卷</h2>
+        <p class="sub">三本理论书全文入库，按需加载。支持切段、调字号、术语描金。</p>
+        <ClassicsReader />
+      </div>
 
       <!-- 章节检索 -->
       <div class="card hoverable">

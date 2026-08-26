@@ -1,10 +1,11 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
 import Palette from './components/Palette.vue'
 import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
+import BackToTop from './components/BackToTop.vue'
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
@@ -47,7 +48,6 @@ const NAV = [
 
 const route = useRoute()
 
-/** 各页面当值道长：右下角吉祥物随路由换人 */
 const ROUTE_SAGE: Record<string, string> = {
   '/': 'qingxuan',
   '/chart': 'danxia',
@@ -58,6 +58,7 @@ const ROUTE_SAGE: Record<string, string> = {
   '/daily': 'meixue',
   '/almanac': 'yunji',
   '/oracle': 'meixue',
+  '/xiaoliuren': 'meixue',
   '/classics': 'yunji',
   '/geju': 'shuanghua',
   '/rules': 'shouzhuo',
@@ -197,9 +198,19 @@ onBeforeUnmount(() => {
       <span class="name">命理天工<small>八字量化研究</small></span>
     </RouterLink>
     <nav class="nav">
-      <RouterLink v-for="n in NAV" :key="n.to" :to="n.to" class="nav-link" :class="{ fresh: route.path === n.to && ['/liuyao','/meihua','/daily','/almanac','/settings'].includes(n.to) }" @click="sfx.blip()">
-        <span class="glyph">{{ n.glyph }}</span>{{ n.label }}
+      <RouterLink to="/" class="nav-link home-link" :class="{ 'router-link-exact-active': route.path === '/' }" @click="sfx.blip()">
+        <span class="glyph">☯</span>山门
       </RouterLink>
+      <div v-for="g in NAV_GROUPS" :key="g.label" class="nav-group">
+        <i class="group-cap">{{ g.label }}</i>
+        <RouterLink
+          v-for="n in g.items" :key="n.to" :to="n.to" class="nav-link"
+          :class="{ fresh: route.path === n.to && ['/liuyao','/meihua','/daily','/almanac','/settings'].includes(n.to) }"
+          @click="sfx.blip()"
+        >
+          <span class="glyph">{{ n.glyph }}</span>{{ n.label }}
+        </RouterLink>
+      </div>
     </nav>
     <div class="top-actions">
     <Palette />
@@ -271,6 +282,7 @@ onBeforeUnmount(() => {
   </div>
 
   <PixelSage :key="sageChar" :char="sageChar" />
+  <BackToTop />
   <TalismanEgg />
 </template>
 
@@ -294,8 +306,25 @@ onBeforeUnmount(() => {
 .name { font-family: var(--cute); font-size: 1.12rem; color: var(--gold-bright); line-height: 1.05; display: flex; flex-direction: column; }
 .name small { font-size: 0.62rem; color: var(--dim); letter-spacing: 0.35em; }
 
-.nav { display: flex; gap: 2px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: none; align-items: center; }
 .nav::-webkit-scrollbar { display: none; }
+.nav-group {
+  display: flex; align-items: center; gap: 2px;
+  padding: 2px 8px 2px 6px;
+  border-right: 1px solid var(--line);
+}
+.group-cap {
+  font-style: normal;
+  font-family: var(--cute);
+  font-size: 0.72rem;
+  color: var(--dim);
+  opacity: 0.85;
+  margin-right: 3px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(var(--acc-rgb), 0.05);
+}
 .nav-link {
   white-space: nowrap;
   color: var(--dim);

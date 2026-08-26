@@ -53,12 +53,25 @@ export function runChart(y: number, m: number, d: number, hh: number, mm: number
   return {
     ...base,
     ps,
+    hide: [ec.getYearHideGan(), ec.getMonthHideGan(), ec.getDayHideGan(), ec.getTimeHideGan()] as unknown as string[][],
+    kong: xunKongOf(ps[2]!),
     zs: zsRaw.score,
     ziweiDetail: zsRaw.detail,
     sh,
     got,
     tot,
   } as ChartResult
+}
+
+/** 由日柱干支推旬空（甲子旬戌亥空…） */
+function xunKongOf(dayGZ: string): string {
+  const GAN = '甲乙丙丁戊己庚辛壬癸'
+  const ZHI = '子丑寅卯辰巳午未申酉戌亥'
+  const gi = GAN.indexOf(dayGZ[0]!)
+  let zi = ZHI.indexOf(dayGZ[1]!)
+  while (((zi % 10) + 10) % 10 !== ((gi % 10) + 10) % 10) zi += 12
+  const start = Math.floor(zi / 10) * 10
+  return ZHI[(start + 10) % 12]! + ZHI[(start + 11) % 12]!
 }
 
 /** 仅紫微：由公历生日生成十二宫命盘（含大限）与三方四正评分 */
