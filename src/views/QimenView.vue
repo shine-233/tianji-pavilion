@@ -135,6 +135,41 @@ function calc(): void {
 }
 
 const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
+
+/* 用神细断：问事类型 → 取门/星/干 */
+const YS: Record<string, { men?: string; xing?: string; gan?: string; label: string }> = {
+  求财: { men: '生', gan: '戊', label: '生门为财源，戊为资本' },
+  官事: { men: '开', xing: '值符', label: '开门主官途，值符为权贵' },
+  婚姻: { men: '六合作合', gan: '乙', label: '六合主婚媒，乙奇为女方' },
+  疾病: { xing: '天芮', gan: '乙', label: '天芮为病星，乙奇为医药' },
+  出行: { men: '开', ma: true, label: '开门宜行，驿马主动' },
+  考试: { men: '景', gan: '丁', label: '景门主文书，丁奇为文章' },
+}
+const yscat = ref<keyof typeof YS>('求财')
+
+const ysVerdict = computed(() => {
+  if (!pan.value) return ''
+  const cfg = YS[yscat.value]!
+  const hits: string[] = []
+  const findMenPal = (m: string): number | null => {
+    for (let i = 0; i < 8; i++) if (pan.value!.tian[RING[i]!]!.men.startsWith(m)) return RING[i]!
+    return null
+  }
+  let pal: number | null = null
+  if (cfg.men && !cfg.men.includes('合')) pal = findMenPal(cfg.men)
+  if (pal === null && cfg.gan) pal = Math.max(1, pan.value.diPan.indexOf(cfg.gan))
+  if (pal === null && cfg.xing && cfg.xing !== '值符') {
+    for (let i = 1; i <= 9; i++) if (pan.value.tian[i]?.xing === cfg.xing) pal = i
+  }
+  if (pal === null || pal === undefined) return `${cfg.label}——盘面暂未锁定其落宫，细断从略。`
+  const info = pan.value.tian[pal]
+  const bad = pan.value.geju.filter((gj) => gj.includes(`${pal} 宫`) || gj.startsWith('伏吟') || gj.startsWith('反吟'))
+  if (info?.shen === '值符') hits.push('临值符，得尊贵之气')
+  if (bad.length) hits.push(...bad.map((b) => '但' + b.split(' · ')[0]))
+  else hits.push('未见击刑门迫等破格')
+  hits.push(info?.men ? `落${info.men}门、${info.xing}` : '')
+  return `${cfg.label}：用神落在 ${pal} 宫（${pan.value.diPan[pal]}）。${hits.filter(Boolean).join(';')}。`
+})
 </script>
 
 <template>
@@ -184,6 +219,13 @@ const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
         <h2>格局提示</h2>
         <p v-for="(gj, gi) in pan.geju" :key="gi" class="note gj-line">{{ gj }}</p>
         <p v-if="!pan.geju.length" class="note">未见伏吟、反吟、击刑、门迫，盘面平和。</p>
+        <div style="margin-top: 14px">
+          <h2 style="margin-bottom: 6px">用神细断</h2>
+          <select v-model="yscat" style="max-width: 200px" @change="sfx.blip()">
+            <option v-for="(_, k) in YS" :key="k" :value="k">{{ k }}</option>
+          </select>
+          <p class="sub" style="margin-top: 10px">{{ ysVerdict }}</p>
+        </div>
         <p class="note" style="margin-top: 8px">
           值符星：{{ pan.zhiFuXing }} · 值使门：{{ pan.zhiShiMen }}。格局仅列最显性的四类，
           三奇得使、玉女守门等吉格需结合用神宫细断。
