@@ -84,16 +84,22 @@ const ROUTE_SAGE: Record<string, string> = {
   '/wuxing': 'suwen',
   '/liuyao': 'lingshi',
   '/meihua': 'lingshi',
+  '/shuzi': 'lingshi',
   '/daily': 'meixue',
   '/almanac': 'yunji',
   '/oracle': 'meixue',
   '/xiaoliuren': 'meixue',
+  '/jiaobei': 'meixue',
   '/classics': 'yunji',
   '/geju': 'shuanghua',
   '/rules': 'shouzhuo',
   '/cases': 'shiyi',
+  '/qimen': 'danxia',
+  '/yanyi': 'yunji',
+  '/story': 'xinglan',
   '/sages': 'qingxuan',
   '/memory': 'lingshi',
+  '/settings': 'qingxuan',
 }
 const sageChar = computed(() => ROUTE_SAGE[route.path] ?? 'qingxuan')
 
