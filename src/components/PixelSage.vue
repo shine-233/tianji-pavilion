@@ -20,7 +20,7 @@ const motionVars = computed(() => ({
   '--bdel': `${motion.value.delay}s`,
 }))
 
-const CELL = 6
+const CELL = 7
 const GRID_W = 25
 const GRID_H = 27
 const WIDTH = GRID_W * CELL

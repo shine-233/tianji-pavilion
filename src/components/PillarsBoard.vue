@@ -356,9 +356,9 @@ function toggle(i: number): void {
 }
 .z-slither { animation: z-slither 3s ease-in-out infinite; }
 @keyframes z-slither {
-  0%, 100% { translate: 0 0; skewX(0deg); }
-  25% { translate: 1.1px 0; skewX(3deg); }
-  75% { translate: -1.1px 0; skewX(-3deg); }
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  25% { translate: 1.1px 0; rotate: 2.6deg; }
+  75% { translate: -1.1px 0; rotate: -2.6deg; }
 }
 .z-gallop { animation: z-gallop 1.9s ease-in-out infinite; }
 @keyframes z-gallop {
