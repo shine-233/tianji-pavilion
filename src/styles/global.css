@@ -444,3 +444,116 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ============ 主题签名特效：每套皮肤一个标志性氛围 ============ */
+.theme-fx {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  display: none;
+}
+
+/* 月白：浮云缓移 */
+[data-theme='yue'] .theme-fx {
+  display: block;
+  background:
+    radial-gradient(420px 120px at 15% 22%, rgba(255,255,255,0.85), transparent 70%),
+    radial-gradient(520px 140px at 75% 12%, rgba(255,255,255,0.7), transparent 70%),
+    radial-gradient(380px 110px at 55% 78%, rgba(210,225,238,0.55), transparent 70%);
+  background-size: 200% 200%;
+  animation: fx-clouds 46s ease-in-out infinite alternate;
+}
+@keyframes fx-clouds {
+  from { background-position: 0% 0%, 100% 0%, 40% 100%; }
+  to   { background-position: 60% 30%, -20% 20%, 80% 80%; }
+}
+
+/* 朱砂：巨印水印 + 绛纱晕角 */
+[data-theme='zhu'] .theme-fx {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 8vh 6vw 0 0;
+}
+[data-theme='zhu'] .theme-fx::before {
+  content: '敕';
+  font-family: var(--cute);
+  font-size: min(34vh, 30vw);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 92, 92, 0.10);
+  transform: rotate(6deg);
+}
+[data-theme='zhu'] .theme-fx::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 22vh rgba(90, 12, 16, 0.5);
+  animation: fx-zhu-breathe 7s ease-in-out infinite;
+}
+@keyframes fx-zhu-breathe {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
+/* 水墨：远山淡影 */
+[data-theme='shui'] .theme-fx {
+  display: block;
+  background:
+    radial-gradient(60vw 24vh at 18% 96%, rgba(74, 85, 104, 0.16), transparent 70%),
+    radial-gradient(52vw 20vh at 62% 99%, rgba(74, 85, 104, 0.11), transparent 70%),
+    radial-gradient(44vw 17vh at 88% 95%, rgba(122, 158, 159, 0.14), transparent 72%);
+  filter: blur(6px);
+  animation: fx-mist 38s ease-in-out infinite alternate;
+}
+@keyframes fx-mist {
+  from { transform: translateX(-2vw); }
+  to   { transform: translateX(3vw); }
+}
+
+/* 紫霄：星云漩涡 */
+[data-theme='zi'] .theme-fx {
+  display: block;
+  background:
+    radial-gradient(46vw 46vh at 78% 18%, rgba(201, 176, 255, 0.13), transparent 68%),
+    radial-gradient(38vw 34vh at 12% 66%, rgba(125, 232, 195, 0.08), transparent 70%),
+    conic-gradient(from 220deg at 82% 14%, transparent 0deg, rgba(160, 120, 255, 0.07) 70deg, transparent 150deg);
+  animation: fx-nebula 60s linear infinite;
+}
+@keyframes fx-nebula {
+  to { transform: rotate(4deg) scale(1.06); }
+}
+
+/* 青梅：烟雨斜织 */
+[data-theme='qing'] .theme-fx {
+  display: block;
+  overflow: hidden;
+}
+[data-theme='qing'] .theme-fx::before,
+[data-theme='qing'] .theme-fx::after {
+  content: '';
+  position: absolute;
+  inset: -20% -10%;
+  background-image: repeating-linear-gradient(
+    115deg,
+    transparent 0 26px,
+    rgba(159, 216, 187, 0.05) 26px 27px,
+    transparent 27px 54px,
+    rgba(255, 215, 110, 0.04) 54px 55px
+  );
+  animation: fx-rain 1.9s linear infinite;
+}
+[data-theme='qing'] .theme-fx::after {
+  animation-duration: 2.9s;
+  opacity: 0.6;
+  transform: translate(14px, 10px);
+}
+@keyframes fx-rain {
+  from { transform: translateY(-4%); }
+  to   { transform: translateY(6%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-fx, [data-theme] .theme-fx::before, [data-theme] .theme-fx::after { animation: none !important; }
+}

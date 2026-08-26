@@ -38,6 +38,20 @@ const backPixels = computed(() => {
   return cardBackPixels({ R: pal.R, D: pal.D, Y: pal.Y })
 })
 
+/** 主题专属牌背纹样：每套皮肤的卡背都是独一份 */
+const BACK_PATTERNS: Record<string, string> = {
+  xuan: `<svg xmlns='http://www.w3.org/2000/svg' width='46' height='46'><g fill='none' stroke='%23e8c473' stroke-opacity='.28'><circle cx='23' cy='23' r='9'/><path d='M0 23h10M36 23h10M23 0v10M23 36v10'/></g><circle cx='23' cy='23' r='1.6' fill='%23ffe3a8' fill-opacity='.5'/></svg>`,
+  yue: `<svg xmlns='http://www.w3.org/2000/svg' width='52' height='40'><g fill='none' stroke='%233a6ea5' stroke-opacity='.26' stroke-width='2' stroke-linecap='round'><path d='M4 30q12-14 24-2t24-2'/><path d='M0 16q10-10 20-3'/></g></svg>`,
+  zhu: `<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'><rect x='8' y='8' width='28' height='28' fill='none' stroke='%23ff7a5c' stroke-opacity='.3'/><circle cx='22' cy='22' r='6.5' fill='none' stroke='%23ff7a5c' stroke-opacity='.38'/><path d='M22 15.5v13M18.8 18.5l6.4 7M25.2 18.5l-6.4 7' stroke='%23ff9c85' stroke-opacity='.34'/></svg>`,
+  shui: `<svg xmlns='http://www.w3.org/2000/svg' width='56' height='34'><g fill='none' stroke='%23555f66' stroke-opacity='.3' stroke-width='2'><path d='M0 12q14-12 28 0t28 0'/><path d='M-6 24q14-10 28 0t28 0t28 0'/></g></svg>`,
+  zi: `<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><path d='M6 40L20 18l10 12 8-16 6 10' fill='none' stroke='%23c9b0ff' stroke-opacity='.32'/><circle cx='20' cy='18' r='1.8' fill='%23e4d6ff' fill-opacity='.55'/><circle cx='38' cy='14' r='1.4' fill='%237de8c3' fill-opacity='.5'/></svg>`,
+  qing: `<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><g fill='%23ffd76e' fill-opacity='.24'><circle cx='24' cy='17' r='5'/><circle cx='17' cy='27' r='5'/><circle cx='31' cy='27' r='5'/><circle cx='21' cy='35' r='4.4'/><circle cx='27' cy='35' r='4.4'/></g><circle cx='24' cy='27' r='3.4' fill='%230f1a13' fill-opacity='.55'/></svg>`,
+}
+const backPattern = computed(() => {
+  const svg = BACK_PATTERNS[liveTheme.value] ?? BACK_PATTERNS.xuan!
+  return `url("data:image/svg+xml,${svg.replace(/\s+/g, ' ')}")`
+})
+
 const HEADS = ['年柱', '月柱', '日柱', '时柱']
 const BRANCH_ANIMAL = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪']
 const ZHI_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
@@ -77,6 +91,7 @@ function toggle(i: number): void {
   <div class="pillars" :class="{ flipped }">
     <button
       v-for="(p, i) in props.ps" :key="i"
+      v-tilt="5"
       class="pillar-flip" :style="{ transitionDelay: `${i * 120}ms` }"
       @click="toggle(i)"
     >
@@ -106,8 +121,8 @@ function toggle(i: number): void {
           </div>
           <div class="nayin" :title="'纳音五行：' + nayinOf(p[0], p[1])">纳音·{{ nayinOf(p[0], p[1]) }}</div>
         </div>
-        <!-- 背面：道长小像纹样 -->
-        <div class="face back-face">
+        <!-- 背面：道长小像纹样 + 主题专属底纹 -->
+        <div class="face back-face" :style="{ backgroundImage: backPattern }">
           <svg class="back-sprite" viewBox="0 0 13 18" shape-rendering="crispEdges">
             <rect v-for="(q, qi) in backPixels" :key="qi"
               :x="q.x" :y="q.y" width="1.02" height="1.02" :fill="q.fill" />

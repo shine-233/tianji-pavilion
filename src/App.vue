@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import PixelSage from './components/PixelSage.vue'
@@ -6,9 +6,14 @@ import Palette from './components/Palette.vue'
 import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
+<<<<<<< HEAD
 import ScrollProgress from './components/ScrollProgress.vue'
+=======
+import ThemeFlair from './components/ThemeFlair.vue'
+>>>>>>> 6522077 (feat: per-theme ambient decor layer + themed card-back patterns)
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
+import ThemeDecor from './components/ThemeDecor.vue'
 import { buildTaoess, TAOESS_IDS } from './data/sageSprite'
 
 const soundOn = ref(isSoundOn())
@@ -273,7 +278,12 @@ onBeforeUnmount(() => {
     规则全部公开，欢迎挑错 · 断语仅供把玩参考，大事请多商量 · 数据不出你的浏览器
   </footer>
 
+  <ThemeDecor :theme="activeTheme" />
+
   <TransitionVeil />
+
+  <div class="theme-fx" aria-hidden="true"></div>
+  <ThemeFlair />
 
   <!-- 一炷香：滚动进度 -->
   <div class="incense" aria-hidden="true">
