@@ -91,6 +91,21 @@ function pickBook(b: string): void {
   selBook.value = selBook.value === b ? null : b
 }
 
+/** 书档：选中书目后的档案卡数据 */
+const bookProfile = computed(() => {
+  const b = selBook.value
+  if (!b) return null
+  const rows = chapters.value.filter((c) => c.book === b)
+  const chars = rows.reduce((s, c) => s + Number(c.chars || 0), 0)
+  const topicSum = TOPIC_KEYS.map((k) => ({
+    name: k,
+    alias: KEY_ALIAS[k]!,
+    v: rows.reduce((s, c) => s + Number(c[k] ?? 0), 0),
+  })).sort((x, y) => y.v - x.v)
+  const longest = [...rows].sort((x, y) => Number(y.chars) - Number(x.chars)).slice(0, 3)
+  return { book: b, n: rows.length, chars, top: topicSum.slice(0, 3), maxV: Math.max(1, topicSum[0]?.v ?? 1), longest }
+})
+
 function toggleChapter(i: number): void {
   sfx.pop()
   openChapter.value = openChapter.value === i ? null : i
@@ -172,6 +187,28 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
         </p>
       </div>
 
+      <transition name="pop">
+        <div v-if="bookProfile" class="card book-profile">
+          <h2>书档 · {{ bookProfile.book }}</h2>
+          <p class="bp-line">
+            <span class="tag gold">{{ bookProfile.n }} 章</span>
+            <span class="tag teal">{{ (bookProfile.chars / 10000).toFixed(1) }} 万字</span>
+            <span
+              v-for="tp in bookProfile.top" :key="tp.name"
+              class="bp-topic"
+              :style="{ color: topicColor(tp.name) }"
+            >{{ tp.name }}·{{ tp.v.toFixed(0) }}</span>
+          </p>
+          <div class="bp-bars">
+            <div v-for="tp in bookProfile.top" :key="'b' + tp.name" class="bp-bar-row">
+              <span class="bp-name">{{ tp.name }}</span>
+              <span class="bar"><i :style="{ width: `${(tp.v / bookProfile.maxV) * 100}%`, background: topicColor(tp.name) }"></i></span>
+            </div>
+          </div>
+          <p class="note">最长三章：{{ bookProfile.longest.map((c) => `${c.chapter}（${Number(c.chars).toLocaleString()}字）`).join(' · ') }}</p>
+        </div>
+      </transition>
+
       <!-- 章节检索 -->
       <div class="card hoverable">
         <h2>章节检索 <small class="sub">共 {{ filtered.length }} / {{ chapters.length }} 节{{ selBook ? ` · 已限定「${selBook}」` : '' }}</small></h2>
@@ -222,6 +259,14 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .stat .big-num { font-size: 1.9rem; }
 
 .matrix th, .matrix td { padding: 7px 8px; transition: background 0.2s ease; }
+
+.book-profile { border-color: rgba(var(--acc-rgb), 0.4); }
+.bp-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.bp-topic { font-family: var(--cute); font-size: 0.86rem; }
+.bp-bars { max-width: 460px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.bp-bar-row { display: flex; align-items: center; gap: 12px; }
+.bp-name { width: 56px; text-align: right; font-size: 0.78rem; }
+.bp-bar-row .bar { flex: 1; margin: 0; }
 .matrix tbody tr { cursor: pointer; transition: background 0.2s ease; }
 .matrix tbody tr:hover { background: rgba(232, 196, 115, 0.05); }
 .matrix tbody tr.on { background: rgba(232, 196, 115, 0.09); outline: 1px solid rgba(232, 196, 115, 0.35); }

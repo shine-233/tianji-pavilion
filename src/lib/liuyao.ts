@@ -1,360 +1,399 @@
-/** 六爻纳甲引擎：京房八宫装卦，纯查表实现，可离线回归 */
-import { ELE_B } from './constants'
-import type { Element } from './constants'
+﻿/**
+ * 六爻纳甲引擎（京房一脉）
+ *
+ * 数据与规则：
+ * - 先天八卦按二进制自下而上存位（1 阳 0 阴），hex = 下卦*8 + 上卦
+ * - 八宫卦序定本宫五行与世应爻位（含游魂归魂）
+ * - 纳甲：干支逐爻装卦；六亲以本宫五行为「我」
+ * - 六兽按占日天干起初爻顺行
+ * - 旬空由占日干支推得
+ *
+ * 断语只是把传统套路整理成人话，供把玩参考。
+ */
 
-export const TRIGRAMS = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤'] as const
-export type Trigram = (typeof TRIGRAMS)[number]
+export type Element = '木' | '火' | '土' | '金' | '水'
 
-/** 三爻自下而上的阴阳位：1 为阳 */
-export const TRI_BITS: Record<Trigram, string> = {
-  乾: '111', 兑: '110', 离: '101', 震: '100', 巽: '011', 坎: '010', 艮: '001', 坤: '000',
+export const TRIGRAM_NAMES = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤'] as const
+export const TRIGRAM_BITS: number[][] = [
+  [1, 1, 1], // 乾
+  [1, 1, 0], // 兑
+  [1, 0, 1], // 离
+  [1, 0, 0], // 震
+  [0, 1, 1], // 巽
+  [0, 1, 0], // 坎
+  [0, 0, 1], // 艮
+  [0, 0, 0], // 坤
+]
+/** 先天八卦数 ↔ 三爻数组下标 */
+export const XIANTIAN_NUM_TO_TRIG = [7, 0, 1, 2, 3, 4, 5, 6] as const // 数1~8 → 下标
+export const ZHI_WUXING: Record<string, Element> = { 子: '水', 丑: '土', 寅: '木', 卯: '木', 辰: '土', 巳: '火', 午: '火', 未: '土', 申: '金', 酉: '金', 戌: '土', 亥: '水' }
+export const BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
+export const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
+
+const E_SHENG: Record<Element, Element> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
+const E_KE: Record<Element, Element> = { 木: '土', 火: '金', 土: '水', 金: '木', 水: '火' }
+
+/** 生我者 */
+export function shengWo(e: Element): Element {
+  return (Object.keys(E_SHENG) as Element[]).find((k) => E_SHENG[k] === e)!
+}
+/** 克我者 */
+export function keWo(e: Element): Element {
+  return (Object.keys(E_KE) as Element[]).find((k) => E_KE[k] === e)!
 }
 
-export const BITS_TO_TRI: Record<string, Trigram> = Object.fromEntries(
-  TRIGRAMS.map((t) => [TRI_BITS[t], t]),
-) as Record<string, Trigram>
-
-export const TRI_WUXING: Record<Trigram, Element> = {
-  乾: '金', 兑: '金', 离: '火', 震: '木', 巽: '木', 坎: '水', 艮: '土', 坤: '土',
+/** 八宫首卦与本宫五行 */
+export const PALACE_ELEMENT: Record<string, Element> = {
+  乾宫: '金',
+  兑宫: '金',
+  离宫: '火',
+  震宫: '木',
+  巽宫: '木',
+  坎宫: '水',
+  艮宫: '土',
+  坤宫: '土',
 }
 
-/** 内卦纳甲（初爻至三爻） */
-const NAJIA_INNER: Record<Trigram, string[]> = {
+/**
+ * 卦索引约定：hex = trigVal(lower) * 8 + trigVal(upper)
+ * trigVal = b0 + 2*b1 + 4*b2（b0 最下一爻）
+ */
+const TV = [0, 0, 0, 0, 0, 0, 0, 0]
+TRIGRAM_BITS.forEach((bits, i) => {
+  TV[i] = bits[0] + bits[1] * 2 + bits[2] * 4
+})
+/** 二进制值 → 数组下标（TRIGRAM_NAMES 下标） */
+const POS_FROM_TV: number[] = []
+TV.forEach((v, i) => {
+  POS_FROM_TV[v] = i
+})
+
+/** 64 卦名表 [下卦名][上卦名] */
+const NAME_TABLE: Record<string, Record<string, string>> = {
+  乾: { 乾: '乾为天', 兑: '天泽履', 离: '天火同人', 震: '天雷无妄', 巽: '天风姤', 坎: '天水讼', 艮: '天山遁', 坤: '天地否' },
+  兑: { 乾: '泽天夬', 兑: '兑为泽', 离: '泽火革', 震: '泽雷随', 巽: '泽风大过', 坎: '泽水困', 艮: '泽山咸', 坤: '泽地萃' },
+  离: { 乾: '火天大有', 兑: '火泽睽', 离: '离为火', 震: '火雷噬嗑', 巽: '火风鼎', 坎: '火水未济', 艮: '火山旅', 坤: '火地晋' },
+  震: { 乾: '雷天大壮', 兑: '雷泽归妹', 离: '雷火丰', 震: '震为雷', 巽: '雷风恒', 坎: '雷水解', 艮: '雷山小过', 坤: '雷地豫' },
+  巽: { 乾: '风天小畜', 兑: '风泽中孚', 离: '风火家人', 震: '风雷益', 巽: '巽为风', 坎: '风水涣', 艮: '风山渐', 坤: '风地观' },
+  坎: { 乾: '水天需', 兑: '水泽节', 离: '水火既济', 震: '水雷屯', 巽: '水风井', 坎: '坎为水', 艮: '水山蹇', 坤: '水地比' },
+  艮: { 乾: '山天大畜', 兑: '山泽损', 离: '山火贲', 震: '山雷颐', 巽: '山风蛊', 坎: '山水蒙', 艮: '艮为山', 坤: '山地剥' },
+  坤: { 乾: '地天泰', 兑: '地泽临', 离: '地火明夷', 震: '地雷复', 巽: '地风升', 坎: '地水师', 艮: '地山谦', 坤: '坤为地' },
+}
+
+/** 表按 [上卦][下卦] 排列（与通行卦序表一致） */
+export function hexName(lowerPos: number, upperPos: number): string {
+  return NAME_TABLE[TRIGRAM_NAMES[upperPos]][TRIGRAM_NAMES[lowerPos]]
+}
+
+export function bitsToIdx(bits: number[]): number {
+  // bits 自下而上 6 位
+  const lower = bits[0] + bits[1] * 2 + bits[2] * 4
+  const upper = bits[3] + bits[4] * 2 + bits[5] * 4
+  return lower * 8 + upper
+}
+export function idxToBits(idx: number): number[] {
+  const lo = POS_FROM_TV[Math.floor(idx / 8)]
+  const hi = POS_FROM_TV[idx % 8]
+  return TRIGRAM_BITS[lo].concat(TRIGRAM_BITS[hi])
+}
+
+/** 八宫卦序：从每宫首卦出发的 8 个卦名，依次为首卦至五世、游魂、归魂 */
+export const PALACE_SEQUENCE: Record<string, string[]> = {
+  乾宫: ['乾为天', '天风姤', '天山遁', '天地否', '风地观', '山地剥', '火地晋', '火天大有'],
+  坎宫: ['坎为水', '水泽节', '水雷屯', '水火既济', '泽火革', '雷火丰', '地火明夷', '地水师'],
+  艮宫: ['艮为山', '山火贲', '山天大畜', '山泽损', '火泽睽', '天泽履', '风泽中孚', '风山渐'],
+  震宫: ['震为雷', '雷地豫', '雷水解', '雷风恒', '地风升', '水风井', '泽风大过', '泽雷随'],
+  巽宫: ['巽为风', '风天小畜', '风火家人', '风雷益', '天雷无妄', '火雷噬嗑', '山雷颐', '山风蛊'],
+  离宫: ['离为火', '火山旅', '火风鼎', '火水未济', '山水蒙', '风水涣', '天水讼', '天火同人'],
+  坤宫: ['坤为地', '地雷复', '地泽临', '地天泰', '雷天大壮', '泽天夬', '水天需', '水地比'],
+  兑宫: ['兑为泽', '泽水困', '泽地萃', '泽山咸', '水山蹇', '地山谦', '雷山小过', '雷泽归妹'],
+}
+
+/** 世应爻位：index 0..7 对应 首卦至归魂；值为世爻位置(1..6)，应爻=世±3 */
+export const SHI_POS = [6, 1, 2, 3, 4, 5, 4, 3]
+
+/** 纳甲：内三卦与外三卦的干支（自下而上） */
+const NAJIA_IN: Record<string, string[]> = {
   乾: ['甲子', '甲寅', '甲辰'],
-  坤: ['乙未', '乙巳', '乙卯'],
+  坎: ['戊寅', '戊辰', '戊午'],
+  艮: ['丙辰', '丙午', '丙申'],
   震: ['庚子', '庚寅', '庚辰'],
   巽: ['辛丑', '辛亥', '辛酉'],
-  坎: ['戊寅', '戊辰', '戊午'],
   离: ['己卯', '己丑', '己亥'],
-  艮: ['丙辰', '丙午', '丙申'],
+  坤: ['乙未', '乙巳', '乙卯'],
   兑: ['丁巳', '丁卯', '丁丑'],
 }
-/** 外卦纳甲（四爻至上爻） */
-const NAJIA_OUTER: Record<Trigram, string[]> = {
+const NAJIA_OUT: Record<string, string[]> = {
   乾: ['壬午', '壬申', '壬戌'],
-  坤: ['癸丑', '癸亥', '癸酉'],
+  坎: ['戊申', '戊戌', '戊子'],
+  艮: ['丙戌', '丙子', '丙寅'],
   震: ['庚午', '庚申', '庚戌'],
   巽: ['辛未', '辛巳', '辛卯'],
-  坎: ['戊申', '戊戌', '戊子'],
   离: ['己酉', '己未', '己巳'],
-  艮: ['丙戌', '丙子', '丙寅'],
+  坤: ['癸亥', '癸酉', '癸丑'],
   兑: ['丁亥', '丁酉', '丁未'],
 }
 
-interface GuaEntry {
-  name: string
-  gong: Trigram
-  idx: number
-  lower: Trigram
-  upper: Trigram
-}
-
-/** 京房八宫六十四卦序：本宫、一世至五世、游魂、归魂 */
-const PALACE_TABLE: Array<{ gong: Trigram; members: Array<[string, Trigram, Trigram]> }> = [
-  { gong: '乾', members: [['乾为天', '乾', '乾'], ['天风姤', '乾', '巽'], ['天山遁', '乾', '艮'], ['天地否', '乾', '坤'], ['风地观', '巽', '坤'], ['山地剥', '艮', '坤'], ['火地晋', '离', '坤'], ['火天大有', '离', '乾']] },
-  { gong: '坤', members: [['坤为地', '坤', '坤'], ['地雷复', '坤', '震'], ['地泽临', '坤', '兑'], ['地天泰', '坤', '乾'], ['雷天大壮', '震', '乾'], ['泽天夬', '兑', '乾'], ['水天需', '坎', '乾'], ['水地比', '坎', '坤']] },
-  { gong: '震', members: [['震为雷', '震', '震'], ['雷地豫', '震', '坤'], ['雷水解', '震', '坎'], ['雷风恒', '震', '巽'], ['地风升', '坤', '巽'], ['水风井', '坎', '巽'], ['泽风大过', '兑', '巽'], ['泽雷随', '兑', '震']] },
-  { gong: '巽', members: [['巽为风', '巽', '巽'], ['风天小畜', '巽', '乾'], ['风火家人', '巽', '离'], ['风雷益', '巽', '震'], ['天雷无妄', '乾', '震'], ['火雷噬嗑', '离', '震'], ['山雷颐', '艮', '震'], ['山风蛊', '艮', '巽']] },
-  { gong: '坎', members: [['坎为水', '坎', '坎'], ['水泽节', '坎', '兑'], ['水雷屯', '坎', '震'], ['水火既济', '坎', '离'], ['泽火革', '兑', '离'], ['雷火丰', '震', '离'], ['地火明夷', '坤', '离'], ['地水师', '坤', '坎']] },
-  { gong: '离', members: [['离为火', '离', '离'], ['火山旅', '离', '艮'], ['火风鼎', '离', '巽'], ['火水未济', '离', '坎'], ['山水蒙', '艮', '坎'], ['风水涣', '巽', '坎'], ['天水讼', '乾', '坎'], ['天火同人', '乾', '离']] },
-  { gong: '艮', members: [['艮为山', '艮', '艮'], ['山火贲', '艮', '离'], ['山天大畜', '艮', '乾'], ['山泽损', '艮', '兑'], ['火泽睽', '离', '兑'], ['天泽履', '乾', '兑'], ['风泽中孚', '巽', '兑'], ['风山渐', '巽', '艮']] },
-  { gong: '兑', members: [['兑为泽', '兑', '兑'], ['泽水困', '兑', '坎'], ['泽地萃', '兑', '坤'], ['泽山咸', '兑', '艮'], ['水山蹇', '坎', '艮'], ['地山谦', '坤', '艮'], ['雷山小过', '震', '艮'], ['雷泽归妹', '震', '兑']] },
-]
-
-const GUA_MAP: Record<string, GuaEntry> = {}
-PALACE_TABLE.forEach(({ gong, members }) => {
-  members.forEach(([name, upper, lower], idx) => {
-    GUA_MAP[TRI_BITS[lower]! + TRI_BITS[upper]!] = { name, gong, idx, lower, upper }
-  })
-})
-
-const SHI_LINES = [6, 1, 2, 3, 4, 5, 4, 3]
-
-export interface InstalledYao {
-  pos: number
-  /** 1 阳 0 阴 */
-  yang: boolean
-  moving: boolean
-  najia: string
+export interface LiuYaoLine {
+  pos: number // 1..6 自下而上
+  bit: 0 | 1
+  najia: string // 干支
   element: Element
-  liuqin: string
-  liushou: string
-  shi: boolean
-  ying: boolean
+  liuqin: string // 六亲
+  beast: string // 六兽
+  moving: boolean
+  /** 老阳(重)○ / 老阴(交)× 的记号 */
+  mark?: string
+  shiYing?: '世' | '应'
+  changedBit?: 0 | 1
 }
 
-export interface InstalledGua {
+export interface LiuYaoChart {
   name: string
-  gong: Trigram
+  palace: string
   gongWuxing: Element
-  yaos: InstalledYao[]
+  lowerIdx: number
+  upperIdx: number
+  lines: LiuYaoLine[]
+  shiPos: number
+  yingPos: number
+  seqRole: string // 首卦/一世…游魂/归魂
+  hasMoving: boolean
+  changedName: string | null
+  xunkong: [string, string]
 }
 
-const LIUQIN_REL: Record<string, string> = {
-  同: '兄弟', 生我: '父母', 我生: '子孙', 我克: '妻财', 克我: '官鬼',
+export function liuqinOf(gong: Element, target: Element): string {
+  if (target === gong) return '兄弟'
+  if (shengWo(gong) === target) return '父母' // 生我者父母：target 生 gong
+  if (E_SHENG[gong] === target) return '子孙' // 我生者子孙
+  if (E_KE[gong] === target) return '妻财' // 我克者妻财
+  return '官鬼' // 克我者官鬼
 }
 
-function relTo(gongWx: Element, lineWx: Element): string {
-  if (gongWx === lineWx) return '同'
-  const sheng: Record<Element, Element> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
-  const ke: Record<Element, Element> = { 木: '土', 火: '金', 土: '水', 金: '木', 水: '火' }
-  if (sheng[gongWx] === lineWx) return '我生'
-  if (sheng[lineWx] === gongWx) return '生我'
-  if (ke[gongWx] === lineWx) return '我克'
-  return '克我'
+const BEAST_SEQ = ['青龙', '朱雀', '勾陈', '螣蛇', '白虎', '玄武']
+export function beastsOfDay(dayGan: string): string[] {
+  const startMap: Record<string, number> = { 甲: 0, 乙: 0, 丙: 1, 丁: 1, 戊: 2, 己: 3, 庚: 4, 辛: 4, 壬: 5, 癸: 5 }
+  const s = startMap[dayGan] ?? 0
+  return Array.from({ length: 6 }, (_, i) => BEAST_SEQ[(s + i) % 6])
 }
 
-const LIUSHOU_SEQ = ['青龙', '朱雀', '勾陈', '腾蛇', '白虎', '玄武']
-
-function liushouStart(dayGan: string): number {
-  if ('甲乙'.includes(dayGan)) return 0
-  if ('丙丁'.includes(dayGan)) return 1
-  if (dayGan === '戊') return 2
-  if (dayGan === '己') return 3
-  if ('庚辛'.includes(dayGan)) return 4
-  return 5
+/** 由卦名查八宫信息 */
+const NAME_TO_PALACE: Record<string, { palace: string; role: string }> = {}
+for (const [palace, names] of Object.entries(PALACE_SEQUENCE)) {
+  names.forEach((n, i) => {
+    NAME_TO_PALACE[n] = { palace, role: ['本宫', '一世', '二世', '三世', '四世', '五世', '游魂', '归魂'][i] }
+  })
 }
 
-/** 给一个卦完整装卦：纳甲、六亲、六兽、世应 */
-export function install(bits: string, dayGan: string): InstalledGua {
-  const entry = GUA_MAP[bits]
-  if (!entry) throw new Error('未知卦象: ' + bits)
-  const gongWuxing = TRI_WUXING[entry.gong]
-  const inner = NAJIA_INNER[entry.lower]
-  const outer = NAJIA_OUTER[entry.upper]
-  const shiPos = SHI_LINES[entry.idx]!
-  const yaos: InstalledYao[] = []
-  const allBits = TRI_BITS[entry.lower]! + TRI_BITS[entry.upper]!
-  const start = liushouStart(dayGan)
-  for (let i = 0; i < 6; i++) {
-    const gz = i < 3 ? inner[i]! : outer[i - 3]!
-    const wx = ELE_B[gz[1]!]!
-    yaos.push({
-      pos: i + 1,
-      yang: allBits[i] === '1',
-      moving: false,
-      najia: gz,
-      element: wx,
-      liuqin: LIUQIN_REL[relTo(gongWuxing, wx)]!,
-      liushou: LIUSHOU_SEQ[(i + start) % 6]!,
-      shi: i + 1 === shiPos,
-      ying: Math.abs(i + 1 - shiPos) === 3,
-    })
-  }
-  return { name: entry.name, gong: entry.gong, gongWuxing, yaos }
-}
-
-export type CoinResult = 6 | 7 | 8 | 9
-
-/** 三枚铜钱：返回老阴6 / 少阳7 / 少阴8 / 老阳9 */
-export function tossCoins(): CoinResult {
-  let backs = 0
-  for (let i = 0; i < 3; i++) if (Math.random() < 0.5) backs++
-  return ([6, 7, 8, 9] as CoinResult[])[backs]!
-}
-
-export const COIN_LABEL: Record<CoinResult, string> = {
-  6: '老阴 · 交', 7: '少阳 · 单', 8: '少阴 · 拆', 9: '老阳 · 重',
-}
-
-export function bitsFromCast(cast: number[]): string {
-  return cast.map((v) => (v === 7 || v === 9 ? '1' : '0')).join('')
-}
-
-export function changedBits(bits: string, cast: number[]): string {
-  return bits
-    .split('')
-    .map((b, i) => {
-      const v = cast[i]
-      if (v === 9) return '0'
-      if (v === 6) return '1'
-      return b
-    })
-    .join('')
-}
-
-/** 干支纪数的旬空 */
-export function xunKong(gz: string): string {
-  const GAN = '甲乙丙丁戊己庚辛壬癸'
-  const ZHI = '子丑寅卯辰巳午未申酉戌亥'
-  const gi = GAN.indexOf(gz[0]!)
-  let zi = ZHI.indexOf(gz[1]!)
-  while (((zi % 10) + 10) % 10 !== ((gi % 10) + 10) % 10) zi += 12
-  const start = Math.floor(zi / 10) * 10
-  return ZHI[(start + 10) % 12]! + ZHI[(start + 11) % 12]!
-}
-
-export const TRI_NATURE: Record<Trigram, string> = {
-  乾: '天', 兑: '泽', 离: '火', 震: '雷', 巽: '风', 坎: '水', 艮: '山', 坤: '地',
-}
-
-export interface GuaCatalogEntry extends GuaEntry {
-  bits: string
-}
-
-/** 全量六十四卦目录（按八宫顺序） */
-export function guaCatalog(): GuaCatalogEntry[] {
-  return Object.entries(GUA_MAP).map(([bits, e]) => ({ ...e, bits }))
-}
-
-/** 各卦白话点睛：依传统卦德与卦名语义概括，供速览参考 */
-export const GUA_TIP: Record<string, string> = {
-  乾为天: '刚健进取，自强不息',
-  坤为地: '厚德承载，以柔济刚',
-  水雷屯: '草创多艰，蓄势待发',
-  山水蒙: '启蒙求教，虚心则明',
-  水天需: '等待时机，安闲勿躁',
-  天水讼: '争讼宜解，退一步宽',
-  地水师: '兴师动众，纪律为先',
-  水地比: '亲附相帮，择善而从',
-  风天小畜: '小有积蓄，力尚未足',
-  天泽履: '如履虎尾，礼让则吉',
-  地天泰: '通泰和畅，上下相交',
-  天地否: '塞滞不通，守静待变',
-  天火同人: '同心协力，志同道合',
-  火天大有: '大有所获，盛时需敛',
-  地山谦: '谦尊而光，低处纳福',
-  雷地豫: '和乐豫备，顺动而喜',
-  泽雷随: '随时而动，择善而随',
-  山风蛊: '整饬积弊，治乱有序',
-  地泽临: '临事而惧，渐进得位',
-  风地观: '观仰瞻视，静看大局',
-  火雷噬嗑: '咬合去梗，除障则通',
-  山火贲: '文饰其表，质为文本',
-  山地剥: '剥落衰微，厚下安宅',
-  地雷复: '一阳来复，迷途知返',
-  天雷无妄: '无妄至诚，循理而行',
-  山天大畜: '大畜其德，止而后养',
-  山雷颐: '慎言节食，自养自求',
-  泽风大过: '大过之时，行非常之事',
-  坎为水: '重险叠陷，守恒涉险',
-  离为火: '附丽光明，柔顺守正',
-  泽山咸: '二气感应，以诚相感',
-  雷风恒: '恒久有守，立不易方',
-  天山遁: '遁世避锋，退保其余',
-  雷天大壮: '壮而守礼，恃强则折',
-  火地晋: '晋升向明，柔进上行',
-  地火明夷: '晦而转明，用晦自藏',
-  风火家人: '家道齐整，内外有别',
-  火泽睽: '同床异梦，小事可谐',
-  水山蹇: '行路蹇难，反身修德',
-  雷水解: '解缓舒困，赦过宥罪',
-  山泽损: '损己利人，减以求进',
-  风雷益: '损上益下，施惠得众',
-  泽天夬: '决而去之，刚断莫留',
-  天风姤: '不期而遇，防微杜渐',
-  泽地萃: '聚而成群，敬之则安',
-  水风井: '井养不穷，守常济人',
-  泽火革: '变革有时，顺天应人',
-  火风鼎: '鼎定新成，养贤凝命',
-  震为雷: '震惊而动，惧以致福',
-  艮为山: '时止则止，笃实安静',
-  风山渐: '循序渐进，鸿羽有序',
-  雷泽归妹: '归妹有情，守礼则吉',
-  雷火丰: '盛大丰明，日中则昃',
-  火山旅: '旅居在外，谨慎自处',
-  巽为风: '随风入物，谦柔行事',
-  兑为泽: '朋友讲习，和悦相处',
-  风水涣: '涣散将聚，涉川有功',
-  水泽节: '节而有度，张弛中节',
-  风泽中孚: '中诚感通，信及豚鱼',
-  雷山小过: '小事可过，大事守正',
-  水火既济: '既济功成，守成防患',
-  火水未济: '未济待时，慎辨居方',
-}
-
-const YONGSHEN: Record<string, string> = {
-  财运: '妻财',
-  事业: '官鬼',
-  婚姻: '婚姻男看妻财、女看官鬼',
-  健康: '官鬼为病，子孙为药',
-  学业: '父母为文书，官鬼为名次',
-  寻物: '妻财为所失之物',
-  行人: '父母为音信，驿马看动爻',
-  其他: '以世爻为自己，应爻为对方或事体',
-}
-
-/** 各事类对应的用神六亲（用于盘面高亮），无固定用神者返回 null */
-export function yongshenLiuqin(category: string): string | null {
-  const map: Record<string, string> = {
-    财运: '妻财', 寻物: '妻财', 事业: '官鬼', 学业: '父母', 行人: '父母',
-  }
-  return map[category] ?? null
-}
-
-/** 求测事项的称谓：问事人视角 */
-export function shiYaoNote(): string {
-  return '世爻为求测人自己'
-}
-
-const WANGSHUAI: Record<string, string> = {
-  同: '旺——正当时令，事情有底气',
-  生我: '相——得月生扶，后劲还在攒',
-  我生: '休——气往外泄，宜守不宜攻',
-  克我: '死——被月令压着，先避锋芒',
-  我克: '囚——耗力的事多，别硬撑',
-}
-
-export interface LiuyaoContext {
-  dayGZ: string
-  monthGZ: string
-  kong: string
-}
-
-export interface LiuyaoResult {
-  ben: InstalledGua
-  bian: InstalledGua | null
-  ctx: LiuyaoContext
-  cast: number[]
-  reading: string[]
-}
-
-function wangShuaiOf(wx: Element, monthZhi: string): string {
-  const monthWx = ELE_B[monthZhi]!
-  const sheng: Record<Element, Element> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
-  const ke: Record<Element, Element> = { 木: '土', 火: '金', 土: '水', 金: '木', 水: '火' }
-  if (wx === monthWx) return WANGSHUAI['同']!
-  if (sheng[monthWx] === wx) return WANGSHUAI['生我']!
-  if (sheng[wx] === monthWx) return WANGSHUAI['我生']!
-  if (ke[monthWx] === wx) return WANGSHUAI['克我']!
-  return WANGSHUAI['我克']!
-}
-
-export function assembleReading(ben: InstalledGua, bian: InstalledGua | null, cast: number[], ctx: LiuyaoContext, category: string, question: string): LiuyaoResult {
-  ben.yaos.forEach((y, i) => (y.moving = cast[i] === 9 || cast[i] === 6))
-  const movers = ben.yaos.filter((y) => y.moving)
-  const shi = ben.yaos.find((y) => y.shi)!
-  const ying = ben.yaos.find((y) => y.ying)!
-  const out: string[] = []
-
-  out.push(`本卦【${ben.name}】属${ben.gong}宫${ben.gongWuxing}，世爻在${shi.pos}爻${shi.liuqin}${shi.najia}，应爻在${ying.pos}爻。起卦日 ${ctx.dayGZ}，月建 ${ctx.monthGZ}，旬空 ${ctx.kong}。`)
-
-  if (!movers.length) {
-    out.push('六个爻都没动，是静卦。静卦重在卦象与日月生克：事体大体按现状延续，短期内难有大变化，不必急于求成。')
-  } else {
-    const mtxt = movers.map((m) => `${m.pos}爻 ${m.liuqin}·${m.najia}`).join('、')
-    out.push(`动爻在${mtxt}——这几处就是事情的转机所在，吉凶多从动爻与用神的关系里看出来。`)
-  }
-
-  const ysHint = YONGSHEN[category] ?? YONGSHEN['其他']!
-  const targetName = ['财运', '寻物'].includes(category) ? '妻财' : category === '事业' ? '官鬼' : null
-  if (targetName) {
-    const ys = ben.yaos.find((y) => y.liuqin === targetName)
-    if (ys) {
-      const ws = wangShuaiOf(ys.element, ctx.monthGZ.slice(1))
-      const kongHit = ctx.kong.includes(ys.najia[1]!)
-      out.push(`问${category}以${targetName}爻为用神：落在${ys.pos}爻（${ys.najia}），月建之下${ws}${kongHit ? '，且正值旬空——空则事未实，出空之日才有眉目' : ''}。`)
-    } else {
-      out.push(`卦中不见${targetName}爻（用神不现），此类事宜看伏神与飞神关系，或借本宫首卦所用之神来断。`)
+/** 占日干支 → 旬空两支 */
+export function xunkong(dayGanzhi: string): [string, string] {
+  let idx = 0
+  for (let i = 0; i < 60; i++) {
+    if (STEMS[i % 10] === dayGanzhi[0] && BRANCHES[i % 12] === dayGanzhi[1]) {
+      idx = i
+      break
     }
   }
-  out.push(`取用神参考：${ysHint}。`)
+  const xunStart = Math.floor(idx / 10) * 10
+  return [BRANCHES[(xunStart + 10) % 12], BRANCHES[(xunStart + 11) % 12]]
+}
 
-  if (bian && movers.length) {
-    out.push(`动而变出【${bian.name}】，卦由${ben.name}化${bian.name}——变卦示趋势，本卦示当下，两卦合参再下结论。`)
+export interface BuildOpts {
+  /** 每爻掷出的背数 0~3（3背=老阳动，0背=老阴动，1背=少阳，2背=少阴） */
+  tosses: number[]
+  dayGan: string
+  dayZhi: string
+  monthZhi: string // 月建地支（节气月，简化取农历月支亦可）
+}
+
+export function buildChart(opts: BuildOpts): LiuYaoChart {
+  const { tosses, dayGan, dayZhi } = opts
+  if (tosses.length !== 6) throw new Error('需要六次掷币结果')
+
+  // 背数 → 爻：1背=少阳(阳静)，2背=少阴(阴静)，3背=老阳(阳动)，0背=老阴(阴动)
+  const bits = tosses.map((b) => (b === 1 || b === 3 ? 1 : 0))
+  const moving = tosses.map((b) => b === 3 || b === 0)
+  const sixBits = bits as Array<0 | 1>
+  const idx = bitsToIdx(bits)
+  // 数组下标（用于取名与纳甲查表）
+  const lowerPos = POS_FROM_TV[Math.floor(idx / 8)]
+  const upperPos = POS_FROM_TV[idx % 8]
+  const name = hexName(lowerPos, upperPos)
+  const info = NAME_TO_PALACE[name]
+  const palace = info.palace
+  const gongElement = PALACE_ELEMENT[palace]
+  const roleIdx = PALACE_SEQUENCE[palace].indexOf(name)
+  const shiPos = SHI_POS[roleIdx]
+  const yingPos = ((shiPos + 2) % 6) + 1
+
+  const lowerName = TRIGRAM_NAMES[lowerPos]
+  const upperName = TRIGRAM_NAMES[upperPos]
+  const beasts = beastsOfDay(dayGan)
+
+  const lines: LiuYaoLine[] = sixBits.map((bit, i) => {
+    const pos = i + 1
+    const gz = pos <= 3 ? NAJIA_IN[lowerName][pos - 1] : NAJIA_OUT[upperName][pos - 4]
+    const el = ZHI_WUXING[gz[1]]
+    const isMoving = moving[i]
+    return {
+      pos,
+      bit,
+      najia: gz,
+      element: el,
+      liuqin: liuqinOf(gongElement, el),
+      beast: beasts[i],
+      moving: isMoving,
+      mark: tosses[i] === 3 ? '○' : tosses[i] === 0 ? '×' : undefined,
+      shiYing: pos === shiPos ? '世' : pos === yingPos ? '应' : undefined,
+      changedBit: isMoving ? ((bit === 1 ? 0 : 1) as 0 | 1) : undefined,
+    }
+  })
+
+  let changedName: string | null = null
+  if (moving.some(Boolean)) {
+    const nb = sixBits.map((b, i) => (moving[i] ? ((b === 1 ? 0 : 1) as 0 | 1) : b))
+    const nidx = bitsToIdx(nb)
+    changedName = hexName(POS_FROM_TV[Math.floor(nidx / 8)], POS_FROM_TV[nidx % 8])
   }
 
-  if (question.trim()) out.push(`所问「${question.trim()}」已记入卦缘。一卦只断一事，同一件事不宜反复摇卦。`)
-  out.push('以上为排盘与基础提示，细断仍需通盘审视旺衰生克；仅供传统文化学习与娱乐参考。')
-  return { ben, bian, ctx, cast, reading: out }
+  return {
+    name,
+    palace,
+    gongWuxing: gongElement,
+    lowerIdx: lowerPos,
+    upperIdx: upperPos,
+    lines,
+    shiPos,
+    yingPos,
+    seqRole: ['本宫', '一世', '二世', '三世', '四世', '五世', '游魂', '归魂'][roleIdx],
+    hasMoving: moving.some(Boolean),
+    changedName,
+    xunkong: xunkong(dayGan + dayZhi),
+  }
+}
+
+/** 常用所问之事 → 用神六亲 */
+export const YONGSHEN_MAP: Array<{ key: string; label: string; liuqin: string }> = [
+  { key: 'wealth', label: '求财生意', liuqin: '妻财' },
+  { key: 'career', label: '事业功名', liuqin: '官鬼' },
+  { key: 'marryF', label: '婚姻（女问男方）', liuqin: '官鬼' },
+  { key: 'marryM', label: '婚姻（男问女方）', liuqin: '妻财' },
+  { key: 'study', label: '学业文书考试', liuqin: '父母' },
+  { key: 'child', label: '子女晚辈医药', liuqin: '子孙' },
+  { key: 'friend', label: '朋友同伴合伙', liuqin: '兄弟' },
+]
+
+interface LineScore {
+  yueSheng: boolean
+  yueKe: boolean
+  riSheng: boolean
+  riKe: boolean
+}
+
+function judgeLine(el: Element, monthZhi: string, dayZhi: string): LineScore {
+  const mEl = ZHI_WUXING[monthZhi]
+  const dEl = ZHI_WUXING[dayZhi]
+  return {
+    yueSheng: mEl === shengWo(el),
+    yueKe: E_KE[mEl] === el,
+    riSheng: dEl === shengWo(el),
+    riKe: E_KE[dEl] === el,
+  }
+}
+
+export interface YongshenVerdict {
+  liuqin: string
+  foundAt: number[] // 出现爻位
+  moving: number[]
+  strengthScore: number // -100 ~ 100
+  phrases: string[]
+  conclusion: '旺' | '平' | '弱'
+}
+
+export function analyzeYongshen(chart: LiuYaoChart, liuqin: string, monthZhi: string, dayZhi: string): YongshenVerdict {
+  const hits = chart.lines.filter((l) => l.liuqin === liuqin)
+  const phrases: string[] = []
+  let score = 0
+
+  if (hits.length === 0) {
+    return {
+      liuqin,
+      foundAt: [],
+      moving: [],
+      strengthScore: -60,
+      phrases: [`卦中不见${liuqin}用神，传统说法叫「用神不现」，事情多半还没到火候，或者心念不在这件事上。`],
+      conclusion: '弱',
+    }
+  }
+
+  const movingHits = hits.filter((l) => l.moving)
+  for (const l of hits) {
+    const j = judgeLine(l.element, monthZhi, dayZhi)
+    if (j.yueSheng) score += 28
+    if (j.yueKe) score -= 26
+    if (l.element === ZHI_WUXING[monthZhi]) score += 22
+    if (j.riSheng) score += 18
+    if (j.riKe) score -= 18
+    if (l.element === ZHI_WUXING[dayZhi]) score += 14
+    if (chart.xunkong.includes(l.najia[1])) {
+      score -= 15
+      phrases.push(`${l.liuqin}${l.najia}在${l.pos}爻，恰逢旬空（${chart.xunkong.join('、')}），传统认为此事眼下落空，出空之日才有眉目。`)
+    }
+  }
+
+  for (const l of movingHits) {
+    phrases.push(`用神${l.liuqin}（${l.najia}）在第${l.pos}爻发动${l.mark ?? ''}，主事情本身有变化、有动静。`)
+  }
+
+  // 其他动爻对用神的生克
+  for (const l of chart.lines.filter((x) => x.moving && x.liuqin !== liuqin)) {
+    const target = hits[0].element
+    if (E_SHENG[l.element] === target) phrases.push(`第${l.pos}爻${l.liuqin}${l.najia}发动来生用神，是帮手。`)
+    else if (E_KE[l.element] === target) phrases.push(`第${l.pos}爻${l.liuqin}${l.najia}发动克用神，是阻力，留意这个方向。`)
+  }
+
+  // 世爻状态
+  const shi = chart.lines[chart.shiPos - 1]
+  const shiRel = liuqinOf(chart.gongWuxing, shi.element)
+  phrases.push(`世爻持${shiRel}（${shi.najia}），应爻在${chart.yingPos}爻持${chart.lines[chart.yingPos - 1].liuqin}。`)
+
+  score = Math.max(-100, Math.min(100, score))
+  return {
+    liuqin,
+    foundAt: hits.map((h) => h.pos),
+    moving: movingHits.map((m) => m.pos),
+    strengthScore: score,
+    phrases,
+    conclusion: score >= 25 ? '旺' : score >= -15 ? '平' : '弱',
+  }
+}
+
+/** 白话总断 */
+export function summarize(verdict: YongshenVerdict, chart: LiuYaoChart, questionLabel: string): string {
+  const tone =
+    verdict.conclusion === '旺'
+      ? '整体看是往上走的势头，该出手时不必犹豫太久。'
+      : verdict.conclusion === '平'
+        ? '不好不坏，属于稳中有变的一类，按部就班最稳妥。'
+        : '眼下时机偏弱，与其强求，不如等一等、缓一缓。'
+  const head = `这一卦问的是${questionLabel}，取${verdict.liuqin}为用神${verdict.foundAt.length ? `（见${verdict.foundAt.join('、')}爻）` : ''}。`
+  const tail = chart.changedName
+    ? `本卦${chart.name}动而变${chart.changedName}，变化的方向值得琢磨。`
+    : `六爻安静（本卦${chart.name}），局面暂时不会有大变动。`
+  return [head, ...verdict.phrases, tone, tail].join('')
+}
+
+/** 掷币文案 */
+export function tossText(backCount: number): { label: string; detail: string; moving: boolean } {
+  switch (backCount) {
+    case 3:
+      return { label: '老阳 ○', detail: '三个背面 · 阳爻动', moving: true }
+    case 2:
+      return { label: '少阴 ‥', detail: '两个背面一个正面 · 阴爻', moving: false }
+    case 1:
+      return { label: '少阳 ——', detail: '一个背面两个正面 · 阳爻', moving: false }
+    default:
+      return { label: '老阴 ×', detail: '三个正面 · 阴爻动', moving: true }
+  }
 }
