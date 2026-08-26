@@ -5,15 +5,15 @@ defineProps<{ theme: string }>()
 
 <template>
   <div class="decor-root" aria-hidden="true">
-    <!-- 玄夜鎏金：星宿连线 -->
+    <!-- 玄夜鎏金：星宿连线（non-scaling-stroke：高视口下 slice 放大不再把线吹粗） -->
     <svg v-if="theme === 'xuan'" class="ly ly-xuan" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
-      <g stroke="rgba(232,196,115,.4)" stroke-width=".7" fill="none">
-        <path d="M60 60 L110 42 L150 78 L128 118" />
-        <path d="M300 50 L342 88 L320 132 L268 108 Z" />
-        <path d="M210 200 L252 232 L310 214" />
+      <g stroke="rgba(232,196,115,.3)" stroke-width=".8" fill="none" vector-effect="non-scaling-stroke">
+        <path d="M60 60 L110 42 L150 78 L128 118" vector-effect="non-scaling-stroke" />
+        <path d="M300 50 L342 88 L320 132 L268 108 Z" vector-effect="non-scaling-stroke" />
+        <path d="M210 200 L252 232 L310 214" vector-effect="non-scaling-stroke" />
       </g>
-      <g fill="#ffe3a8">
-        <circle v-for="(p, i) in [[60,60],[110,42],[150,78],[128,118],[300,50],[342,88],[320,132],[268,108],[210,200],[252,232],[310,214]]" :key="i" :cx="p[0]" :cy="p[1]" r="1.8" />
+      <g fill="#ffe3a8" opacity=".55">
+        <circle v-for="(p, i) in [[60,60],[110,42],[150,78],[128,118],[300,50],[342,88],[320,132],[268,108],[210,200],[252,232],[310,214]]" :key="i" :cx="p[0]" :cy="p[1]" r="1.1" />
       </g>
     </svg>
 
@@ -63,7 +63,7 @@ defineProps<{ theme: string }>()
 </template>
 
 <style scoped>
-.decor-root { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.decor-root { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .ly { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 .ly-zhu .fu-strip {

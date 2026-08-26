@@ -94,7 +94,7 @@ async function copyQuote(): Promise<void> {
 const STATS = [
   { n: 21912 as number | null, pre: '', suf: '', label: '同龄男命全量百分位池', sub: '2001–2005 年出生，每一盘都是逐个复算的' },
   { n: 7, pre: '', suf: ' 部', label: '典籍数字化语料', sub: '滴天髓、三命通会、穷通宝鉴等，整本入库' },
-  { n: 100, pre: '~', suf: '万', label: '古籍校对字数', sub: '按章节统计过主题密度，不是拍脑袋' },
+  { n: 100, pre: '', suf: '万+', label: '古籍校对字数', sub: '按章节统计过主题密度，不是拍脑袋' },
   { n: 2037, pre: '', suf: '', label: '案例自动标注入库', sub: '带置信度，教学样本单独分层' },
   { n: 49, pre: '', suf: ' 个', label: '特殊格局谱系', sub: '五部书互相印证，源流都标了年代' },
   { n: null, pre: '', suf: '', text: 'ρ=-0.059', label: '引擎×古典断语一致性', sub: '120 例双通道核对，结论：不显著' },
@@ -349,6 +349,8 @@ function arcPath(i: number, j: number, off: number): string {
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
 .stat-card { padding: 16px; text-align: center; }
+/* 长数字（ρ=-0.059 / 100万+）在 150px 窄卡里不再折行溢出 */
+.stats .big-num { font-size: clamp(1.35rem, 1.9vw, 2.1rem); white-space: nowrap; }
 .stat-label { color: var(--fg); font-size: 0.85rem; margin: 6px 0 4px; }
 
 .play-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-bottom: 26px; align-items: start; }
@@ -381,5 +383,7 @@ function arcPath(i: number, j: number, off: number): string {
   .hero { flex-direction: column; }
   .hero-wheel { transform: scale(0.82); margin: -20px 0; }
   .play-grid, .time-grid { grid-template-columns: 1fr; }
+  /* 窄屏下轮盘+装饰道长+常驻吉祥物三层叠，撤掉装饰那层 */
+  .hero-sage { display: none; }
 }
 </style>
