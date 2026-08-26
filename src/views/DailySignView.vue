@@ -139,7 +139,7 @@ function backToTube(): void {
       每日首签按日期轮定——同一天来抽，人人同一支；心里有具体的事，就填一句再摇「随手签」，签只管当下。
     </p>
 
-    <div class="grid-top v-reveal">
+    <div class="grid-top" v-reveal>
       <!-- 今日首签 -->
       <div class="card today-card" role="button" tabindex="0" @click="showToday" @keydown.enter="showToday">
         <span class="badge">今日首签 · {{ todaySign.tier }}</span>
@@ -169,7 +169,7 @@ function backToTube(): void {
       </div>
     </div>
 
-    <section class="card stage-card v-reveal">
+    <section class="card stage-card" v-reveal="80">
       <div class="q-row">
         <label>心里想问的事（可不填）</label>
         <input v-model="question" type="text" maxlength="30" placeholder="如：要不要答应那次调动" />
@@ -222,7 +222,7 @@ function backToTube(): void {
       </div>
     </section>
 
-    <section class="card v-reveal">
+    <section class="card" v-reveal="60">
       <h2>小六壬 · 掐指速断</h2>
       <XiaoLiuren />
     </section>
@@ -249,7 +249,7 @@ function backToTube(): void {
       <p class="note">抽到过的签自动入册，点亮的随时翻出来重读；今日首签点开即入册。什么时候集齐六十支，梅雪大概会请你喝茶。</p>
     </section>
 
-    <section v-if="history.length > 1" class="card v-reveal">
+    <section v-if="history.length > 0" class="card" v-reveal="120">
       <h2>本次所抽</h2>
       <table>
         <tbody>

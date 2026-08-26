@@ -300,6 +300,7 @@ function lunarInfo(): string {
         <h2>最近排盘记录（本地保存）</h2>
         <div v-if="historyList.length === 0" class="sub">暂无记录——每次排盘会自动保存到浏览器。</div>
         <table v-else>
+            <tbody>
           <tr><th>四柱</th><th>出生</th><th>总分</th><th>百分位</th><th></th></tr>
           <tr v-for="h in historyList.slice(0, 8)" :key="h.ts">
             <td>{{ h.pillars.join(' ') }}</td>
@@ -308,6 +309,7 @@ function lunarInfo(): string {
             <td>{{ h.pctl !== null ? h.pctl.toFixed(1) + '%' : '—' }}</td>
             <td><span class="tag teal pointer" @click="restore(h)">复算</span></td>
           </tr>
+                  </tbody>
         </table>
         <div style="margin-top: 10px"><button class="ghost" @click="clearHistory(); historyList = []">清空记录</button></div>
       </div>

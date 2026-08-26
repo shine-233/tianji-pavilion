@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DecryptTitle from '../components/DecryptTitle.vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import VoxelWuxing from '../components/VoxelWuxing.vue'
 import RichText from '../components/RichText.vue'
 import { Element, ELE_S, ELE_B, ELEMENT_DESC, SHENG_ORDER } from '../lib/constants'
@@ -10,6 +11,7 @@ import { loadHistory, HistoryItem } from '../lib/history'
 import { runChart } from '../lib/runtime'
 import { sfx } from '../lib/sfx'
 
+const router = useRouter()
 const selected = ref<Element>('木')
 const chart = ref<ChartResult | null>(null)
 const lastHistory = ref<HistoryItem | null>(loadHistory()[0] ?? null)
@@ -69,13 +71,15 @@ function clearChart(): void {
             <span class="p-kw">{{ ELEMENT_DESC[selected].keyword }}</span>
           </div>
           <table class="p-table">
+              <tbody>
             <tr><th>方位季节</th><td>{{ ELEMENT_DESC[selected].season }}</td></tr>
             <tr><th>对应身体</th><td>{{ ELEMENT_DESC[selected].body }}</td></tr>
             <tr><th>我生</th><td><b :class="`ele-${selected === '水' ? '木' : SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 1) % 5] }}</b>（食伤·输出表达）</td></tr>
             <tr><th>我克</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 2) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 2) % 5] }}</b>（财星·掌控对象）</td></tr>
             <tr><th>克我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 3) % 5] }}</b>（官杀·压力约束）</td></tr>
             <tr><th>生我</th><td><b :class="`ele-${SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5]}`">{{ SHENG_ORDER[(SHENG_ORDER.indexOf(selected) + 4) % 5] }}</b>（印星·资源庇护）</td></tr>
-          </table>
+                    </tbody>
+        </table>
           <p v-if="chart" class="sub advice"><RichText :text="elementAdvice(selected, chart.cnt) + '（本盘日主：' + chart.dmg + '）'" /></p>
         </div>
       </div>
@@ -99,7 +103,7 @@ function clearChart(): void {
         <div style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap">
           <button v-if="!chart && lastHistory" @click="recount()">☯ 用最近一次排盘联动</button>
           <button v-if="chart" class="ghost" @click="clearChart()">还原默认体量</button>
-          <RouterLink to="/chart"><button v-if="!chart && !lastHistory">去排盘 →</button></RouterLink>
+            <button v-if="!chart && !lastHistory" @click="router.push('/chart')">去排盘 →</button>
         </div>
 
         <h2 style="margin-top: 20px">干支速查五行</h2>

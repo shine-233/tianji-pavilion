@@ -320,9 +320,9 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .pop-enter-active { transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .pop-enter-from { opacity: 0; transform: translateY(-8px); }
 .pop-leave-active { display: none; }
-</style>
 
 @media (max-width: 520px) {
   .search-row { flex-direction: column; }
   .stats { gap: 14px; }
 }
+</style>

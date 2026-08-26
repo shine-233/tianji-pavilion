@@ -328,7 +328,7 @@ function moreSr(): void {
             v-for="d in thDmAvail" :key="d"
             class="ghost dm-btn" :class="{ on: thDm === d }"
             @click="pickThDm(d)"
-          >{{ d }}木</button>
+          >{{ d }}</button>
         </div>
         <div class="th-list">
           <div
