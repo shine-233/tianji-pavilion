@@ -4,8 +4,7 @@ import ZiweiSky3D from '../components/ZiweiSky3D.vue'
 import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
-import { starSpritePixels } from '../data/starSprites'
-import { STAR_PERSONAS } from '../data/starPersonas'
+import { starSpritePixels, STAR_PERSONAS, starAccent } from '../data/starSprites'
 import { sfx } from '../lib/sfx'
 
 interface ScoredDetail { palace: string; stars: string[]; delta: number }
@@ -143,6 +142,21 @@ const STAR_TIP: Record<string, string> = {
 function starList(mains: string): string[] {
   return mains.split(/\s+/).filter(Boolean)
 }
+
+/** 宫位小星签的悬浮释义：首行道号司职，次行星曜本义 */
+function chipTip(st: string): string {
+  const p = STAR_PERSONAS[st]
+  return p ? `${p.ming} · ${p.title}\n${STAR_TIP[st] ?? st}` : (STAR_TIP[st] ?? st)
+}
+
+/** 点击详情面板的星曜：让当值道长把她的台词转告给你 */
+function speakStar(st: string): void {
+  const p = STAR_PERSONAS[st]
+  sfx.blip()
+  window.dispatchEvent(new CustomEvent('sage-say', {
+    detail: p ? `${st}·${p.ming}：「${p.hello}」` : `${st}：${STAR_TIP[st] ?? ''}`,
+  }))
+}
 </script>
 
 <template>
@@ -193,7 +207,7 @@ function starList(mains: string): string[] {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" :title="STAR_PERSONAS[st] ? `${STAR_PERSONAS[st].ming}·${STAR_PERSONAS[st].title}：${STAR_PERSONAS[st].hello}` : ''" :data-tip="STAR_TIP[st] ?? st"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
+                <span v-for="st in starList(p.mains)" :key="st" class="star" :data-tip="chipTip(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -226,12 +240,22 @@ function starList(mains: string): string[] {
             主星：
             <template v-if="zc.palaces[sel]!.mains">
               <span
-                v-for="st in starList(zc.palaces[sel]!.mains)" :key="'d' + st"
-                class="star-big" :data-tip="STAR_TIP[st] ?? st"
+                v-for="(st, si) in starList(zc.palaces[sel]!.mains)" :key="'d' + st"
+                class="star-big" role="button" tabindex="0"
+                :style="{ '--star-accent': starAccent(st) }"
+                :data-tip="STAR_TIP[st] ?? st"
+                @click="speakStar(st)" @keydown.enter="speakStar(st)"
               >
-                <svg class="star-face big" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>
-                <b class="gold-t2">{{ st }}</b>
+                <span class="bob-wrap" :style="{ animationDelay: si * 0.4 + 's' }">
+                  <svg class="star-face big" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>
+                </span>
+                <span class="star-id">
+                  <b class="gold-t2">{{ st }}</b>
+                  <i v-if="STAR_PERSONAS[st]" class="star-ming">{{ STAR_PERSONAS[st].ming }} · {{ STAR_PERSONAS[st].title }}<em class="nat">{{ STAR_PERSONAS[st].nature }}</em></i>
+                  <em v-if="STAR_PERSONAS[st]" class="star-hello">{{ STAR_PERSONAS[st].hello }}</em>
+                </span>
               </span>
+              <span class="sub tip-hint">悬停看释义，点一下让道长替她传话</span>
             </template>
             <b v-else class="gold-t2">空宫（借对宫）</b>
           </p>
@@ -361,7 +385,40 @@ function starList(mains: string): string[] {
   align-items: center;
   gap: 8px;
   margin-right: 16px;
-  cursor: help;
+  cursor: pointer;
+}
+.star-big:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; border-radius: 10px; }
+.bob-wrap { display: inline-flex; animation: face-bob 3.4s ease-in-out infinite; }
+@keyframes face-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.tip-hint { margin-left: 4px; opacity: 0.7; }
+.star-id { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.star-ming { font-style: normal; font-size: 0.72rem; color: var(--dim); display: inline-flex; align-items: center; gap: 6px; }
+.star-ming .nat {
+  font-style: normal;
+  font-size: 0.62rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid var(--star-accent);
+  color: var(--star-accent);
+}
+.star-hello {
+  font-style: normal;
+  max-width: 340px;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--fg);
+  background: rgba(127, 127, 127, 0.06);
+  border-left: 3px solid var(--star-accent);
+  border-radius: 0 8px 8px 0;
+  padding: 5px 10px;
+  animation: hello-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes hello-pop {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
 .star-face.big { width: 42px; height: 46px; border: 1px solid rgba(var(--acc-rgb), 0.35); border-radius: 9px; background: rgba(127, 127, 127, 0.05); padding: 3px; }
 .star-big::after {
@@ -395,7 +452,7 @@ function starList(mains: string): string[] {
   transform: translateX(-50%);
   width: max-content;
   max-width: 190px;
-  white-space: normal;
+  white-space: pre-line;
   background: linear-gradient(160deg, var(--card-2), var(--panel));
   border: 1px solid rgba(var(--acc-rgb), 0.45);
   border-radius: 9px;
