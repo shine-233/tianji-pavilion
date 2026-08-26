@@ -36,6 +36,22 @@ interface Pan {
   ma: string
   timeGZ: string
   dayGZ: string
+  zhiFuXing: string
+  zhiShiMen: string
+  tian: Record<number, { xing: string; men: string; shen: string }>
+}
+
+const XING: Record<number, string> = { 1: '天蓬', 8: '天任', 3: '天冲', 4: '天辅', 5: '天禽', 6: '天心', 7: '天柱', 2: '天芮', 9: '天英' }
+const MEN0: Record<number, string> = { 1: '休', 8: '生', 3: '伤', 4: '杜', 6: '开', 7: '惊', 2: '死', 9: '景' }
+const RING = [1, 8, 3, 4, 9, 2, 7, 6]
+const SHEN_SEQ = ['值符', '螣蛇', '太阴', '六合', '白虎', '玄武', '九地', '九天']
+const XUN_YI: Record<string, string> = { 子: '戊', 戌: '己', 申: '庚', 午: '辛', 辰: '壬', 寅: '癸' }
+
+function timeIndex(gz: string): number {
+  const gi = GAN.indexOf(gz[0]!)
+  let n = ZHI.indexOf(gz[1]!)
+  while (n % 10 !== gi) n += 12
+  return n % 60
 }
 
 function qiMenPan(d: Date): Pan {
@@ -63,7 +79,33 @@ function qiMenPan(d: Date): Pan {
   const kong = xunKong(lunar.getDayInGanZhi())
   const grp: Record<string, string> = { 申: '寅', 子: '寅', 辰: '寅', 寅: '申', 午: '申', 戌: '申', 巳: '亥', 酉: '亥', 丑: '亥', 亥: '巳', 卯: '巳', 未: '巳' }
   const ma = grp[lunar.getDayInGanZhi()[1]!] ?? '申'
-  return { yangDun, ju, yuan, jieqi, fuTou: ftGz, diPan, kong, ma, timeGZ, dayGZ }
+
+  /* v2：天盘转动 */
+  const tn = timeIndex(timeGZ)
+  const xunStartN = tn - (tn % 10)
+  const xunZhi = ZHI[xunStartN % 12]!
+  const fuYi = XUN_YI[xunZhi] ?? '戊'
+  let fuPal = Math.max(1, diPan.indexOf(fuYi))
+  if (fuPal === -1 || fuPal === 0) fuPal = 5
+  const zhiFuXing = XING[fuPal]!
+  const zhiShiMen = (MEN0[fuPal] ?? '禽') + '门'
+  const tGan = timeGZ[0]!
+  let p0 = Math.max(1, diPan.indexOf(tGan))
+  if (p0 === 5) p0 = 2
+  const deltaS = ((RING.indexOf(p0) - RING.indexOf(fuPal)) % 8 + 8) % 8
+  const offset = tn - xunStartN
+  let gatePal = pan2(yangDun ? ((fuPal - 1 + offset) % 9) + 1 : (((fuPal - 1 - offset) % 9) + 18) % 9 + 1)
+  const deltaG = ((RING.indexOf(gatePal) - RING.indexOf(fuPal)) % 8 + 8) % 8
+  function pan2(n: number): number { return n === 5 ? 2 : n }
+  const tian: Record<number, { xing: string; men: string; shen: string }> = {}
+  for (let i = 0; i < 8; i++) {
+    const pal = RING[i]!
+    const starOrig = RING[((i - deltaS) % 8 + 8) % 8]!
+    const gateOrig = RING[((i - deltaG) % 8 + 8) % 8]!
+    const shenIdx = ((RING.indexOf(p0) + (yangDun ? i : -i)) % 8 + 8) % 8
+    tian[pal] = { xing: XING[starOrig]!, men: (MEN0[gateOrig] ?? '禽') + '门', shen: SHEN_SEQ[shenIdx]! }
+  }
+  return { yangDun, ju, yuan, jieqi, fuTou: ftGz, diPan, kong, ma, timeGZ, dayGZ, zhiFuXing, zhiShiMen, tian }
 }
 
 const pan = ref<Pan | null>(null)
@@ -107,7 +149,9 @@ const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
           <div v-for="row in GRID" :key="row.join()" class="prow">
             <div v-for="n in row" :key="n" class="pcell">
               <span class="no">{{ n }}</span>
+              <span class="shen" :class="{ zf: pan.tian[n]?.shen === '值符' }">{{ pan.tian[n]?.shen }}</span>
               <span class="yi">{{ pan.diPan[n] || '中五' }}</span>
+              <span class="xm"><b>{{ pan.tian[n]?.xing }}</b>{{ pan.tian[n]?.men }}</span>
             </div>
           </div>
         </div>
@@ -136,4 +180,8 @@ const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
 .pcell:hover { transform: translateY(-3px); border-color: rgba(var(--acc-rgb), 0.45); }
 .no { position: absolute; top: 5px; left: 9px; font-size: 0.62rem; color: var(--dim); }
 .yi { font-family: var(--cute); font-size: 1.55rem; color: var(--gold-bright); text-shadow: 0 0 14px rgba(var(--acc-rgb), 0.35); }
+.shen { display: block; font-size: 0.62rem; color: var(--teal); margin-bottom: 2px; }
+.shen.zf { color: var(--gold-bright); font-family: var(--cute); }
+.xm { display: block; margin-top: 3px; font-size: 0.72rem; color: var(--fg); }
+.xm b { color: var(--gold-bright); margin-right: 4px; font-weight: normal; }
 </style>
