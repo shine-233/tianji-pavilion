@@ -6,11 +6,8 @@ import Palette from './components/Palette.vue'
 import TransitionVeil from './components/TransitionVeil.vue'
 import TalismanEgg from './components/TalismanEgg.vue'
 import BackToTop from './components/BackToTop.vue'
-<<<<<<< HEAD
 import ScrollProgress from './components/ScrollProgress.vue'
-=======
 import ThemeFlair from './components/ThemeFlair.vue'
->>>>>>> 6522077 (feat: per-theme ambient decor layer + themed card-back patterns)
 import { isSoundOn, sfx, toggleSound } from './lib/sfx'
 import { THEMES, applyTheme, initTheme, themeId } from './data/themes'
 import ThemeDecor from './components/ThemeDecor.vue'

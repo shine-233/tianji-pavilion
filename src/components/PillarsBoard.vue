@@ -121,8 +121,25 @@ function toggle(i: number): void {
           </div>
           <div class="nayin" :title="'纳音五行：' + nayinOf(p[0], p[1])">纳音·{{ nayinOf(p[0], p[1]) }}</div>
         </div>
-        <!-- 背面：道长小像纹样 + 主题专属底纹 -->
+        <!-- 背面：道长小像纹样 + 主题专属底纹 + 回纹边框与旋太极 -->
         <div class="face back-face" :style="{ backgroundImage: backPattern }">
+          <svg class="back-orn" viewBox="0 0 60 84">
+            <rect x="2.5" y="2.5" width="55" height="79" rx="7" fill="none" stroke="var(--acc, #e8c473)" stroke-width="1.4" opacity="0.8" />
+            <rect x="5.5" y="5.5" width="49" height="73" rx="5" fill="none" stroke="var(--acc, #e8c473)" stroke-width="0.6" opacity="0.45" />
+            <g stroke="var(--teal, #5eead4)" stroke-width="0.9" fill="none" opacity="0.7">
+              <path d="M9 15 v-6 h6 M51 15 v-6 h-6 M9 69 v6 h6 M51 69 v6 h-6" />
+            </g>
+            <circle cx="30" cy="42" r="17" fill="none" stroke="var(--acc, #e8c473)" stroke-width="0.8" opacity="0.6" stroke-dasharray="2.4 3.4" />
+            <g class="back-taiji">
+              <circle cx="30" cy="42" r="9.5" fill="#f6f1e3" opacity="0.94" />
+              <path d="M30 32.5 a9.5 9.5 0 0 1 0 19 a4.75 4.75 0 0 1 0 -9.5 a4.75 4.75 0 0 0 0 -9.5z" fill="#232a3a" />
+              <circle cx="30" cy="37.25" r="1.5" fill="#232a3a" />
+              <circle cx="30" cy="46.75" r="1.5" fill="#f6f1e3" />
+            </g>
+            <text v-for="(g, gi) in ['☰', '☳', '☷', '☵']" :key="g"
+              :x="[11, 49, 49, 11][gi]" :y="[14, 14, 78, 78][gi]"
+              class="corner-gua">{{ g }}</text>
+          </svg>
           <svg class="back-sprite" viewBox="0 0 13 18" shape-rendering="crispEdges">
             <rect v-for="(q, qi) in backPixels" :key="qi"
               :x="q.x" :y="q.y" width="1.02" height="1.02" :fill="q.fill" />
@@ -186,6 +203,19 @@ function toggle(i: number): void {
   border-radius: 10px;
   pointer-events: none;
 }
+.front::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: -34%;
+  width: 34%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  transform: translateX(-150%) rotate(9deg);
+  pointer-events: none;
+}
+.pillar-flip:hover .front::after { animation: sheen-sweep 0.95s ease; }
+@keyframes sheen-sweep { to { transform: translateX(460%) rotate(9deg); } }
 .pillar-flip:hover .front { border-color: rgba(232, 196, 115, 0.45); }
 
 .back-face {
@@ -199,7 +229,11 @@ function toggle(i: number): void {
   align-items: center;
   justify-content: center;
 }
-.back-sprite { width: 58%; height: auto; image-rendering: pixelated; }
+.back-orn { position: absolute; inset: 6% 7%; width: 86%; height: 88%; pointer-events: none; }
+.back-taiji { transform-origin: 30px 42px; animation: taiji-turn 9s linear infinite; }
+@keyframes taiji-turn { to { transform: rotate(360deg); } }
+.corner-gua { fill: var(--teal, #5eead4); opacity: 0.55; font-size: 6.4px; font-family: var(--cute); }
+.back-sprite { width: 34%; height: auto; image-rendering: pixelated; position: relative; margin-top: 26px; }
 .back-word {
   font-family: var(--cute);
   color: var(--gold-bright);
@@ -208,6 +242,33 @@ function toggle(i: number): void {
   padding-left: 0.4em;
   margin-top: 4px;
 }
+/* 印章角饰：朱砂方章，随主题走色 */
+.back-seal {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-family: var(--cute);
+  font-size: 0.66rem;
+  color: #e05a4a;
+  border: 1.5px solid rgba(224, 90, 74, 0.75);
+  border-radius: 4px;
+  background: rgba(224, 90, 74, 0.08);
+  transform: rotate(6deg);
+  box-shadow: inset 0 0 5px rgba(224, 90, 74, 0.25);
+}
+[data-theme='yue'] .back-seal,
+[data-theme='shui'] .back-seal {
+  color: #b04a3a;
+  border-color: rgba(176, 74, 58, 0.7);
+}
+[data-theme='zi'] .back-seal { color: #ff7a9e; border-color: rgba(255, 122, 158, 0.65); }
+[data-theme='qing'] .back-seal { color: var(--amber); border-color: rgba(242, 201, 76, 0.55); }
 
 .head { font-size: 0.78rem; color: var(--dim); letter-spacing: 0.3em; padding-left: 0.3em; }
 .dm-badge {
