@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
 import { buildTaoess, TAOESSES } from '../data/sageSprite'
+import { motionOf } from '../data/motionPersonas'
 import { sfx } from '../lib/sfx'
 
 const props = withDefaults(defineProps<{
@@ -11,6 +12,13 @@ const props = withDefaults(defineProps<{
 
 const def = computed(() => TAOESSES[props.char] ?? TAOESSES.qingxuan!)
 const pixels = computed(() => buildTaoess(def.value.id))
+const motion = computed(() => motionOf(def.value.id))
+const motionVars = computed(() => ({
+  '--bd': `${motion.value.dur}s`,
+  '--ba': motion.value.mode === 'tilt' ? `${motion.value.amp}deg` : `${motion.value.amp}px`,
+  '--bk': `${motion.value.blink}s`,
+  '--bdel': `${motion.value.delay}s`,
+}))
 
 const CELL = 6
 const GRID_W = 25
@@ -103,7 +111,10 @@ onBeforeUnmount(() => {
         {{ typedText }}<span class="caret">▌</span>
       </div>
     </transition>
-    <button class="sage-btn" :aria-label="def.nameCn" @click="onClick">
+    <button
+      class="sage-btn" :class="`motion-${motion.mode}`"
+      :style="motionVars" :aria-label="def.nameCn" @click="onClick"
+    >
       <span class="orbit-glyph g1">{{ def.orbit }}</span>
       <span class="orbit-glyph g2">✦</span>
       <span class="orbit-glyph g3">⋆</span>
@@ -142,19 +153,56 @@ onBeforeUnmount(() => {
   border: none;
   cursor: pointer;
   padding: 0;
-  animation: sage-bob 3.4s ease-in-out infinite;
+  animation: k-bob var(--bd, 3.4s) ease-in-out var(--bdel, 0s) infinite;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
 }
-.sage-btn:hover { transform: scale(1.08) rotate(-4deg); }
+.sage-btn:hover { transform: scale(1.08); }
 .sage-btn:active { transform: scale(0.94); }
 
-@keyframes sage-bob {
+/* 动作人格：同一张骨架，不同的脾气 */
+.motion-bounce { animation-name: k-bounce; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.motion-sway { animation-name: k-sway; }
+.motion-tilt { animation-name: k-tilt; }
+.motion-glow { animation-name: k-glow; }
+.motion-glow::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 214, 130, 0.28), transparent 72%);
+  animation: glow-breath var(--bd, 3.4s) ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes k-bob {
   0%, 100% { translate: 0 0; }
-  50% { translate: 0 -7px; }
+  50% { translate: 0 calc(var(--ba, 6px) * -1); }
+}
+@keyframes k-sway {
+  0%, 100% { translate: calc(var(--ba, 4px) * -0.8) 0; rotate: -1.5deg; }
+  50% { translate: var(--ba, 4px) calc(var(--ba, 4px) * -0.7); rotate: 1.5deg; }
+}
+@keyframes k-tilt {
+  0%, 100% { rotate: calc(var(--ba, 4deg) * 0.45); translate: 0 0; }
+  50% { rotate: calc(var(--ba, 4deg) * -0.45); translate: 0 calc(var(--ba, 4px) * -0.5); }
+}
+@keyframes k-bounce {
+  0%, 100% { translate: 0 0; }
+  38% { translate: 0 calc(var(--ba, 8px) * -1); }
+  55% { translate: 0 0; }
+  70% { translate: 0 calc(var(--ba, 8px) * -0.32); }
+  82% { translate: 0 0; }
+}
+@keyframes k-glow {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 calc(var(--ba, 6px) * -1); }
+}
+@keyframes glow-breath {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 0.9; transform: scale(1.08); }
 }
 
-.eyelid { opacity: 0; animation: blink 5.2s infinite; }
+.eyelid { opacity: 0; animation: blink var(--bk, 5.2s) infinite; }
 @keyframes blink {
   0%, 91%, 100% { opacity: 0; }
   93%, 97% { opacity: 1; }

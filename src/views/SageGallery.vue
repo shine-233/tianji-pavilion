@@ -1,8 +1,9 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { buildTaoess, TAOESSES, TAOESS_IDS } from '../data/sageSprite'
 import type { TaoessDef } from '../data/sageSprite'
+import { motionOf } from '../data/motionPersonas'
 import { sfx } from '../lib/sfx'
 import SageVoxel3D from '../components/SageVoxel3D.vue'
 
@@ -80,6 +81,16 @@ function goPage(id: string): void {
   sfx.ding()
   router.push(PAGE_OF[id] ?? '/')
 }
+
+/** 画廊卡片的动作人格变量：十个人十种动法，相位错开免得齐步走 */
+function gMotion(id: string): Record<string, string> {
+  const m = motionOf(id)
+  return {
+    '--bd': `${m.dur}s`,
+    '--ba': m.mode === 'tilt' ? `${m.amp}deg` : `${m.amp}px`,
+    '--bdel': `${m.delay}s`,
+  }
+}
 </script>
 
 <template>
@@ -142,7 +153,10 @@ function goPage(id: string): void {
         <transition name="bubble">
           <span v-if="talking === en.def.id" class="mini-bubble">{{ en.def.hello }}</span>
         </transition>
-        <svg viewBox="0 0 26 29" shape-rendering="crispEdges" class="g-svg">
+        <svg
+          viewBox="0 0 26 29" shape-rendering="crispEdges" class="g-svg"
+          :class="`motion-${motionOf(en.def.id).mode}`" :style="gMotion(en.def.id)"
+        >
           <rect v-for="(p, pi) in en.pixels" :key="pi" :x="p.x" :y="p.y" width="1" height="1" :fill="p.fill" />
         </svg>
         <span class="orbit">{{ en.def.orbit }}</span>
@@ -199,14 +213,38 @@ function goPage(id: string): void {
 .g-svg {
   width: 96px;
   image-rendering: pixelated;
-  animation: g-bob 3.6s ease-in-out infinite;
+  animation: g-bob var(--bd, 3.6s) ease-in-out var(--bdel, 0s) infinite;
   filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.42));
 }
 @keyframes g-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 calc(var(--ba, 6px) * -1); }
 }
-.g-card:hover .g-svg { animation-duration: 1.6s; }
+/* 动作人格：与 PixelSage 同一套骨架，画廊里十个人各动各的 */
+.g-svg.motion-sway { animation-name: g-sway; }
+.g-svg.motion-tilt { animation-name: g-tilt; }
+.g-svg.motion-bounce { animation-name: g-bounce; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.g-svg.motion-glow { animation-name: g-bob, glow-pulse; }
+@keyframes g-sway {
+  0%, 100% { translate: calc(var(--ba, 4px) * -0.8) 0; rotate: -1.5deg; }
+  50% { translate: var(--ba, 4px) calc(var(--ba, 4px) * -0.7); rotate: 1.5deg; }
+}
+@keyframes g-tilt {
+  0%, 100% { rotate: calc(var(--ba, 3deg) * 0.45); translate: 0 0; }
+  50% { rotate: calc(var(--ba, 3deg) * -0.45); translate: 0 calc(var(--ba, 4px) * -0.5); }
+}
+@keyframes g-bounce {
+  0%, 100% { translate: 0 0; }
+  38% { translate: 0 calc(var(--ba, 8px) * -1); }
+  55% { translate: 0 0; }
+  70% { translate: 0 calc(var(--ba, 8px) * -0.32); }
+  82% { translate: 0 0; }
+}
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 4px rgba(255, 214, 130, 0.15)); }
+  50% { filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 14px rgba(255, 214, 130, 0.55)); }
+}
+.g-card:hover .g-svg { animation-duration: 1.6s, 0.9s; }
 .orbit {
   position: absolute;
   top: 10px;
