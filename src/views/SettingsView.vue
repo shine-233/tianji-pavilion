@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { applyTheme, THEMES, currentThemeId } from '../lib/themes'
+import { applyTheme, THEMES, themeId } from '../data/themes'
 import { isSoundOn, sfx, toggleSound } from '../lib/sfx'
 import { clearHistory } from '../lib/history'
 import { clearRecords, loadRecords } from '../lib/records'
-import TaoistMaiden from '../components/TaoistMaiden.vue'
 
-const current = ref(currentThemeId())
+const current = themeId
 const soundOn = ref(isSoundOn())
 const recordCount = ref(loadRecords().length)
 const cleared = ref(false)
 
 function pick(id: string): void {
-  current.value = applyTheme(id)
+  applyTheme(id)
   sfx.ding()
 }
 
@@ -36,32 +35,30 @@ function doClear(): void {
     <p class="sub">换一身衣裳，或者清一清账本。所有偏好都存在你自己浏览器里，不上传任何东西。</p>
 
     <section v-reveal="0" class="card">
-      <h2>衣橱 · 七套主题</h2>
-      <p class="note wardrobe-note">每一套都是整体设计：界面配色、道姑姐妹的道袍、绦子颜色一起换，不会出现混搭的脏色。</p>
+      <h2>衣橱 · 六套主题</h2>
+      <p class="note wardrobe-note">每套主题都是一件整体设计：界面配色、环境装置、牌背纹样、道长的道袍一起换，不会混出脏色。</p>
       <div class="wardrobe">
         <button
           v-for="t in THEMES"
           :key="t.id"
           class="skin"
           :class="{ active: current === t.id }"
-          :style="{ '--pv-bg': t.preview.bg, '--pv-accent': t.preview.accent, '--pv-robe': t.preview.robe, '--pv-hair': t.preview.hair }"
+          :style="{ '--pv-bg': t.swatch[0], '--pv-accent': t.swatch[1], '--pv-robe': t.swatch[2] }"
           @click="pick(t.id)"
         >
           <span class="swatches">
-            <i class="sw bg"></i><i class="sw accent"></i><i class="sw robe"></i><i class="sw hair"></i>
+            <i class="sw bg"></i><i class="sw accent"></i><i class="sw robe"></i>
           </span>
-          <b>{{ t.name }}</b>
-          <small>{{ t.motto }}</small>
+          <b>{{ t.nameCn }}</b>
+          <small>{{ t.note }}</small>
           <span v-if="current === t.id" class="on">穿着中</span>
         </button>
       </div>
 
       <div class="preview-row">
-        <TaoistMaiden variant="xuanwei" :width="120" chatty :idle-sec="0" :tips="['这件袍子随主题一起换色，你看。']" />
-        <TaoistMaiden variant="lingqian" :width="100" chatty :idle-sec="0" :tips="['师姐我们又在试新衣啦。']" />
         <div class="preview-note note">
-          道姑姐妹的道袍制式是统一的，换主题时整套跟着变。
-          玄微掌坛穿高髻玉簪配拂尘，灵签抱签筒——发型和法器区分人物，配色永远是「同门」。
+          十位道长各有发型、法器与道袍色，进「道长图鉴」可以逐个点过去看；
+          换主题时他们的袍子颜色也跟着整套变。
         </div>
       </div>
     </section>
@@ -122,7 +119,6 @@ function doClear(): void {
 .sw.bg { background: var(--pv-bg); }
 .sw.accent { background: var(--pv-accent); }
 .sw.robe { background: var(--pv-robe); }
-.sw.hair { background: var(--pv-hair); }
 .skin b { font-family: var(--cute); font-size: 0.98rem; }
 .skin small { font-size: 0.72rem; color: var(--dim); line-height: 1.5; }
 .on {

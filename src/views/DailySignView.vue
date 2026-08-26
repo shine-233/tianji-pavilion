@@ -27,6 +27,22 @@ const history = ref<Array<{ sign: Sign; q: string; ts: number }>>([])
 
 const tierStyle = computed(() => TIER_STYLE[shown.value.tier])
 
+/** 生成式卦印：由签号决定六根爻的阴阳，每支签一枚独一无二的印章 */
+const sealBars = computed(() => {
+  const no = shown.value.no
+  const bars: Array<{ x: number; y: number; w: number }> = []
+  for (let i = 0; i < 6; i++) {
+    const yang = ((no >> i) & 1) === 1
+    const y = 8 + i * 7
+    if (yang) bars.push({ x: 4, y, w: 24 })
+    else {
+      bars.push({ x: 4, y, w: 9 })
+      bars.push({ x: 19, y, w: 9 })
+    }
+  }
+  return bars
+})
+
 function shakeTube(): void {
   if (shaking.value || revealed.value) return
   shaking.value = true
@@ -142,6 +158,11 @@ function backToTube(): void {
             <span class="no">{{ isRandomPick ? '随手签' : '今日首签' }} · 第 {{ shown.no }} 签</span>
             <b class="tier" :style="{ color: tierStyle.color }">{{ tierStyle.label }}</b>
           </header>
+          <svg class="seal" viewBox="0 0 32 52" aria-hidden="true">
+            <circle cx="16" cy="26" r="15" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.5" />
+            <circle cx="16" cy="26" r="12.5" fill="none" stroke="var(--gold)" stroke-width="0.6" opacity="0.35" />
+            <rect v-for="(b, i) in sealBars" :key="i" :x="b.x" :y="b.y" :width="b.w" height="3.4" rx="1" fill="var(--gold-bright)" />
+          </svg>
           <div class="poem big">
             <span v-for="(l, i) in shown.poem" :key="i" :style="{ '--d': `${0.15 + i * 0.16}s` }">{{ l }}</span>
           </div>
@@ -321,6 +342,20 @@ function backToTube(): void {
   to { transform: none; opacity: 1; }
 }
 .head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px dashed var(--line); padding-bottom: 10px; }
+
+.seal {
+  position: absolute;
+  right: 16px;
+  top: 46px;
+  width: 46px;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 6px var(--glow));
+  animation: seal-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.5s;
+}
+@keyframes seal-in {
+  from { opacity: 0; transform: rotate(-14deg) scale(1.5); }
+  to { opacity: 0.85; transform: none; }
+}
 .no { font-family: var(--cute); color: var(--dim); letter-spacing: 0.12em; font-size: 0.86rem; }
 .tier { font-family: var(--cute); font-size: 1.02rem; }
 .note-text { line-height: 2.05; color: var(--fg); font-size: 0.9rem; margin-top: 14px; }

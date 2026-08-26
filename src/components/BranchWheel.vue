@@ -65,12 +65,19 @@ const ARCS: Arc[] = [
 ]
 
 const hover = ref<string | null>(null)
+/** 点按固定：触屏没有 hover，点一支钉住它的关系网 */
+const pinned = ref<string | null>(null)
+const focus = computed(() => hover.value ?? pinned.value)
+
+function togglePin(z: string): void {
+  pinned.value = pinned.value === z ? null : z
+}
 
 const presentSet = computed(() => new Set(props.present))
 
 function arcState(arc: Arc): 'on' | 'mine' | 'dim' {
-  if (hover.value) {
-    return arc.members.includes(hover.value) ? 'on' : 'dim'
+  if (focus.value) {
+    return arc.members.includes(focus.value) ? 'on' : 'dim'
   }
   if (presentSet.value.size) {
     return arc.members.every((m) => presentSet.value.has(m)) ? 'mine' : 'dim'
@@ -79,7 +86,7 @@ function arcState(arc: Arc): 'on' | 'mine' | 'dim' {
 }
 
 function zhiState(z: string): boolean {
-  if (hover.value) return hover.value === z
+  if (focus.value) return focus.value === z
   if (presentSet.value.size) return presentSet.value.has(z)
   return true
 }
@@ -107,13 +114,13 @@ const LEGEND = [
       <g v-for="z in ZHI" :key="z" class="node-g">
         <circle
           :cx="pt(z, R)![0]" :cy="pt(z, R)![1]" r="15"
-          class="node" :class="{ on: zhiState(z), mine: presentSet.has(z) }"
-          @mouseenter="hover = z" @mouseleave="hover = null"
+          class="node" :class="{ on: zhiState(z), mine: presentSet.has(z), pin: pinned === z }"
+          @mouseenter="hover = z" @mouseleave="hover = null" @click="togglePin(z)"
         />
         <text
           :x="pt(z, R)![0]" :y="pt(z, R)![1]" class="zhi"
           :class="{ on: zhiState(z), mine: presentSet.has(z) }"
-          @mouseenter="hover = z" @mouseleave="hover = null"
+          @mouseenter="hover = z" @mouseleave="hover = null" @click="togglePin(z)"
         >{{ z }}</text>
       </g>
     </svg>
@@ -121,9 +128,10 @@ const LEGEND = [
       <span v-for="l in LEGEND" :key="l.kind" class="lg"><i :class="`dot-${l.kind}`"></i>{{ l.note }}</span>
     </div>
     <p class="note hint-line">
-      <template v-if="hover">「{{ hover }}」相关的关系弧已点亮，移开恢复。</template>
-      <template v-else-if="presentSet.size">命局地支（{{ present.join(' · ') }}）齐备的关系常亮；悬停任意支查看它的关系网。</template>
-      <template v-else>悬停任意地支，点亮它的六合 / 三合 / 相冲 / 相害。</template>
+      <template v-if="pinned">「{{ pinned }}」已钉住，再点一次解除。</template>
+      <template v-else-if="hover">「{{ hover }}」相关的关系弧已点亮，移开恢复。</template>
+      <template v-else-if="presentSet.size">命局地支（{{ present.join(' · ') }}）齐备的关系常亮；悬停或点按任意支查看它的关系网。</template>
+      <template v-else>悬停或点按任意地支，点亮它的六合 / 三合 / 相冲 / 相害。</template>
     </p>
   </div>
 </template>
@@ -158,6 +166,7 @@ const LEGEND = [
   transition: all 0.25s ease;
 }
 .node.on { stroke: var(--gold-bright); stroke-width: 1.6; }
+.node.pin { stroke: var(--gold-bright); stroke-width: 2; }
 .node.mine { stroke: var(--teal); stroke-width: 2; filter: drop-shadow(0 0 6px rgba(94, 234, 212, 0.5)); }
 .zhi {
   font-family: var(--cute);

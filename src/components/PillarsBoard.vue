@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ELE_B, ELE_S, Element, nayinOf } from '../lib/constants'
 import { THEME_SPRITE_PALS } from '../data/themes'
-import { currentThemeId } from '../lib/themes'
+import { currentTheme } from '../data/themes'
 import { Pillar, shiShen } from '../lib/engine'
 import { buildTaoess } from '../data/sageSprite'
 import { ELEMENT_SPIRITS, spritePixels, ZODIAC_SPRITES } from '../data/pillarSprites'
@@ -25,10 +25,10 @@ const THEME_PAL_MAP: Record<string, string> = {
 }
 
 /** 皮肤联动：牌背道长小像随主题换色（监听 html[data-theme] 变化保持响应） */
-const liveTheme = ref(currentThemeId())
+const liveTheme = ref(currentTheme())
 let themeObs: MutationObserver | null = null
 onMounted(() => {
-  themeObs = new MutationObserver(() => (liveTheme.value = currentThemeId()))
+  themeObs = new MutationObserver(() => (liveTheme.value = currentTheme()))
   themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 })
 onBeforeUnmount(() => themeObs?.disconnect())

@@ -15,6 +15,7 @@ export const TAO_PALETTE: Record<string, string> = {
   O: '#8a5a3b',
   P: '#caa14f',
   Q: '#fff6ec',
+  F: '#e8c473',
 }
 
 /** 主骨架：高髻道冠 + 广袖道袍 + 束腰长裙 */
@@ -50,6 +51,114 @@ export const TAO_BASE_SPRITE = [
 
 /** 法器浮层：[x, y, 字母]，叠加在主骨架上 */
 export type PropOverlay = Array<[number, number, string]>
+
+/** 发型层：启用时裁掉基础图顶部默认高髻（前4行），把发型画在头皮之上。
+ *  坐标以「裁剪后基础图」为基准，dy 为负表示向上扩展。F=发饰色，P/Q 复用法器色。 */
+export const TAO_HAIRS: Record<string, { rows: string[]; dy: number }> = {
+  /** 不换：保留默认高髻玉冠 */
+  none: { rows: [], dy: 0 },
+  /** 双环髻：两侧圆髻+连桥 */
+  shuanghuan: {
+    dy: -5,
+    rows: [
+      '....KK..........KK.....',
+      '...KHHHK......KHHHK....',
+      '..KHHHHHK.KK.KHHHHHK...',
+      '..KHhhHHHKKHHKKHHHhHK..',
+      '.KKHHHHHHHHHHHHHHHHHKK.',
+    ],
+  },
+  /** 束巾灵官巾：方巾压顶 */
+  shujin: {
+    dy: -3,
+    rows: [
+      '.........KKKKKKK.......',
+      '........KFFFFFFFK......',
+      '.......KFFFFFFFFFK.....',
+    ],
+  },
+  /** 披发铃兰：中分长披，发间小星，长发垂到肩 */
+  pifa: {
+    dy: -4,
+    rows: [
+      '..........KKKK.........',
+      '.........KHHHHK........',
+      '........KHHhhHHK.......',
+      '.......KHHQHHQHHK......',
+      '.....KKHHHHHHHHHKK.....',
+      '....KHHHHHHHHHHHHHK....',
+      '...KHHKHHHHHHHHHKHHK...',
+      '..KHHKHHHHHHHHHHHKHHK..',
+      '..KHhKHHSSSSSSSHKHhK...',
+      '..KHhKHSSSSSSSSSKHhK...',
+    ],
+  },
+  /** 莲冠：三瓣莲座 */
+  lianguan: {
+    dy: -4,
+    rows: [
+      '.......W.....W.........',
+      '......WWW.W.WWW........',
+      '.......KKKKKKK.........',
+      '......KHHQQHHHK........',
+    ],
+  },
+  /** 高马尾：额前束带，脑后马尾甩出 */
+  gaoma: {
+    dy: -3,
+    rows: [
+      '..........KKKK.........',
+      '.........KHHHHK........',
+      '........KKFFFFKK.......',
+      '..................KKK..',
+      '.................KHHHK.',
+      '.................KhHK..',
+      '..................KHK..',
+    ],
+  },
+  /** 平髻素巾：极简低髻 */
+  pingji: {
+    dy: -2,
+    rows: [
+      '..........KKKK.........',
+      '.........KFHHFK........',
+    ],
+  },
+  /** 斗笠：夜行掌灯的宽檐斗笠 */
+  douli: {
+    dy: -4,
+    rows: [
+      '...........K...........',
+      '..........KPK..........',
+      '........KPpPPpK........',
+      '.....KKKPPPPPPPpKKK....',
+    ],
+  },
+  /** 偏髻簪花：一侧偏髻+玉簪花 */
+  pianji: {
+    dy: -4,
+    rows: [
+      '......KKK..............',
+      '.....KHHHK.............',
+      '....KHHVHHK............',
+      '.......KKHHHHHKK.......',
+    ],
+  },
+}
+
+/** 每位角色的发型分配：十人十个剪影（none=默认玉冠） */
+export const TAO_HAIR_ASSIGN: Record<string, string> = {
+  qingxuan: 'none',
+  danxia: 'shujin',
+  xinglan: 'pifa',
+  suwen: 'lianguan',
+  yunji: 'pianji',
+  shuanghua: 'gaoma',
+  shouzhuo: 'pingji',
+  shiyi: 'douli',
+  lingshi: 'shuanghuan',
+  meixue: 'lianguan',
+}
 
 export const TAO_PROPS: Record<string, PropOverlay> = {
   whisk: [
@@ -135,12 +244,12 @@ export const TAOESSES: Record<string, TaoessDef> = {
   danxia: {
     id: 'danxia', nameCn: '丹霞', title: '掌盘道长', prop: 'luopan', orbit: '☰',
     hello: '我是丹霞，罗盘都擦亮了——报个生辰，四柱马上给你翻出来。',
-    palette: { H: '#5c4033', R: '#d97b62', D: '#a3543e', Y: '#ffd76e' },
+    palette: { H: '#5c4033', R: '#d97b62', D: '#a3543e', Y: '#ffd76e', F: '#ffd76e' },
   },
   xinglan: {
     id: 'xinglan', nameCn: '星阑', title: '司星道长', prop: 'scrollStars', orbit: '✷',
     hello: '星阑在此守夜。紫微诸星已经归位，就差你的生辰点灯了。',
-    palette: { H: '#2c3a58', R: '#9080d8', D: '#5e4fa6', Y: '#b3a6f7' },
+    palette: { H: '#2c3a58', R: '#9080d8', D: '#5e4fa6', Y: '#b3a6f7', F: '#b3a6f7' },
   },
   suwen: {
     id: 'suwen', nameCn: '素问', title: '五行道长', prop: 'taiji', orbit: '◈',
@@ -175,7 +284,7 @@ export const TAOESSES: Record<string, TaoessDef> = {
   meixue: {
     id: 'meixue', nameCn: '梅雪', title: '解签道长', prop: 'stickpot', orbit: '❀',
     hello: '梅雪抱签筒来也。今日运势如何，抽一支便知——不许偷看下一支。',
-    palette: { H: '#262033', R: '#e8a4b8', D: '#b8748c', Y: '#ffd76e' },
+    palette: { H: '#262033', R: '#e8a4b8', D: '#b8748c', Y: '#ffd76e', F: '#ff9fce' },
   },
 }
 
@@ -190,8 +299,8 @@ export interface TaoPixel {
 
 const EYE_CHAR = 'E'
 
-/** 组装某位角色的完整像素列表（主骨架 + 配色替换 + 法器浮层）
- *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人等场景复用骨架 */
+/** 组装某位角色的完整像素列表（发型层 + 主骨架 + 配色替换 + 法器浮层）
+ *  palOverride：额外覆盖调色板键（R 道袍 / D 辅色 / Y 饰金…），供主星拟人、主题换袍等场景复用骨架 */
 export function buildTaoess(id: string, palOverride?: Partial<Record<string, string>>): TaoPixel[] {
   const def = TAOESSES[id] ?? TAOESSES.qingxuan!
   const pal: Record<string, string> = { ...TAO_PALETTE }
@@ -206,7 +315,15 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
     }
   }
   const out: TaoPixel[] = []
-  TAO_BASE_SPRITE.forEach((row, y) => {
+
+  // 发型层：启用自定义发型时，裁掉基础图前 4 行默认高髻
+  const hairId = TAO_HAIR_ASSIGN[id] ?? 'none'
+  const hairDef = TAO_HAIRS[hairId]
+  const custom = !!hairDef && hairDef.rows.length > 0
+  const baseRows = custom ? TAO_BASE_SPRITE.slice(4) : [...TAO_BASE_SPRITE]
+  const hairRows = custom ? layerRows(baseRows, hairDef!.rows, hairDef!.dy) : baseRows
+
+  hairRows.forEach((row, y) => {
     row.split('').forEach((ch, x) => {
       if (ch === '.') return
       out.push({ x: x + 1, y, fill: pal[ch] ?? TAO_PALETTE.K!, isEye: ch === EYE_CHAR })
@@ -219,6 +336,27 @@ export function buildTaoess(id: string, palOverride?: Partial<Record<string, str
     out.push({ x: x + 1, y, fill: pal[ch] ?? ch, isEye: false })
   })
   return out
+}
+
+/** 行叠加：over 覆盖 base（dy 可为负向上扩展），'.' 不遮蔽 */
+function layerRows(base: string[], over: string[], rawDy: number): string[] {
+  let dy = rawDy
+  let rows = [...base]
+  if (dy < 0) {
+    rows = [...Array.from({ length: -dy }, () => ''), ...rows]
+    dy = 0
+  }
+  over.forEach((line, i) => {
+    const y = i + dy
+    while (rows.length <= y) rows.push('')
+    const chars = rows[y]!.padEnd(Math.max(rows[y]!.length, line.length), '.').split('')
+    line.split('').forEach((ch, x) => {
+      if (ch === '.' || ch === ' ') return
+      chars[x] = ch
+    })
+    rows[y] = chars.join('')
+  })
+  return rows
 }
 
 /** 牌背纹样：小像居中，四角饰点，供翻牌卡背使用 */

@@ -6,9 +6,9 @@ import router from './router'
 import { vReveal } from './lib/reveal'
 import { vTilt } from './lib/tilt'
 import { vMagnetic, vCountup, initSmoothScroll } from './lib/motion'
-import { initThemes } from './lib/themes'
+import { initTheme } from './data/themes'
 
-initThemes()
+initTheme()
 initSmoothScroll(router)
 createApp(App)
   .use(router)
