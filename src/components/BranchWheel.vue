@@ -3,7 +3,8 @@
  * 地支关系盘：十二支环坐，六合（内弧）/三合（中弧）/相冲（直径）/相害（外弧）一次看全。
  * 悬停任意一支，与它相关的关系弧全部点亮；传入命局地支时，命里自带的关系常亮。
  */
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { sfx } from '../lib/sfx'
 
 const props = withDefaults(defineProps<{ present?: string[] }>(), { present: () => [] })
 
@@ -71,7 +72,17 @@ const focus = computed(() => hover.value ?? pinned.value)
 
 function togglePin(z: string): void {
   pinned.value = pinned.value === z ? null : z
+  sfx.blip()
 }
+
+function onNodeEnter(z: string): void {
+  hover.value = z
+  sfx.tick()
+}
+
+/** 入场：弧线按六合→三合→冲→害的次序生长 */
+const entered = ref(false)
+onMounted(() => window.setTimeout(() => (entered.value = true), 80))
 
 const presentSet = computed(() => new Set(props.present))
 
@@ -104,23 +115,24 @@ const LEGEND = [
     <svg viewBox="0 0 320 320" class="wheel" role="img" aria-label="十二地支刑冲合害关系盘">
       <circle cx="160" cy="160" :r="R + 22" fill="none" stroke="rgba(139,147,167,0.25)" stroke-dasharray="2 6" />
       <g
-        v-for="arc in ARCS"
+        v-for="(arc, ai) in ARCS"
         :key="arc.id"
         class="arc"
-        :class="[`k-${arc.kind}`, arcState(arc)]"
+        :class="[`k-${arc.kind}`, arcState(arc), { grown: entered }]"
+        :style="{ '--ai': ai }"
       >
-        <path :d="arc.d" fill="none" />
+        <path :d="arc.d" fill="none" pathLength="100" />
       </g>
-      <g v-for="z in ZHI" :key="z" class="node-g">
+      <g v-for="(z, zi) in ZHI" :key="z" class="node-g" :class="{ grown: entered }" :style="{ '--zi': zi }">
         <circle
           :cx="pt(z, R)![0]" :cy="pt(z, R)![1]" r="15"
           class="node" :class="{ on: zhiState(z), mine: presentSet.has(z), pin: pinned === z }"
-          @mouseenter="hover = z" @mouseleave="hover = null" @click="togglePin(z)"
+          @mouseenter="onNodeEnter(z)" @mouseleave="hover = null" @click="togglePin(z)"
         />
         <text
           :x="pt(z, R)![0]" :y="pt(z, R)![1]" class="zhi"
           :class="{ on: zhiState(z), mine: presentSet.has(z) }"
-          @mouseenter="hover = z" @mouseleave="hover = null" @click="togglePin(z)"
+          @mouseenter="onNodeEnter(z)" @mouseleave="hover = null" @click="togglePin(z)"
         >{{ z }}</text>
       </g>
     </svg>
@@ -145,6 +157,21 @@ const LEGEND = [
   fill: none;
   opacity: 0.34;
   transition: opacity 0.3s ease, stroke-width 0.3s ease;
+}
+/* 入场：实线弧（六合/三合）依次画出；虚线弧（冲/害）与自身 dash 图案冲突，改为错拍淡入 */
+.k-六合 path, .k-三合 path { stroke-dasharray: 100; stroke-dashoffset: 100; }
+.arc.grown.k-六合 path, .arc.grown.k-三合 path {
+  animation: arc-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--ai, 0) * 55ms);
+}
+@keyframes arc-grow { to { stroke-dashoffset: 0; } }
+.k-相冲:not(.grown) path, .k-相害:not(.grown) path { opacity: 0; }
+.node-g { opacity: 0; transform: scale(0.4); transform-origin: 160px 160px; }
+.node-g.grown {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(200ms + var(--zi, 0) * 35ms);
 }
 .arc.on path, .arc.mine path { opacity: 0.95; }
 .arc.dim path { opacity: 0.08; }
