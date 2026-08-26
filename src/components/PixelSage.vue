@@ -1,7 +1,7 @@
 ﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sparkle } from '../lib/sparkle'
-import { buildTaoess, TAOESSES } from '../data/sageSprite'
+import { buildTaoess, TAOESSES, TAO_TIPS } from '../data/sageSprite'
 import { motionOf } from '../data/motionPersonas'
 import { sfx } from '../lib/sfx'
 
@@ -70,7 +70,8 @@ function say(text: string): void {
 }
 
 function onClick(event: MouseEvent): void {
-  const t = Math.random() < 0.35 ? def.value.hello : TIPS[Math.floor(Math.random() * TIPS.length)]!
+  const pool = Math.random() < 0.35 ? [def.value.hello] : (TAO_TIPS[def.value.id] ?? TIPS)
+  const t = pool[Math.floor(Math.random() * pool.length)]!
   say(t)
   sparkle(event.clientX, event.clientY, 10)
   sfx.blip()
