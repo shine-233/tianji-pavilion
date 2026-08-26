@@ -120,3 +120,33 @@ export function starSpritePixels(name: string): Pixel[] {
 }
 
 export const MAIN_STAR_NAMES = Object.keys(STAR_SPRITES)
+
+/** 星曜人设文案：道号、司职、性情、台词——与上面的像素小像一一对应 */
+export interface StarPersona {
+  ming: string
+  title: string
+  nature: string
+  hello: string
+}
+
+export const STAR_PERSONAS: Record<string, StarPersona> = {
+  紫微: { ming: '紫微真人', title: '观主 · 北辰', nature: '尊贵 · 化权', hello: '我是观主。帝座之星，主孤高也主担当——你命宫见我，先学会扛起事来。' },
+  天机: { ming: '机衡子', title: '司算 · 掌棋局', nature: '智巧 · 善谋', hello: '落子别急。天机善变，我教你的第一课是想三步、走一步。' },
+  太阳: { ming: '曦和君', title: '司光 · 掌博爱', nature: '光明 · 操劳', hello: '日头照四方，也照得自己发烫。肯付出是福分，但记得给自己留片荫凉。' },
+  武曲: { ming: '铗金娘', title: '司财 · 掌决断', nature: '刚毅 · 财星', hello: '账要清，话要短。武曲的钱是挣出来的，不是等出来的——手起刀落，别拖。' },
+  天同: { ming: '同尘师太', title: '司福 · 掌安逸', nature: '温和 · 福星', hello: '急什么？茶还没凉。天同的福气在知足，日子过得顺，比什么都强。' },
+  廉贞: { ming: '青肃娘子', title: '司囚 · 掌规矩', nature: '棱角 · 化忌亦化权', hello: '规矩立得住，人才站得直。廉贞带刺，刺伤人也护住人，看你怎么用。' },
+  天府: { ming: '府藏夫人', title: '司库 · 掌稳重', nature: '厚重 · 令星', hello: '库房满了心里才不慌。天府会攒——攒钱、攒人缘、攒底气，都是本事。' },
+  太阴: { ming: '望舒姑娘', title: '司月 · 掌柔静', nature: '温柔 · 田宅主', hello: '月亮不争白天的热闹。太阴的富，是静下来之后才看得见的那种。' },
+  贪狼: { ming: '醉桃仙', title: '司欲 · 掌机缘', nature: '多才 · 桃花', hello: '想要就说，想学就学。贪狼一身本事都从「贪」字上来，只是别贪杯贪夜。' },
+  巨门: { ming: '问津姑', title: '司口 · 掌是非', nature: '善辩 · 暗星', hello: '我把丑话说前头：巨门多疑，疑对了是洞察，疑错了是内耗，界限在你自己。' },
+  天相: { ming: '持衡女史', title: '司印 · 掌辅弼', nature: '正直 · 衣禄', hello: '我不站C位，我让C位的人不犯错。天相是宰相命，成全别人也是成就自己。' },
+  天梁: { ming: '荫木道长', title: '司荫 · 掌寿数', nature: '老成 · 荫星', hello: '大树底下好乘凉，我就是那棵树。天梁逢凶化吉，但你得先学会让人靠得住。' },
+  七杀: { ming: '断霜姐', title: '司杀 · 掌开创', nature: '果决 · 将星', hello: '旧的不去新的不来。七杀宜攻不宜守，乱世开路的刀，太平日子里要收鞘。' },
+  破军: { ming: '裂潮姬', title: '司破 · 掌变更', nature: '先锋 · 耗星', hello: '我先趟过去，碎了的回头再拼。破军不怕重来，怕的是原地不动。' },
+}
+
+/** 星曜主题色：取像素小像的道袍主色，供界面做个性化描边/辉光 */
+export function starAccent(name: string): string {
+  return STAR_SPRITES[name]?.pal.R ?? FALLBACK.pal.R!
+}
