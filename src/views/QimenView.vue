@@ -39,6 +39,7 @@ interface Pan {
   zhiFuXing: string
   zhiShiMen: string
   tian: Record<number, { xing: string; men: string; shen: string }>
+  geju: string[]
 }
 
 const XING: Record<number, string> = { 1: '天蓬', 8: '天任', 3: '天冲', 4: '天辅', 5: '天禽', 6: '天心', 7: '天柱', 2: '天芮', 9: '天英' }
@@ -105,7 +106,25 @@ function qiMenPan(d: Date): Pan {
     const shenIdx = ((RING.indexOf(p0) + (yangDun ? i : -i)) % 8 + 8) % 8
     tian[pal] = { xing: XING[starOrig]!, men: (MEN0[gateOrig] ?? '禽') + '门', shen: SHEN_SEQ[shenIdx]! }
   }
-  return { yangDun, ju, yuan, jieqi, fuTou: ftGz, diPan, kong, ma, timeGZ, dayGZ, zhiFuXing, zhiShiMen, tian }
+
+  /* 格局断语 */
+  const geju: string[] = []
+  if (deltaS === 0) geju.push('伏吟 · 天地盘相同，万事迟滞难动，宜守不宜进')
+  if (deltaS === 4) geju.push('反吟 · 星门对冲，事多反复，静待时机再动')
+  const xingPal: Record<string, number[]> = { 戊: [3], 己: [2], 庚: [8], 辛: [9], 壬: [4], 癸: [4] }
+  for (let p = 1; p <= 9; p++) {
+    const yi = diPan[p]!
+    if (xingPal[yi]?.includes(p)) geju.push(`六仪击刑 · ${yi} 落 ${p} 宫，自刑带伤，防口舌与暗损`)
+  }
+  const gateEle: Record<string, string> = { 休: '水', 生: '土', 伤: '木', 杜: '木', 景: '火', 死: '土', 惊: '金', 开: '金' }
+  const palEle: Record<number, string> = { 1: '水', 8: '土', 3: '木', 4: '木', 6: '金', 7: '金', 2: '土', 9: '火' }
+  const ke: Record<string, string> = { 水: '火', 火: '金', 金: '木', 木: '土', 土: '水' }
+  for (let i = 0; i < 8; i++) {
+    const pal = RING[i]!
+    const g0 = tian[pal]!.men.replace('门', '')
+    if (ke[gateEle[g0]!] === palEle[pal]) geju.push(`门迫 · ${g0}门（${gateEle[g0]}）迫${pal}宫（${palEle[pal]}），其事受阻`)
+  }
+  return { yangDun, ju, yuan, jieqi, fuTou: ftGz, diPan, kong, ma, timeGZ, dayGZ, zhiFuXing, zhiShiMen, tian, geju }
 }
 
 const pan = ref<Pan | null>(null)
@@ -157,7 +176,17 @@ const GRID: number[][] = [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
         </div>
         <p class="note" style="margin-top: 10px">
           {{ pan.yangDun ? '阳遁顺布六仪，阴遁逆布' : '' }}戊己庚辛壬癸为六仪，乙丙丁为三奇；
-          中五宫寄坤二宫。此盘为静态地盘，值符随时干的转动留待进阶篇。
+          中五宫寄坤二宫。
+        </p>
+      </div>
+
+      <div class="card" v-reveal="180">
+        <h2>格局提示</h2>
+        <p v-for="(gj, gi) in pan.geju" :key="gi" class="note gj-line">{{ gj }}</p>
+        <p v-if="!pan.geju.length" class="note">未见伏吟、反吟、击刑、门迫，盘面平和。</p>
+        <p class="note" style="margin-top: 8px">
+          值符星：{{ pan.zhiFuXing }} · 值使门：{{ pan.zhiShiMen }}。格局仅列最显性的四类，
+          三奇得使、玉女守门等吉格需结合用神宫细断。
         </p>
       </div>
     </template>
