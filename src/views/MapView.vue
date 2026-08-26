@@ -49,8 +49,32 @@ const GROUPS: Array<{ name: string; halls: Hall[] }> = [
 ]
 
 function go(to: string): void {
+  const g = GUIDE[to]
+  if (g) window.dispatchEvent(new CustomEvent('sage-say', { detail: `${g.who}：「${g.line}」` }))
   sfx.ding()
   router.push(to)
+}
+
+/** 各殿当值道长的引路话——跨路由也听得见，角标那位会替她捎到 */
+const GUIDE: Record<string, { who: string; line: string }> = {
+  '/chart': { who: '丹霞', line: '客官里边请，罗盘都替你擦亮了。' },
+  '/ziwei': { who: '星阑', line: '今夜星空刚归位，就差点灯人了。' },
+  '/liuyao': { who: '灵蓍', line: '铜钱洗净了，想问什么，摇之前先想清楚。' },
+  '/meihua': { who: '灵蓍', line: '梅花一枝，时间起卦，最快的一课。' },
+  '/daily': { who: '梅雪', line: '签筒抱来了——一支就好，不许偷看下一支。' },
+  '/jiaobei': { who: '梅雪', line: '筊杯掷得响，答案掷得准。允不允，问了才算。' },
+  '/xiaoliuren': { who: '灵蓍', line: '大安留连速喜，掐指便知，小事别排盘。' },
+  '/almanac': { who: '素问', line: '今日五行穿什么颜色、哪个时辰行事，历上都写着。' },
+  '/oracle': { who: '梅雪', line: '老签池留着呢，情怀也是灵验的一种。' },
+  '/wuxing': { who: '素问', line: '五行天穹开着，进去转一圈，比背口诀快。' },
+  '/qimen': { who: '丹霞', line: '奇门地基刚打好，先看定局布仪，别急着上天盘。' },
+  '/yanyi': { who: '星阑', line: '从无极滚到六十四卦，一路往下看就是一部易学史。' },
+  '/sages': { who: '青玄', line: '观里上下十位都在图鉴里，去挑个投缘的说话。' },
+  '/classics': { who: '云笈', line: '藏经阁七部古书都在架上，我扫了这么久的地，随你翻。' },
+  '/geju': { who: '霜华', line: '格局谱系五十九族，个个来路清白，尽管查。' },
+  '/rules': { who: '守拙', line: '七百九十九条规则码得整整齐齐，欢迎挑刺。' },
+  '/cases': { who: '拾遗', line: '两千多个命例落着灰，提灯给你照着挑。' },
+  '/settings': { who: '青玄', line: '衣房在客舍里，七套道袍随主题换，慢慢挑。' },
 }
 </script>
 
@@ -63,7 +87,7 @@ function go(to: string): void {
     <section v-for="(g, gi) in GROUPS" :key="g.name" v-reveal="gi * 60" class="zone">
       <h2>{{ g.name }}</h2>
       <div class="hall-grid">
-        <button v-for="h in g.halls" :key="h.to" class="hall" @click="go(h.to)">
+        <button v-for="h in g.halls" :key="h.to" class="hall" @click="go(h.to)" @mouseenter="sfx.tick()">
           <span class="h-glyph">{{ h.glyph }}</span>
           <span class="h-label">{{ h.label }}</span>
           <span class="h-line">{{ h.line }}</span>
