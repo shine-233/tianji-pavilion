@@ -42,7 +42,10 @@ const backPal = computed(() => {
 })
 
 function backPixelsOf(i: number) {
-  return buildTaoess(BACK_MAIDENS[i % BACK_MAIDENS.length]!, backPal.value)
+  // 保留每位女道士自己的道袍配色（区分度优先），仅主题为朱砂时统一换赤袍
+  const theme = liveTheme.value
+  if (theme === 'zhu') return buildTaoess(BACK_MAIDENS[i % BACK_MAIDENS.length]!, backPal.value)
+  return buildTaoess(BACK_MAIDENS[i % BACK_MAIDENS.length]!)
 }
 
 /** 主题专属牌背纹样：每套皮肤的卡背都是独一份 */
