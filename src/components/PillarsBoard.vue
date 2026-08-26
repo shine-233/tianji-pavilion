@@ -150,9 +150,9 @@ function toggle(i: number): void {
               :x="[11, 49, 49, 11][gi]" :y="[14, 14, 78, 78][gi]"
               class="corner-gua">{{ g }}</text>
           </svg>
-          <svg class="back-sprite maiden" viewBox="0 0 26 29" shape-rendering="crispEdges">
-            <rect v-for="(q, qi) in backPixelsOf(i)" :key="qi"
-              :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" />
+<svg class="back-sprite maiden" viewBox="0 0 26 29">
+<rect v-for="(q, qi) in backPixelsOf(i)" :key="qi"
+:x="q.x + 0.06" :y="q.y + 0.06" width="0.88" height="0.88" rx="0.22" :fill="q.fill" :opacity="0.93 + ((q.x * 7 + q.y * 13) % 5) * 0.0175" />
           </svg>
           <span class="back-word">{{ ['天', '机', '阁', '签'][i] }}</span>
         </div>

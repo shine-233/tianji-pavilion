@@ -161,8 +161,8 @@ function arcPath(i: number, j: number, off: number): string {
           <path v-for="(p, i) in SHENG_CYCLE" :key="'s' + i" :d="arcPath(SHENG_ORDER.indexOf(p[0]), SHENG_ORDER.indexOf(p[1]), -24)" class="arc-s" marker-end="url(#arrH)" />
           <path v-for="(p, i) in KE_CYCLE" :key="'k' + i" :d="arcPath(SHENG_ORDER.indexOf(p[0]), SHENG_ORDER.indexOf(p[1]), 26)" class="arc-k" marker-end="url(#arrR)" />
         </svg>
-        <svg class="hero-sage" viewBox="0 0 26 30" shape-rendering="crispEdges">
-          <rect v-for="(p, i) in SAGE" :key="i" :x="p.x" :y="p.y + 2" width="1" height="1" :fill="p.fill" />
+<svg class="hero-sage" viewBox="0 0 26 30">
+<rect v-for="(p, i) in SAGE" :key="i" :x="p.x + 0.06" :y="p.y + 2.06" width="0.88" height="0.88" rx="0.22" :fill="p.fill" :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175" />
         </svg>
       </div>
     </section>

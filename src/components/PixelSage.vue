@@ -119,8 +119,15 @@ onBeforeUnmount(() => {
       <span class="orbit-glyph g1">{{ def.orbit }}</span>
       <span class="orbit-glyph g2">✦</span>
       <span class="orbit-glyph g3">⋆</span>
-      <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT" shape-rendering="crispEdges">
-        <rect v-for="(p, i) in pixels" :key="i" :x="p.x * CELL" :y="p.y * CELL" :width="CELL" :height="CELL" :fill="p.fill" />
+      <svg class="sage-sprite" :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" :width="WIDTH" :height="HEIGHT">
+        <rect
+          v-for="(p, i) in pixels" :key="i"
+          :x="p.x * CELL + 0.4" :y="p.y * CELL + 0.4"
+          :width="CELL - 0.8" :height="CELL - 0.8"
+          :rx="CELL * 0.24"
+          :fill="p.fill"
+          :opacity="0.93 + ((p.x * 7 + p.y * 13) % 5) * 0.0175"
+        />
         <rect
           v-for="(e, i) in eyePixels" :key="'e' + i"
           class="eyelid" :x="e.x * CELL" :y="e.y * CELL" :width="CELL" :height="CELL"

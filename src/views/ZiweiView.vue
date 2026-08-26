@@ -253,7 +253,7 @@ function tapStar(st: string): void {
                 @click="speakStar(st)" @keydown.enter="speakStar(st)"
               >
                 <span class="bob-wrap" :style="{ animationDelay: si * 0.4 + 's' }">
-                  <svg class="star-face big" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>
+                  <svg class="star-face big" viewBox="0 0 12 13"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x + 0.05" :y="q.y + 0.05" width="0.9" height="0.9" rx="0.2" :fill="q.fill" :opacity="0.93 + ((q.x * 7 + q.y * 13) % 5) * 0.0175" /></svg>
                 </span>
                 <span class="star-id">
                   <b class="gold-t2">{{ st }}</b>
