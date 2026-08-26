@@ -279,7 +279,6 @@ onBeforeUnmount(() => {
 
   <TransitionVeil />
 
-  <div class="theme-fx" aria-hidden="true"></div>
   <ThemeFlair />
 
   <!-- 一炷香：滚动进度 -->
