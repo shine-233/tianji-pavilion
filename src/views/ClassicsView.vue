@@ -134,7 +134,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 
 <template>
   <main class="page">
-    <div class="card hoverable">
+    <div v-reveal="0" class="card hoverable">
       <h2><DecryptTitle text="典籍语料 · 七书数字化" /></h2>
       <p class="sub">
         《滴天髓阐微》《三命通会》《穷通宝鉴》《子平真诠评注》《渊海子平》《神峰通考》《千里命稿》
@@ -308,3 +308,8 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
 .pop-enter-from { opacity: 0; transform: translateY(-8px); }
 .pop-leave-active { display: none; }
 </style>
+
+@media (max-width: 520px) {
+  .search-row { flex-direction: column; }
+  .stats { gap: 14px; }
+}

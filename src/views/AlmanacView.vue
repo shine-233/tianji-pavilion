@@ -49,7 +49,7 @@ function backToday(): void {
     <h1>今日黄历</h1>
     <p class="sub">宜忌、冲煞、方位都按《协纪辨方书》一路的老历法算，数据来自开源历法库。信则参考之，不信就当看个节气。</p>
 
-    <section class="card head-card">
+    <section v-reveal="0" class="card head-card">
       <button class="ghost nav" @click="step(-1)">← 前一天</button>
       <div class="date-block">
         <svg class="moon" viewBox="0 0 100 100" aria-hidden="true">
@@ -75,7 +75,7 @@ function backToday(): void {
       <button class="ghost nav" @click="step(1)">后一天 →</button>
     </section>
 
-    <section class="cols">
+    <section v-reveal="120" class="cols">
       <div class="card col-card">
         <h2>宜</h2>
         <transition-group name="yi-in" tag="ul" class="items do-list">
@@ -90,7 +90,7 @@ function backToday(): void {
       </div>
     </section>
 
-    <section class="card meta-card">
+    <section v-reveal="200" class="card meta-card">
       <h2>杂项参考</h2>
       <div class="meta-grid">
         <div><label>喜神方位</label><b class="dir">{{ info.xi }}</b></div>
@@ -159,3 +159,9 @@ function backToday(): void {
 .yi-in-enter-from { opacity: 0; transform: translateX(-14px); }
 .ji-in-enter-from { opacity: 0; transform: translateX(14px); }
 </style>
+
+@media (max-width: 560px) {
+  .lunar-big { font-size: 1.25rem; }
+  .head-card .btns { justify-content: center; }
+  .date-block { gap: 14px; }
+}

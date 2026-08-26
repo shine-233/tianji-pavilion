@@ -182,18 +182,33 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(var(--acc-rgb), 0.07), transparent 60%),
-    radial-gradient(900px 600px at -10% 30%, rgba(var(--acc2-rgb), 0.05), transparent 55%),
+    radial-gradient(1200px 700px at 85% -10%, var(--glow), transparent 60%),
+    radial-gradient(900px 600px at -10% 30%, rgba(94, 234, 212, 0.05), transparent 55%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   color: var(--fg);
   font-family: var(--serif);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
+
+/* 触屏：输入聚焦不缩放、按钮有足够命中区 */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px; }
+}
+
+/* 刘海屏 / 手势条安全区 */
+.safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 
 /* 星野三层视差 */
 body::before,
@@ -393,8 +408,15 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 ::-webkit-scrollbar-thumb:hover { background: var(--line); }
 
 @media (max-width: 720px) {
-  .page { padding: 18px 12px 110px; }
+  .page { padding: 18px 12px calc(110px + env(safe-area-inset-bottom)); }
   .big-num { font-size: 2rem; }
+}
+
+/* 触屏与窄屏：更大的命中区、禁掉长按选中 */
+@media (pointer: coarse), (max-width: 720px) {
+  button, .btn, .tab, .nav-link, a.nav-link { min-height: 40px; }
+  .cursor-trail { display: none; }
+  td, th { padding: 8px 9px; }
 }
 
 .fx-spark {

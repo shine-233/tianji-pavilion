@@ -494,7 +494,7 @@ defineExpose({
 
 <style scoped>
 .vx-wrap { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: radial-gradient(900px 500px at 50% 20%, rgba(232, 196, 115, 0.05), transparent 60%), #0b0d12; }
-.vx-canvas { width: 100%; height: 520px; cursor: grab; }
+.vx-canvas { width: 100%; height: 520px; cursor: grab; touch-action: none; }
 .vx-canvas:active { cursor: grabbing; }
 .hint {
   position: absolute;

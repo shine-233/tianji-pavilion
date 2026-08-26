@@ -35,7 +35,7 @@ function doClear(): void {
     <h1>设置</h1>
     <p class="sub">换一身衣裳，或者清一清账本。所有偏好都存在你自己浏览器里，不上传任何东西。</p>
 
-    <section class="card">
+    <section v-reveal="0" class="card">
       <h2>衣橱 · 七套主题</h2>
       <p class="note wardrobe-note">每一套都是整体设计：界面配色、道姑姐妹的道袍、绦子颜色一起换，不会出现混搭的脏色。</p>
       <div class="wardrobe">
@@ -66,7 +66,7 @@ function doClear(): void {
       </div>
     </section>
 
-    <section class="card">
+    <section v-reveal="100" class="card">
       <h2>声音与记录</h2>
       <div class="row-actions">
         <button class="ghost" @click="onToggleSound">{{ soundOn ? '🔊 音效已开' : '🔇 音效已关' }}</button>
@@ -78,7 +78,7 @@ function doClear(): void {
       <p class="note">占卜记录只写在你这台电脑的浏览器里（localStorage），清了就是真没了。</p>
     </section>
 
-    <section class="card">
+    <section v-reveal="180" class="card">
       <h2>关于这座观</h2>
       <p class="sub about-text">
         云鹤观是一座虚构的线上小道观，供各位把玩八字、紫微、六爻、梅花这些老玩意儿。

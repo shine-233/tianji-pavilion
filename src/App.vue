@@ -33,10 +33,9 @@ const NAV = [
   { to: '/ziwei', label: '紫微命盘', glyph: '✷' },
   { to: '/liuyao', label: '六爻纳甲', glyph: '🪙' },
   { to: '/meihua', label: '梅花易数', glyph: '❄' },
-  { to: '/daily', label: '每日一签', glyph: '🎋' },
+  { to: '/daily', label: '灵签', glyph: '🎋' },
   { to: '/almanac', label: '今日黄历', glyph: '📅' },
   { to: '/wuxing', label: '五行天穹', glyph: '🌌' },
-  { to: '/oracle', label: '轻卜抽签', glyph: '❀' },
   { to: '/classics', label: '典籍语料', glyph: '📜' },
   { to: '/geju', label: '格局辞典', glyph: '⚔' },
   { to: '/rules', label: '规则库', glyph: '⚖' },
@@ -283,7 +282,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 10px 20px;
+  padding: calc(10px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) 10px calc(20px + env(safe-area-inset-left));
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);

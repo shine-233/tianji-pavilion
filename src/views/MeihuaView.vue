@@ -63,7 +63,7 @@ function reroll(): void {
       这套法子相传是邵雍先生走路时想出来的，讲究一个「触机而发」——你起念的那一刻，卦就成了。
     </p>
 
-    <section class="card">
+    <section v-reveal="0" class="card">
       <div class="tabs">
         <button :class="{ active: mode === 'time' }" @click="mode = 'time'; sfx.blip()">⏱ 以当下时辰起卦</button>
         <button :class="{ active: mode === 'number' }" @click="mode = 'number'; sfx.blip()">🔢 以两数起卦</button>

@@ -1,14 +1,18 @@
 /**
- * 云鹤观灵签 · 三十六签
- * 原创签文。抽签按「日期 + 签筒种子」哈希决定，同一天同一支，全站一致。
+ * 云鹤观灵签 · 六十支
+ * 前三十六支为七言体，后二十四支由「观卜」五绝签并入，统一为同一套格式。
+ * 抽签按「日期 + 签筒种子」哈希决定，同一天同一支，全站一致。
  */
+
+import { SIGNS as ORACLE_SIGNS } from './oracleData'
 
 export type Tier = '上吉' | '中吉' | '平' | '小警'
 
 export interface Sign {
   no: number
   tier: Tier
-  poem: [string, string]
+  /** 竖排诗句，两行七言或四行五绝 */
+  poem: string[]
   note: string
   doText: string
   dontText: string
@@ -312,6 +316,47 @@ export const TIER_STYLE: Record<Tier, { color: string; label: string }> = {
   小警: { color: 'var(--red)', label: '小警 · 宜慎' },
 }
 
+/** 观卜五绝签 → 统一格式的映射表（等级归并 + 补宜忌） */
+const ORACLE_CONVERT: Array<{ tier: Tier; doText: string; dontText: string }> = [
+  { tier: '上吉', doText: '捡起搁置的事、顺势启程', dontText: '犹豫观望' },
+  { tier: '中吉', doText: '扎根、打基础', dontText: '急于求成' },
+  { tier: '平', doText: '守住已有的', dontText: '贪多冒进' },
+  { tier: '中吉', doText: '咬牙过坎，最难处已近', dontText: '半途而废' },
+  { tier: '平', doText: '顾好基本盘、多陪人', dontText: '折腾新摊子' },
+  { tier: '中吉', doText: '主动联络旧友', dontText: '等对方先开口' },
+  { tier: '平', doText: '琐事一件件来', dontText: '越乱越急' },
+  { tier: '上吉', doText: '多开口问一句', dontText: '闷头等机会上门' },
+  { tier: '中吉', doText: '继续磨自己', dontText: '急着证明自己' },
+  { tier: '平', doText: '料理家门口的事', dontText: '远行、大动干戈' },
+  { tier: '中吉', doText: '耐心等收成', dontText: '临门变卦' },
+  { tier: '平', doText: '盯好自己的航道', dontText: '与人攀比' },
+  { tier: '上吉', doText: '坚持到见分晓', dontText: '功亏一篑' },
+  { tier: '平', doText: '看清脚下、行得正', dontText: '心虚冒进' },
+  { tier: '中吉', doText: '大方接住好意', dontText: '谦虚过头错失机会' },
+  { tier: '中吉', doText: '借力使力', dontText: '一个人硬扛' },
+  { tier: '平', doText: '少争执、多吃饭', dontText: '争闲气' },
+  { tier: '平', doText: '想清最坏结果再落子', dontText: '落子后反悔' },
+  { tier: '上吉', doText: '往外走一步', dontText: '缩在舒适区里' },
+  { tier: '中吉', doText: '收下人情与进项', dontText: '客套推辞' },
+  { tier: '平', doText: '找准病根慢慢调', dontText: '硬扛拖延' },
+  { tier: '中吉', doText: '给误会一点时间', dontText: '急着辩解' },
+  { tier: '中吉', doText: '报名应考、动笔写', dontText: '荒废功课' },
+  { tier: '平', doText: '在旧底子上翻新', dontText: '推倒重来' },
+]
+
+/** 全量签池：三十六支七言 + 二十四支五绝（并入后统一编号） */
+export const ALL_SIGNS: Sign[] = [
+  ...SIGNS,
+  ...ORACLE_SIGNS.map((s, i) => ({
+    no: SIGNS.length + i + 1,
+    tier: ORACLE_CONVERT[i]!.tier,
+    poem: s.poem,
+    note: s.jie,
+    doText: ORACLE_CONVERT[i]!.doText,
+    dontText: ORACLE_CONVERT[i]!.dontText,
+  })),
+]
+
 /** 稳定哈希：同一天同一支签 */
 export function hashStr(s: string): number {
   let h = 2166136261
@@ -323,8 +368,8 @@ export function hashStr(s: string): number {
 }
 
 export function drawSign(dateKey: string): Sign {
-  const idx = hashStr('yunheguan:' + dateKey) % SIGNS.length
-  return SIGNS[idx]
+  const idx = hashStr('yunheguan:' + dateKey) % ALL_SIGNS.length
+  return ALL_SIGNS[idx]
 }
 
 export function todayKey(d = new Date()): string {

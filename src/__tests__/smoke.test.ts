@@ -14,7 +14,7 @@ const ROUTES = [
   { path: '/meihua', component: () => import('../views/MeihuaView.vue') },
   { path: '/daily', component: () => import('../views/DailySignView.vue') },
   { path: '/almanac', component: () => import('../views/AlmanacView.vue') },
-  { path: '/oracle', component: () => import('../views/OracleView.vue') },
+  { path: '/oracle', redirect: '/daily' },
   { path: '/wuxing', component: () => import('../views/WuxingView.vue') },
   { path: '/classics', component: () => import('../views/ClassicsView.vue') },
   { path: '/geju', component: () => import('../views/GejuView.vue') },

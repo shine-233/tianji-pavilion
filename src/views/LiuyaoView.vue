@@ -130,7 +130,7 @@ const libRows = computed(() => {
       装卦、世应、六亲、断语都按京房老规矩来，解出来的话仅供参考，主意还得你自己拿。
     </p>
 
-    <section class="card">
+    <section v-reveal="0" class="card">
       <div class="form-row">
         <div class="q-wrap">
           <label>这一卦问什么</label>
@@ -182,7 +182,7 @@ const libRows = computed(() => {
     </section>
 
     <template v-if="phase === 'done' && chart && verdict">
-      <section class="card">
+      <section v-reveal="0" class="card">
         <h2>装卦盘</h2>
         <div class="board-head">
           <span class="tag gold">本卦 {{ chart.name }}</span>

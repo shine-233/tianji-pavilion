@@ -96,16 +96,24 @@ function scheduleIdle(): void {
   }, props.idleSec * 1000 + Math.random() * 8000)
 }
 
+/** 各页面通过 sage-say 自定义事件让道姑开口（如抽签结果、排盘完成） */
+function onSageSay(e: Event): void {
+  const detail = (e as CustomEvent<string>).detail
+  if (typeof detail === 'string' && detail) say(detail)
+}
+
 onMounted(() => {
   window.setTimeout(() => {
     visible.value = true
   }, 350)
   scheduleIdle()
+  window.addEventListener('sage-say', onSageSay)
 })
 onBeforeUnmount(() => {
   if (typeTimer !== null) window.clearInterval(typeTimer)
   if (closeTimer !== null) window.clearTimeout(closeTimer)
   if (idleTimer !== null) window.clearTimeout(idleTimer)
+  window.removeEventListener('sage-say', onSageSay)
 })
 </script>
 

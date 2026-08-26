@@ -16,7 +16,7 @@ const router = createRouter({
     { path: '/geju', name: 'geju', component: () => import('../views/GejuView.vue') },
     { path: '/rules', name: 'rules', component: () => import('../views/RulesView.vue') },
     { path: '/cases', name: 'cases', component: () => import('../views/CasesView.vue') },
-    { path: '/oracle', name: 'oracle', component: () => import('../views/OracleView.vue') },
+    { path: '/oracle', redirect: '/daily' },
     { path: '/sages', name: 'sages', component: () => import('../views/SageGallery.vue') },
     { path: '/yanyi', name: 'yanyi', component: () => import('../views/YanYiView.vue') },
     { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
