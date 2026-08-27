@@ -229,9 +229,6 @@ function lucky(e?: MouseEvent): void {
     }
   }, 90)
 }
-    }
-  }, 90)
-}
 
 onBeforeUnmount(() => {
   if (rollTimer !== null) window.clearInterval(rollTimer)
