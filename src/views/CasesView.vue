@@ -148,7 +148,7 @@ function fmtCtx(ctx: string): string {
       <h2><DecryptTitle text="案例库 · 古籍命例数字化" /></h2>
       <p class="sub">
         从典籍原文中自动抽取四柱命例，人工复核标注吉凶层级，并对多书重复记载做交叉互证。
-        点击案例卡展开古籍原文语境。所有抽取与标注脚本公开可复算。
+        点击案例卡展开古籍原文语境。哪条标错了，欢迎来规则页提。
       </p>
       <div class="stats">
         <div class="stat"><span class="big-num">{{ master.length }}</span><span class="note">个典籍命例</span></div>

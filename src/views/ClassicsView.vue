@@ -140,7 +140,7 @@ function barW(v: number, mx: number, enteredOn: boolean): string {
       <h2><DecryptTitle text="典籍语料 · 七书数字化" /></h2>
       <p class="sub">
         《滴天髓阐微》《三命通会》《穷通宝鉴》《子平真诠评注》《渊海子平》《神峰通考》《千里命稿》
-        全文入库，按章节切分后以八个主题词族的密度刻画每部书的"性格"。数据全部可复算。
+        全文入库，按章节切分后以八个主题词族的密度刻画每部书的"性格"。
       </p>
       <div class="stats">
         <div class="stat"><span class="big-num">7</span><span class="note">部典籍</span></div>

@@ -537,7 +537,8 @@ export function cardBackPixels(palOverride?: Partial<Record<string, string>>): T
   return out
 }
 
-/** 超采样：把标准精灵细分成半格密度，边缘子格向邻色过渡——形状不变，观感分辨率翻倍 */
+/** 高清渲染：不再放大倍数（基底已是 2× 网格），改为描边 + 受光边 + 完整身形。
+ *  旧版「再翻倍 + 邻色混合」把精灵糊成色块，而消费端 viewBox 只装得下左上角，等于双重伤害。 */
 export interface HdPixel {
   x: number
   y: number
@@ -546,12 +547,20 @@ export interface HdPixel {
   op?: number
 }
 
+/** 输出画布尺寸：基底约 47×54，四周留边给描边 */
+export const HD_W = 50
+export const HD_H = 58
+/** 基底坐标平移到画布中央的偏移 */
+const HD_OX = 2
+const HD_OY = 3
+const OUTLINE = '#171326'
+
 function hexMix(a: string, b: string, t: number): string {
   const pa = parseInt(a.slice(1), 16)
   const pb = parseInt(b.slice(1), 16)
   const r = Math.round(((pa >> 16) & 255) * (1 - t) + ((pb >> 16) & 255) * t)
   const g = Math.round(((pa >> 8) & 255) * (1 - t) + ((pb >> 8) & 255) * t)
-  const bl = Math.round((pa & 255) * (1 - t) + (pb & 255) * t)
+  const bl = Math.round((pa & 255) * (1 - t) + ((pb >> 8) & 255) * t)
   return '#' + ((r << 16) | (g << 8) | bl).toString(16).padStart(6, '0')
 }
 
@@ -560,19 +569,34 @@ export function buildTaoessHd(id: string, palOverride?: Partial<Record<string, s
   const at = new Map<string, string>()
   base.forEach((p) => at.set(`${p.x},${p.y}`, p.fill))
   const out: HdPixel[] = []
-  base.forEach((p) => {
-    for (let oy = 0; oy < 2; oy++) {
-      for (let ox = 0; ox < 2; ox++) {
-        let fill = p.fill
-        const nx = ox === 0 ? p.x - 1 : p.x + 1
-        const ny = oy === 0 ? p.y - 1 : p.y + 1
-        const h = at.get(`${nx},${p.y}`)
-        if (h && h !== fill) fill = hexMix(fill, h, 0.3)
-        const v = at.get(`${p.x},${ny}`)
-        if (v && v !== p.fill && v !== fill) fill = hexMix(fill, v, 0.3)
-        out.push({ x: p.x * 2 + ox, y: p.y * 2 + oy, fill, op: p.op })
-      }
+
+  // 1) 轮廓描边：空白格只要四邻身体就上深色，剪影立刻干净立体
+  for (const [key] of at) {
+    const [x, y] = key.split(',').map(Number)
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const nx = x + dx
+      const ny = y + dy
+      if (!at.has(`${nx},${ny}`)) out.push({ x: nx + HD_OX, y: ny + HD_OY, fill: OUTLINE })
     }
-  })
+  }
+
+  // 2) 身体：原样落位（褶皱/发丝/眼底细节都在基底里），左缘补一道受光
+  for (const p of base) {
+    let fill = p.fill
+    if (!at.has(`${p.x - 1},${p.y}`) && p.fill !== TAO_PALETTE.K) {
+      fill = hexMix(fill, '#dfe6ff', 0.22)
+    }
+    out.push({ x: p.x + HD_OX, y: p.y + HD_OY, fill, op: p.op })
+  }
+
+  // 3) 眼睛点睛：瞳底压深、上缘点一粒高光，视线立刻有神
+  for (const p of base) {
+    if (!p.isEye) continue
+    const x = p.x + HD_OX
+    const y = p.y + HD_OY
+    out.push({ x, y, fill: '#1b1626' })
+    out.push({ x, y: y - 1, fill: '#ffffff', op: 0.85 })
+  }
+
   return out
 }

@@ -110,6 +110,47 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
     .map(([book, n]) => ({ book, n }))
     .sort((a, b) => b.n - a.n)
 }
+
+/** ── 五行关系链：仅从格局名本身推五行，推不出的不进链 ── */
+type Ele = '木' | '火' | '土' | '金' | '水'
+const ELE_COLOR: Record<Ele, string> = { 木: '#7bc47f', 火: '#ef7d57', 土: '#c9a15f', 金: '#e8c473', 水: '#64a7e8' }
+const SHENG: Record<Ele, Ele> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
+const KE: Record<Ele, Ele> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' }
+/** 五行得名的专旺格（《尚书·洪范》曲直/炎上/稼穑/从革/润下）与四灵格 */
+const NAMED_ELE: Record<string, Ele> = {
+  曲直: '木', 炎上: '火', 稼穑: '土', 从革: '金', 润下: '水',
+  青龙伏形: '木', 朱雀乘风: '火', 勾陈得位: '土', 白虎持势: '金', 玄武当权: '水',
+}
+function eleOf(name: string): Ele | null {
+  const named = NAMED_ELE[name]
+  if (named) return named
+  let found: Ele | null = null
+  for (const e of ['木', '火', '土', '金', '水'] as const) {
+    if (!name.includes(e)) continue
+    if (found) return null // 一名含多行（如「金白水清」），不强行归属
+    found = e
+  }
+  return found
+}
+const chain = computed(() => {
+  const out: { name: string; ele: Ele }[] = []
+  for (const l of lineage.value) {
+    const e = eleOf(l.name)
+    if (e) out.push({ name: l.name, ele: e })
+    if (out.length >= 10) break
+  }
+  return out
+})
+const chainEdges = computed(() =>
+  chain.value.slice(1).map((n, i) => {
+    const a = chain.value[i]
+    return { rel: a && SHENG[a.ele] === n.ele ? '生' : a && KE[a.ele] === n.ele ? '克' : '' }
+  }),
+)
+const hlEle = ref<Ele | null>(null)
+function cx(i: number): number {
+  return 45 + i * 102
+}
 </script>
 
 <template>
@@ -132,6 +173,39 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
     <div v-else-if="loadErr" class="card"><p class="sub">⚠️ 格局谱系装载失败，请检查网络后刷新重试。</p></div>
 
     <template v-if="!loading && !loadErr">
+      <!-- 五行关系链：由格局名推得的五行属性画相生相克细线 -->
+      <div v-if="chain.length" class="card chain-card">
+        <p class="note chain-cap">
+          格局五行关系链
+          <i class="lg gen" aria-hidden="true"></i>相生
+          <i class="lg ke" aria-hidden="true"></i>相克
+          <span class="cap-hint">· 悬停节点，同五行的格局卡会亮起</span>
+        </p>
+        <div class="chain-wrap">
+          <svg
+            class="chain-svg" :class="{ in: entered }"
+            viewBox="0 0 1010 84" role="img"
+            aria-label="由格局名推得五行的前十个格局，按相生相克相连的关系图"
+          >
+            <g v-for="(e, i) in chainEdges" :key="'e' + i" aria-hidden="true">
+              <line :x1="cx(i) + 18" y1="32" :x2="cx(i + 1) - 18" y2="32" :class="e.rel === '生' ? 'edge-gen' : 'edge-ke'" />
+              <text v-if="e.rel" :x="(cx(i) + cx(i + 1)) / 2" y="20" class="edge-label" text-anchor="middle">{{ e.rel }}</text>
+            </g>
+            <g
+              v-for="(n, i) in chain" :key="n.name"
+              class="chain-node" tabindex="0"
+              :style="{ color: ELE_COLOR[n.ele] }"
+              @mouseenter="hlEle = n.ele" @mouseleave="hlEle = null"
+              @focus="hlEle = n.ele" @blur="hlEle = null"
+            >
+              <circle :cx="cx(i)" cy="32" r="15" />
+              <text :x="cx(i)" y="32" dy="0.36em" class="node-ch">{{ n.ele }}</text>
+              <text :x="cx(i)" y="68" class="node-name">{{ n.name }}</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
       <div class="card">
         <div class="filter-row">
           <span
@@ -148,7 +222,7 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
       <div class="g-grid" :class="{ loaded: entered }">
         <button
           v-for="(l, i) in filtered" :key="l.name"
-          v-tilt="7" class="g-card" :class="{ on: openName === l.name }"
+          v-tilt="7" class="g-card" :class="{ on: openName === l.name, kin: hlEle !== null && eleOf(l.name) === hlEle }"
           :style="{ transitionDelay: entered ? `${Math.min(i * 22, 400)}ms` : '0ms' }"
           @click="open(l)"
         >
@@ -239,6 +313,34 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
 .g-grid.loaded .g-card { opacity: 1; transform: translateY(0); }
 .g-card:hover { border-color: rgba(232, 196, 115, 0.55); transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4); }
 .g-card.on { outline: 2px solid var(--teal); }
+.g-card.kin { border-color: var(--gold); box-shadow: 0 0 16px rgba(232, 196, 115, 0.28); }
+
+/* 五行关系链 */
+.chain-cap { margin-bottom: 4px; }
+.cap-hint { color: var(--dim); }
+.lg { display: inline-block; width: 18px; border-top: 2px solid; vertical-align: middle; margin: 0 5px 0 12px; }
+.lg.gen { border-color: rgba(94, 234, 212, 0.55); }
+.lg.ke { border-color: rgba(248, 113, 113, 0.6); border-top-style: dashed; }
+.chain-wrap { overflow-x: auto; }
+.chain-svg {
+  display: block; width: 100%; min-width: 760px; height: auto;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.6s ease 0.15s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+.chain-svg.in { opacity: 1; transform: none; }
+.chain-node { outline: none; }
+.chain-node circle { fill: rgba(255, 255, 255, 0.03); stroke: currentColor; stroke-width: 1.4; transition: stroke-width 0.2s ease, filter 0.2s ease; }
+.chain-node .node-ch { font-family: var(--cute); font-size: 13px; fill: currentColor; text-anchor: middle; pointer-events: none; }
+.chain-node .node-name { font-size: 11px; fill: var(--dim); text-anchor: middle; transition: fill 0.2s ease; }
+.chain-node:hover circle, .chain-node:focus-visible circle { stroke-width: 2.6; filter: drop-shadow(0 0 6px currentColor); }
+.chain-node:hover .node-name, .chain-node:focus-visible .node-name { fill: var(--fg); }
+.edge-gen { stroke: rgba(94, 234, 212, 0.55); stroke-width: 1.3; }
+.edge-ke { stroke: rgba(248, 113, 113, 0.6); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.edge-label { font-size: 9px; fill: var(--dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .chain-svg { opacity: 1; transform: none; transition: none; }
+}
 .g-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .g-name { font-family: var(--cute); font-size: 1.08rem; color: var(--gold-bright); text-shadow: 0 0 12px rgba(232, 196, 115, 0.3); }
 .ancient { font-style: normal; font-size: 0.6rem; color: var(--teal); border: 1px solid rgba(94, 234, 212, 0.45); border-radius: 999px; padding: 1px 6px; }
@@ -261,8 +363,8 @@ function srcBars(l: Lineage): { book: string; n: number }[] {
 .snip.open .snip-text { display: block; -webkit-line-clamp: unset; }
 .more-hint { position: absolute; right: 12px; bottom: 8px; font-size: 0.68rem; color: var(--teal); }
 
-.pop-enter-active { transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-.pop-enter-from { opacity: 0; transform: translateY(-10px); }
+.pop-enter-active { transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pop-enter-from { opacity: 0; transform: translateY(-14px) scale(0.985); }
 .pop-leave-active { display: none; }
 
 @media (max-width: 720px) {

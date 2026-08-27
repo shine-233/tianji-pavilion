@@ -129,7 +129,7 @@ function talkStage(): void {
       </div>
       <div class="stage-right">
         <h3 class="gold-t2">立体道长 · 体素建模</h3>
-        <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点她一下还会弹一下——换人试试？</p>
+        <p class="sub">像素画抬进了三维空间。拖一拖会转身，滚轮能拉近，点一下还会弹。</p>
 <svg
 viewBox="0 0 26 29" style="width:90px;margin:6px 0"
 :class="`g-svg motion-${motionOf(selected3d).mode}`" :style="gMotion(selected3d)"

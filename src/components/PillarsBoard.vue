@@ -7,6 +7,7 @@ import { Pillar, shiShen } from '../lib/engine'
 import { buildTaoess } from '../data/sageSprite'
 import { ELEMENT_SPIRITS, spritePixels, ZODIAC_SPRITES } from '../data/pillarSprites'
 import { sfx } from '../lib/sfx'
+import { toast } from '../lib/toast'
 
 const props = defineProps<{ ps: Pillar; hide?: string[][] }>()
 const flipped = ref(false)
@@ -111,6 +112,16 @@ function toggle(i: number): void {
   backs.value[i] = !backs.value[i]
   sfx.flip()
 }
+
+/** 触屏没有 hover/title：点藏干、纳音格子直接把内容 toast 出来 */
+function showCanggan(i: number): void {
+  sfx.blip()
+  toast('地支藏干：' + (props.hide?.[i]?.join('、') ?? '—'))
+}
+function showNayin(p: string): void {
+  sfx.blip()
+  toast('纳音五行：' + nayinOf(p[0], p[1]))
+}
 </script>
 
 <template>
@@ -142,10 +153,21 @@ function toggle(i: number): void {
             <span class="big-zhi" :class="zhiEle(p[1]) ? `ele-${zhiEle(p[1])}` : ''">{{ p[1] }}</span>
           </div>
           <div class="ten-god dim">{{ animalOf(p[1]) }} · {{ zhiEle(p[1]) }}</div>
-          <div v-if="props.hide?.[i]?.length" class="canggan" :title="'地支藏干：' + props.hide[i]!.join('、')">
+          <div
+            v-if="props.hide?.[i]?.length"
+            class="canggan"
+            :title="'地支藏干：' + props.hide[i]!.join('、')"
+            :aria-label="'地支藏干：' + props.hide[i]!.join('、')"
+            @click.stop="showCanggan(i)"
+          >
             <span class="cg-label">藏</span><span v-for="(h, hi) in props.hide[i]" :key="hi" class="cg-gan">{{ h }}</span>
           </div>
-          <div class="nayin" :title="'纳音五行：' + nayinOf(p[0], p[1])">纳音·{{ nayinOf(p[0], p[1]) }}</div>
+          <div
+            class="nayin"
+            :title="'纳音五行：' + nayinOf(p[0], p[1])"
+            :aria-label="'纳音五行：' + nayinOf(p[0], p[1])"
+            @click.stop="showNayin(p)"
+          >纳音·{{ nayinOf(p[0], p[1]) }}</div>
         </div>
         <!-- 背面：道长小像纹样 + 主题专属底纹 + 回纹边框与旋太极 -->
         <div class="face back-face" :style="{ backgroundImage: backPattern }">
@@ -268,33 +290,6 @@ function toggle(i: number): void {
   padding-left: 0.4em;
   margin-top: 4px;
 }
-/* 印章角饰：朱砂方章，随主题走色 */
-.back-seal {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-style: normal;
-  font-family: var(--cute);
-  font-size: 0.66rem;
-  color: #e05a4a;
-  border: 1.5px solid rgba(224, 90, 74, 0.75);
-  border-radius: 4px;
-  background: rgba(224, 90, 74, 0.08);
-  transform: rotate(6deg);
-  box-shadow: inset 0 0 5px rgba(224, 90, 74, 0.25);
-}
-[data-theme='yue'] .back-seal,
-[data-theme='shui'] .back-seal {
-  color: #b04a3a;
-  border-color: rgba(176, 74, 58, 0.7);
-}
-[data-theme='zi'] .back-seal { color: #ff7a9e; border-color: rgba(255, 122, 158, 0.65); }
-[data-theme='qing'] .back-seal { color: var(--amber); border-color: rgba(242, 201, 76, 0.55); }
 
 .head { font-size: 0.78rem; color: var(--dim); letter-spacing: 0.3em; padding-left: 0.3em; }
 .dm-badge {
@@ -414,6 +409,7 @@ function toggle(i: number): void {
   justify-content: center;
   gap: 4px;
   margin-top: 5px;
+  cursor: pointer;
 }
 .cg-label {
   font-size: 0.66rem;

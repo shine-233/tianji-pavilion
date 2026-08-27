@@ -15,10 +15,10 @@ const router = useRouter()
 const CHAPTERS = [
   { key: 'wuji', title: '无极', sub: '开始之前', text: '什么都没有。连「没有」这两个字，都还没有。' },
   { key: 'taiji', title: '太极', sub: '一动', text: '有了一点点不一样。动的那半边叫阳，静的那半边叫阴。' },
-  { key: 'liangyi', title: '两仪', sub: '分阴分阳', text: '白天与黑夜，进与退，你与镜子里的你——从此有了两边。' },
+  { key: 'liangyi', title: '两仪', sub: '分阴分阳', text: '阳的一半显出来，阴的一半收进去。昼夜、进退、呼吸，都照这个分法。' },
   { key: 'wuxing', title: '五行', sub: '五种脾气', text: '木火土金水挨个登场。万物各有各的性子，相生相克，谁也别想独走。' },
   { key: 'bagua', title: '八卦', sub: '八个符号', text: '先民把整个世界，压缩成三根爻的八种排列。天、地、雷、风、水、火、山、泽。' },
-  { key: 'liushisi', title: '六十四卦', sub: '六十四种处境', text: '卦是处境的名字。你现在站的地方，早在其中一格画好了。——要不要去看看是哪一格？' },
+  { key: 'liushisi', title: '六十四卦', sub: '六十四种处境', text: '卦是处境的名字。六十四格里，总有一格像你此刻站着的地方。' },
 ] as const
 
 // 每幕在总进度里的窗口 [起, 峰, 落]
@@ -494,10 +494,23 @@ onBeforeUnmount(() => {
   .panel { left: 20px; right: 60px; width: auto; }
   .rail { right: 14px; }
 }
+/* ≤1100px 时右侧圆点轨与 App 一炷香（right:7px）几乎贴边，移到左缘避开 */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .rail { right: auto; left: 14px; }
+}
+/* 减动效：不做滚动动画，六幕文字改为顺序常显，内容不能跟着动画一起消失 */
 @media (prefers-reduced-motion: reduce) {
   .story { height: auto; }
-  .pin { position: static; height: 60vh; }
-  .panel { display: none; }
+  .pin { position: static; height: auto; min-height: 60vh; padding: 48px 20px; }
+  .panel {
+    position: static;
+    opacity: 1 !important;
+    transform: none !important;
+    width: auto;
+    max-width: 560px;
+    margin: 0 auto 40px;
+    pointer-events: auto;
+  }
   .rail { display: none; }
   .hint { display: none; }
 }

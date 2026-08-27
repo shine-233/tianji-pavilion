@@ -12,7 +12,6 @@ type Phase = 'ready' | 'casting' | 'done'
 
 const phase = ref<Phase>('ready')
 const tosses = ref<number[]>([])
-const currentToss = ref(-1)
 const question = ref(YONGSHEN_MAP[0].key)
 const autoMode = ref(true)
 
@@ -50,10 +49,8 @@ function startCast(): void {
     tosses.value = []
   }
   phase.value = 'casting'
-  currentToss.value = 0
   const step = (): void => {
     castOnce()
-    currentToss.value = tosses.value.length
     if (tosses.value.length >= 6) {
       if (timer !== null) window.clearInterval(timer)
       timer = null
@@ -80,7 +77,6 @@ function startCast(): void {
 function pickManual(n: number): void {
   sfx.blip()
   tosses.value.push(n)
-  currentToss.value = tosses.value.length
   if (tosses.value.length >= 6) {
     phase.value = 'done'
     sfx.gong()
@@ -101,7 +97,6 @@ function reset(): void {
   doneTimer = null
   phase.value = 'ready'
   tosses.value = []
-  currentToss.value = -1
 }
 
 onBeforeUnmount(() => {
@@ -155,7 +150,12 @@ const libRows = computed(() => {
         </div>
         <div class="mode-toggle">
           <label>起卦方式</label>
-          <button class="ghost small" @click="autoMode = !autoMode; sfx.toggle()">{{ autoMode ? '自动摇币' : '手动记录' }}</button>
+          <button
+            class="ghost small"
+            :disabled="phase === 'casting'"
+            :title="phase === 'casting' ? '摇卦进行中，等这一卦落定再切换' : undefined"
+            @click="autoMode = !autoMode; sfx.toggle()"
+          >{{ autoMode ? '自动摇币' : '手动记录' }}</button>
         </div>
         <button class="cast-btn" :disabled="phase === 'casting' || phase === 'done' || !autoMode" @click="startCast">
           {{ phase === 'ready' ? '☯ 心诚则灵，开始摇卦' : phase === 'casting' ? '卦成中…' : '已成一卦' }}
@@ -279,6 +279,7 @@ const libRows = computed(() => {
 .form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
 .q-wrap { flex: 1; min-width: 180px; }
 .mode-toggle { min-width: 130px; }
+.mode-toggle button:disabled { opacity: 0.45; cursor: not-allowed; }
 .small { padding: 8px 12px; font-size: 0.82rem; }
 
 .cast-btn { font-size: 1rem; }

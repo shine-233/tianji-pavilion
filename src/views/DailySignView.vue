@@ -253,7 +253,9 @@ function reshuffle(): void {
     <!-- 集签册：抽到过的签点亮入册 -->
     <section v-reveal class="card">
       <h2>集签册 · 已集 {{ collected.length }} / {{ ALL_SIGNS.length }}</h2>
-      <div class="album">
+      <!-- 60 格在窄屏不再挤扁：横向滚动取用，避免误触邻格 -->
+      <div class="table-scroll album-wrap">
+        <div class="album">
         <button
           v-for="s in ALL_SIGNS"
           :key="s.no"
@@ -269,6 +271,7 @@ function reshuffle(): void {
         >
           <b>{{ collectedSet.has(s.no) ? s.no : '·' }}</b>
         </button>
+        </div>
       </div>
       <p class="note">抽到过的签自动入册，点亮的随时翻出来重读；今日首签点开即入册。什么时候集齐六十支，梅雪大概会请你喝茶。</p>
     </section>
@@ -454,7 +457,8 @@ function reshuffle(): void {
 
 .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
 
-.album { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 7px; margin-top: 10px; }
+.album-wrap { margin-top: 10px; }
+.album { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 7px; min-width: 480px; }
 .slot {
   aspect-ratio: 3 / 4;
   border-radius: 9px;

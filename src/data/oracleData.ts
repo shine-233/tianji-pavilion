@@ -172,16 +172,3 @@ export function hourGods(dayZhi: string): Array<{ zhi: string; god: God; lucky: 
   }
   return out
 }
-
-/** 以日期为种子的稳定抽取：同一天所有人同签 */
-export function signOfDay(y: number, m: number, d: number): Sign {
-  const seed = y * 10000 + m * 100 + d
-  const x = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b)
-  const idx = Math.abs(x ^ (x >>> 13)) % SIGNS.length
-  return SIGNS[idx]!
-}
-
-/** 抽签动画用的随机一支（允许手动重试时展示） */
-export function randomSign(): Sign {
-  return SIGNS[Math.floor(Math.random() * SIGNS.length)]!
-}

@@ -66,7 +66,7 @@ const S = [
   { start: 0.4, end: 0.55, title: '八卦', text: '三爻成卦，天地风雷水火山泽，万物有了八个抽屉。' },
   { start: 0.55, end: 0.7, title: '干支', text: '十干十二支如齿轮咬合，时间从此有了刻度与循环。' },
   { start: 0.7, end: 0.85, title: '四柱', text: '年月日时各立一柱，八个字把一个人出生的时刻钉进宇宙坐标。' },
-  { start: 0.85, end: 1.0, title: '解盘', text: '规则公开、权重公开——把玄学摊开成看得见的样子。' },
+  { start: 0.85, end: 1.0, title: '解盘', text: '每一分怎么来的都写在明处。不服哪个数，去规则页当场拆它。' },
 ]
 
 const stageVis = computed(() => S.map((s) => vis(s.start, s.end)))
@@ -224,7 +224,7 @@ const pFinal = computed(() => sp(0.85, 1))
               transform="rotate(-90 320 196)"
             />
             <text x="320" y="206" text-anchor="middle" class="score-t">{{ Math.round(ease(pFinal) * 88) }}</text>
-            <text x="320" y="330" class="cap" :style="{ opacity: stageVis[6] }">规则公开 · 每一分都能复核</text>
+            <text x="320" y="330" class="cap" :style="{ opacity: stageVis[6] }">分数怎么算的，规则页里全有</text>
           </g>
 
           <defs>

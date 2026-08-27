@@ -12,10 +12,15 @@ export const vTilt: Directive<HTMLElement, number | undefined> = {
     const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     el.addEventListener('mousemove', (e) => {
-      if (reduced()) return
+      if (reduced()) {
+        // 减动效用户：不留任何内联 transform，交还 CSS 的 hover 上浮
+        el.style.transform = ''
+        return
+      }
       const r = el.getBoundingClientRect()
       const px = (e.clientX - r.left) / r.width - 0.5
       const py = (e.clientY - r.top) / r.height - 0.5
+      // 悬停上浮（translateY(-3px)）合并进 tilt 变换，避免覆盖 Geju/Cases 卡片的 :hover 反馈
       el.style.transform = `perspective(620px) rotateX(${(-py * max).toFixed(2)}deg) rotateY(${(px * max).toFixed(2)}deg) translateY(-3px)`
     })
     el.addEventListener('mouseleave', () => {

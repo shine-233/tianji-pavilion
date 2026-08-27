@@ -200,13 +200,14 @@ function tapStar(st: string): void {
           @select="pickPalace"
         />
         <div v-else class="ziwei-grid">
-          <button
+          <div
             v-for="(p, i) in zc.palaces"
             :key="i"
             class="palace"
             :class="{ ming: p.index === zc.mingIndex, sel: sel === i, fang: isFang(i) && sel !== i }"
-            @click="pickPalace(i)"
           >
+            <!-- 覆盖整格的透明按钮：与星曜按钮是兄弟节点，不再出现交互元素嵌套 -->
+            <button type="button" class="palace-hit" :aria-label="`选${p.name}，连出三方四正`" @click="pickPalace(i)"></button>
             <span class="p-name">
               {{ p.name }}<i v-if="p.index === zc.mingIndex" class="ming-dot">命</i>
               <i v-if="zc.limits[p.index]" class="limit-tag" :class="{ now: inLimit(zc.limits[p.index]!) }">{{ zc.limits[p.index] }}</i>
@@ -214,7 +215,7 @@ function tapStar(st: string): void {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <span v-for="st in starList(p.mains)" :key="st" class="star" tabindex="0" :data-tip="chipTip(st)" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</span>
+                <button v-for="st in starList(p.mains)" :key="st" type="button" class="star" :data-tip="chipTip(st)" :aria-label="`听${st}的星曜小传`" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</button>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -222,7 +223,7 @@ function tapStar(st: string): void {
               <em v-for="x in p.extras.slice(0, 4)" :key="x" :class="starClass(x).replace('tag ', 'st-')">{{ x }}</em>
               <em v-if="p.extras.length > 4" class="more">+{{ p.extras.length - 4 }}</em>
             </span>
-          </button>
+          </div>
           <svg v-if="sel !== null" class="fang-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <line
               v-for="(l, li) in fangLines" :key="li"
@@ -339,9 +340,21 @@ function tapStar(st: string): void {
   flex-direction: column;
   gap: 3px;
   transition: all 0.22s ease;
-  font-family: inherit;
-  font-weight: normal;
 }
+
+/* 整格命中层：与星曜按钮互为兄弟，键盘 Tab 先到宫、再到星 */
+.palace-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: inherit;
+}
+.palace-hit:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
+/* 纯展示内容放行点击给命中层；星曜自带按钮，浮到其上 */
+.palace > .p-name, .palace > .p-gz, .palace > .p-extras { pointer-events: none; position: relative; }
 .palace:hover { transform: translateY(-3px); border-color: rgba(232, 196, 115, 0.5); box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
 .palace.ming { border-color: rgba(232, 196, 115, 0.55); background: linear-gradient(160deg, #26221a, #17151f); }
 .palace.sel { outline: 2px solid var(--teal); animation: palace-pulse 1.8s ease-in-out infinite; }
@@ -381,7 +394,8 @@ function tapStar(st: string): void {
 }
 .p-gz { color: var(--teal); font-size: 0.68rem; opacity: 0.75; }
 .p-mains { font-family: var(--cute); color: var(--gold-bright); font-size: 0.98rem; line-height: 1.3; min-height: 1.3em; text-shadow: 0 0 14px rgba(232,196,115,0.35); }
-.star { position: relative; cursor: help; margin-right: 4px; display: inline-flex; align-items: center; gap: 2px; }
+.star { position: relative; z-index: 1; cursor: help; margin-right: 4px; display: inline-flex; align-items: center; gap: 2px; background: none; border: none; padding: 0; font: inherit; color: inherit; }
+.star:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
 .star-face {
   width: 15px;
   height: 16px;

@@ -102,6 +102,11 @@ async function selftest(): Promise<void> {
   selftesting.value = false
 }
 
+function toggleBlock(i: number): void {
+  openBlock.value = openBlock.value === i ? null : i
+  sfx.blip()
+}
+
 const blocks = computed(() => {
   const r = result.value
   if (!r) return []
@@ -261,7 +266,14 @@ function lunarInfo(): string | null {
 
       <div class="card">
         <h2>分项明细 · 点击展开说明</h2>
-        <div v-for="(b, i) in blocks" :key="b.name" class="block-row" @click="openBlock = openBlock === i ? null : i; sfx.blip()">
+        <div
+          v-for="(b, i) in blocks" :key="b.name"
+          class="block-row" role="button" tabindex="0"
+          :aria-expanded="openBlock === i"
+          @click="toggleBlock(i)"
+          @keydown.enter.prevent="toggleBlock(i)"
+          @keydown.space.prevent="toggleBlock(i)"
+        >
           <div class="block-head">
             <span class="b-name">{{ b.name }}</span>
             <span class="bar"><i :style="{ width: `${Math.max(0, Math.min(100, b.score / b.max * 100))}%` }"></i></span>
@@ -369,6 +381,7 @@ function lunarInfo(): string | null {
 
 .block-row { padding: 7px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; transition: background 0.2s ease; }
 .block-row:hover { background: rgba(255, 255, 255, 0.03); }
+.block-row:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
 .block-head { display: flex; align-items: center; gap: 14px; }
 .b-name { min-width: 74px; color: var(--fg); font-size: 0.88rem; }
 .b-score { min-width: 86px; text-align: right; color: var(--gold-bright); font-family: var(--cute); }

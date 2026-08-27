@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import DecryptTitle from '../components/DecryptTitle.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { Directive } from 'vue'
 import { sfx } from '../lib/sfx'
+import { sparkle } from '../lib/sparkle'
 
 interface RuleRow {
   book: string
@@ -22,7 +24,6 @@ const nv = ref<NvRule[]>([])
 const tiaohou = ref<TiaohouRow[]>([])
 const sixrel = ref<SixRelRow[]>([])
 const loading = ref(true)
-const entered = ref(false)
 
 const selTopic = ref<string | null>(null)
 const selBook = ref<string | null>(null)
@@ -72,7 +73,6 @@ onMounted(async () => {
     loadErr.value = true
   } finally {
     loading.value = false
-    requestAnimationFrame(() => (entered.value = true))
   }
 })
 
@@ -101,6 +101,86 @@ function topicColor(t: string): string {
   return k ? TOPIC_COLORS[k]! : '#8b93a7'
 }
 
+/** ── 虚拟分组折叠：按主题把渲染中的条文分组，开合状态存 sessionStorage，回跳还原 ── */
+interface RGroup { topic: string; items: { r: RuleRow; gi: number }[] }
+const GRP_KEY = 'bs-rules-open-groups'
+let savedOpen: unknown = null
+try {
+  savedOpen = JSON.parse(sessionStorage.getItem(GRP_KEY) ?? 'null')
+} catch { /* 隐私模式等场景下忽略 */ }
+const openGroups = ref<Set<string> | null>(
+  Array.isArray(savedOpen) ? new Set(savedOpen.filter((x): x is string => typeof x === 'string')) : null,
+)
+function groupOpen(t: string): boolean {
+  return openGroups.value === null || openGroups.value.has(t)
+}
+function toggleGroup(t: string, silent = false): void {
+  if (!silent) sfx.toggle()
+  const cur = openGroups.value === null ? new Set(topics.value.map((x) => x.name)) : new Set(openGroups.value)
+  if (cur.has(t)) cur.delete(t)
+  else cur.add(t)
+  openGroups.value = cur
+  try {
+    sessionStorage.setItem(GRP_KEY, JSON.stringify([...cur]))
+  } catch { /* noop */ }
+}
+function ensureGroupOpen(t: string): void {
+  if (!groupOpen(t)) toggleGroup(t, true)
+}
+
+const groupedRender = computed<RGroup[]>(() => {
+  const slice = filtered.value.slice(0, RENDER_N)
+  const groups: RGroup[] = []
+  const map = new Map<string, RGroup>()
+  slice.forEach((r, gi) => {
+    let g = map.get(r.topic)
+    if (!g) {
+      g = { topic: r.topic, items: [] }
+      map.set(r.topic, g)
+      groups.push(g)
+    }
+    g.items.push({ r, gi })
+  })
+  return groups
+})
+
+/** ── 渐进入场：单个共享 IntersectionObserver，首次入视口 reveal 一次即 unobserve ── */
+let listIO: IntersectionObserver | null = null
+function ensureListIO(): IntersectionObserver {
+  if (!listIO) {
+    listIO = new IntersectionObserver(
+      (entries) => {
+        for (const en of entries) {
+          if (!en.isIntersecting) continue
+          const el = en.target as HTMLElement
+          listIO!.unobserve(el)
+          el.style.transitionDelay = el.style.getPropertyValue('--rvd')
+          el.classList.remove('rv-hide')
+          window.setTimeout(() => {
+            el.style.transitionDelay = ''
+            el.style.removeProperty('--rvd')
+          }, 80)
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -6% 0px' },
+    )
+  }
+  return listIO
+}
+const vRin: Directive<HTMLElement, number | undefined> = {
+  mounted(el, binding) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!('IntersectionObserver' in window)) return
+    el.style.setProperty('--rvd', `${binding.value ?? 0}ms`)
+    el.classList.add('rv-hide')
+    ensureListIO().observe(el)
+  },
+  unmounted(el) {
+    listIO?.unobserve(el)
+  },
+}
+
+
 function pickTopic(t: string): void {
   sfx.blip()
   selTopic.value = selTopic.value === t ? null : t
@@ -121,11 +201,13 @@ const RENDER_N = 80
 
 let rollTimer: number | null = null
 
-function lucky(): void {
+function lucky(e?: MouseEvent): void {
   const poolN = Math.min(filtered.value.length, RENDER_N)
   if (rolling.value || poolN === 0) return
   rolling.value = true
   sfx.toggle()
+  const px = e?.clientX ?? window.innerWidth / 2
+  const py = e?.clientY ?? window.innerHeight / 2
   let ticks = 9 + Math.floor(Math.random() * 4)
   rollTimer = window.setInterval(() => {
     luckyIdx.value = Math.floor(Math.random() * poolN)
@@ -138,8 +220,15 @@ function lucky(): void {
       sfx.ding()
       openIdx.value = luckyIdx.value
       const picked = filtered.value[luckyIdx.value]
-      if (picked) window.dispatchEvent(new CustomEvent('sage-say', { detail: `抽中《${picked.book}》一条${picked.topic}条文，细读比多读有用。` }))
+      if (picked) {
+        ensureGroupOpen(picked.topic)
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) sparkle(px, py, 8)
+        window.dispatchEvent(new CustomEvent('sage-say', { detail: `抽中《${picked.book}》一条${picked.topic}条文，细读比多读有用。` }))
+      }
       document.getElementById('lucky-rule')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, 90)
+}
     }
   }, 90)
 }
@@ -256,49 +345,62 @@ function moreSr(): void {
         <p class="note">当前 {{ filtered.length }} 条{{ selTopic ? ` · 「${selTopic}」` : '' }}{{ selBook ? ` · 《${selBook}》` : '' }}</p>
       </div>
 
-      <!-- 规则列表 -->
-      <transition-group name="rowfade" tag="div" class="r-list" :class="{ loaded: entered }">
-        <div
-          v-for="(r, i) in filtered.slice(0, RENDER_N)" :key="i"
-          :id="luckyIdx === i ? 'lucky-rule' : undefined"
-          class="r-item" :class="{ open: openIdx === i, lucky: luckyIdx === i }"
-          :style="{ transitionDelay: entered ? `${Math.min(i * 18, 360)}ms` : '0ms' }"
-          @click="toggle(i)"
-        >
-          <div class="r-head">
-            <span class="tag gold r-book">{{ r.book }}</span>
-            <span class="tag" :style="{ color: topicColor(r.topic), borderColor: topicColor(r.topic) + '66' }">{{ r.topic }}</span>
-            <span class="note">{{ r.chapter }}</span>
-            <span class="caret-t">{{ openIdx === i ? '▾' : '▸' }}</span>
-          </div>
-          <p class="rule-text">{{ r.rule }}</p>
-          <transition name="pop">
-            <div v-if="openIdx === i" class="dissect">
-              <template v-if="r.type === '条件结论' && r.condition && r.conclusion">
-                <div class="d-block cond">
-                  <span class="d-label">条件 IF</span>
-                  <p>{{ r.condition }}</p>
-                </div>
-                <div class="d-arrow">⇓ 推出 ⇓</div>
-                <div class="d-block conc">
-                  <span class="d-label">结论 THEN</span>
-                  <p>{{ r.conclusion }}</p>
-                </div>
-              </template>
-              <template v-else>
-                <div class="d-block plain">
-                  <span class="d-label">{{ r.type || '原则' }}</span>
-                  <p>{{ r.rule }}</p>
-                </div>
-              </template>
-              <div class="d-meta">
-                <span class="tag">类型：{{ r.type || '—' }}</span>
-                <span class="tag">质量：{{ r.quality || '—' }}</span>
+      <!-- 规则列表：虚拟分组 + 折叠记忆 -->
+      <div class="r-groups">
+        <template v-for="g in groupedRender" :key="g.topic">
+          <button
+            class="grp-head" type="button"
+            :aria-expanded="groupOpen(g.topic)"
+            @click="toggleGroup(g.topic)"
+          >
+            <span class="tag" :style="{ color: topicColor(g.topic), borderColor: topicColor(g.topic) + '66' }">{{ g.topic }}</span>
+            <span class="note">{{ g.items.length }} 条</span>
+            <span class="caret-t">{{ groupOpen(g.topic) ? '▾' : '▸' }}</span>
+          </button>
+          <transition-group name="rowfade" tag="div" class="r-list grp-items" v-show="groupOpen(g.topic)">
+            <div
+              v-for="it in g.items" :key="it.gi"
+              v-rin="(it.gi % 20) * 18"
+              :id="luckyIdx === it.gi ? 'lucky-rule' : undefined"
+              class="r-item" :class="{ open: openIdx === it.gi, lucky: luckyIdx === it.gi }"
+              @click="toggle(it.gi)"
+            >
+              <div class="r-head">
+                <span class="tag gold r-book">{{ it.r.book }}</span>
+                <span class="tag" :style="{ color: topicColor(it.r.topic), borderColor: topicColor(it.r.topic) + '66' }">{{ it.r.topic }}</span>
+                <span class="note">{{ it.r.chapter }}</span>
+                <span class="caret-t">{{ openIdx === it.gi ? '▾' : '▸' }}</span>
               </div>
+              <p class="rule-text">{{ it.r.rule }}</p>
+              <transition name="pop">
+                <div v-if="openIdx === it.gi" class="dissect">
+                  <template v-if="it.r.type === '条件结论' && it.r.condition && it.r.conclusion">
+                    <div class="d-block cond">
+                      <span class="d-label">条件 IF</span>
+                      <p>{{ it.r.condition }}</p>
+                    </div>
+                    <div class="d-arrow">⇓ 推出 ⇓</div>
+                    <div class="d-block conc">
+                      <span class="d-label">结论 THEN</span>
+                      <p>{{ it.r.conclusion }}</p>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="d-block plain">
+                      <span class="d-label">{{ it.r.type || '原则' }}</span>
+                      <p>{{ it.r.rule }}</p>
+                    </div>
+                  </template>
+                  <div class="d-meta">
+                    <span class="tag">类型：{{ it.r.type || '—' }}</span>
+                    <span class="tag">质量：{{ it.r.quality || '—' }}</span>
+                  </div>
+                </div>
+              </transition>
             </div>
-          </transition>
-        </div>
-      </transition-group>
+          </transition-group>
+        </template>
+      </div>
       <p v-if="filtered.length > 80" class="note" style="margin-top: 8px">
         仅展示前 80 条——共 {{ filtered.length }} 条，请用主题/书名/关键词缩小范围。
       </p>
@@ -403,6 +505,16 @@ function moreSr(): void {
   75% { transform: rotate(4deg) translateY(1px); }
 }
 
+.r-groups { display: flex; flex-direction: column; gap: 10px; }
+.grp-head {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; text-align: left;
+  background: transparent; border: 1px dashed var(--line); border-radius: 9px;
+  padding: 7px 13px; cursor: pointer; color: var(--dim);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.grp-head:hover { border-color: rgba(94, 234, 212, 0.5); color: var(--fg); }
+.grp-head .caret-t { margin-left: auto; }
 .r-list { display: flex; flex-direction: column; gap: 7px; }
 .r-item {
   border: 1px solid var(--line); border-radius: 11px;
@@ -413,8 +525,12 @@ function moreSr(): void {
     opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.r-list.loaded .r-item { opacity: 1; transform: none; }
-.r-list.loaded .rowfade-enter-from { opacity: 0 !important; transform: translateY(-6px) !important; }
+.r-item.rv-hide { opacity: 0; transform: translateY(12px); }
+.r-item:not(.rv-hide) { opacity: 1; transform: none; }
+.grp-items { animation: grp-in 0.3s ease both; }
+@keyframes grp-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
 .r-item:hover { border-color: rgba(94, 234, 212, 0.45); transform: translateX(3px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 .r-item.open { border-color: var(--gold); }
 .r-item.lucky { outline: 2px solid var(--amber); animation: lucky-glow 1.4s ease infinite alternate; }
@@ -475,6 +591,10 @@ function moreSr(): void {
 .pop-enter-active { transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .pop-enter-from { opacity: 0; transform: translateY(-8px); }
 .pop-leave-active { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grp-items { animation: none; }
+}
 
 @media (max-width: 720px) {
   .search-row { flex-direction: column; }

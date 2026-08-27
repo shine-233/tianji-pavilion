@@ -570,6 +570,8 @@ function backToday(): void {
 @media (max-width: 560px) {
   .date-block { gap: 14px; }
   .hour-chips { grid-template-columns: repeat(3, 1fr); }
+  /* 窄屏芯片缩小后仍要可读：辅助文字不低于 0.72rem */
+  .hour-chip small, .hour-chip em { font-size: 0.72rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -603,8 +605,8 @@ function backToday(): void {
 .cal-cell.today { border-color: var(--gold); }
 .cal-cell.picked { background: var(--glow); border-color: var(--gold); transform: scale(1.06); }
 @media (max-width: 560px) {
-  .cal-cell { min-height: 38px; border-radius: 8px; }
-  .cal-cell b { font-size: 0.74rem; }
+  .cal-cell { min-height: 42px; border-radius: 8px; }
+  .cal-cell b { font-size: 0.78rem; }
 }
 
 </style>

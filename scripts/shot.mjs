@@ -33,21 +33,27 @@ async function shoot(name, route, viewport, ua) {
   if (ua) await page.setUserAgent(ua)
   await page.setViewport(viewport)
   const errors = []
+  const notFound = []
   page.on('pageerror', (e) => errors.push('PAGEERROR: ' + String(e).slice(0, 200)))
   page.on('console', (m) => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text().slice(0, 200)) })
+  page.on('response', (r) => { if (r.status() === 404) notFound.push(r.url().slice(-80)) })
   await page.goto(BASE + route, { waitUntil: 'networkidle2', timeout: 45000 })
   await new Promise((r) => setTimeout(r, 1200))
-  // 逐步滚到底触发所有 v-reveal，再回顶部截全页
-  await page.evaluate(async () => {
-    const step = window.innerHeight * 0.7
-    for (let y = 0; y < document.body.scrollHeight; y += step) {
-      window.scrollTo(0, y)
-      await new Promise((r) => setTimeout(r, 90))
-    }
-    window.scrollTo(0, 0)
-  })
+  // Lenis 接管了 window.scrollTo，得用滚轮事件喂它；逐步滚到底触发所有 v-reveal
+  const total = await page.evaluate(() => document.body.scrollHeight)
+  for (let y = 0; y < total; y += 600) {
+    await page.mouse.wheel(0, 600)
+    await new Promise((r) => setTimeout(r, 70))
+  }
+  await page.evaluate(() => window.scrollTo(0, 0))
   await new Promise((r) => setTimeout(r, 1400))
+  // 无头快速滚动可能漏掉部分 IntersectionObserver 触发：截图前强制点亮所有浮现元素
+  await page.evaluate(() => {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'))
+  })
+  await new Promise((r) => setTimeout(r, 500))
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true })
+  if (notFound.length) errors.push('404: ' + notFound.slice(0, 3).join(', '))
   if (errors.length) {
     console.log(`[${name}] ${errors.slice(0, 4).join(' | ')}`)
   }
