@@ -14,7 +14,7 @@ import { ELE_S } from '../lib/constants'
 import type { ChartResult } from '../lib/engine'
 import { interpret } from '../lib/interpret'
 import { clearHistory, HistoryItem, loadHistory, saveHistory } from '../lib/history'
-import { loadPool, percentile, poolReady, runChart } from '../lib/runtime'
+import { loadPool, percentile, poolMedian, poolReady, runChart } from '../lib/runtime'
 import { sfx } from '../lib/sfx'
 import { Solar } from 'lunar-javascript'
 import { toast } from '../lib/toast'
@@ -128,7 +128,17 @@ const radarItems = computed(() =>  blocks.value.map((b) => ({ name: b.name, scor
 const pctlText = computed(() => {
   if (!result.value) return ''
   const p = percentile(result.value.tot)
-  return isFinite(p) ? `超过 ${(100 - p).toFixed(1)}% 的同龄男命（第 ${p.toFixed(1)} 百分位 / ${poolN.value.toLocaleString()} 盘）` : poolN.value === -1 ? '百分位池暂时不可用，评分本身不受影响' : '百分位池加载中…'
+  // percentile() 返回"击败池中多少比例的盘"，即标准百分位排名，两侧数字必须同源
+  return isFinite(p) ? `超过 ${p.toFixed(1)}% 的同龄男命（第 ${p.toFixed(1)} 百分位 / ${poolN.value.toLocaleString()} 盘）` : poolN.value === -1 ? '百分位池暂时不可用，评分本身不受影响' : '百分位池加载中…'
+})
+
+/** 总分分布说明：v5 原始分挤在中低分区，不解释分布的话 10/100 会被误读成"不及格" */
+const distText = computed(() => {
+  const med = poolMedian()
+  if (!result.value || !isFinite(med)) return ''
+  const tot = result.value.tot
+  const rel = tot >= med ? `高于全池中位数 ${med.toFixed(1)} 分` : `低于全池中位数 ${med.toFixed(1)} 分`
+  return `总分刻度说明：v5 各维加权后原始分普遍偏低，高低请以百分位为准——本盘 ${tot.toFixed(1)} 分，${rel}。`
 })
 
 const interpretations = computed(() => (result.value ? interpret(result.value) : []))
@@ -227,6 +237,7 @@ function lunarInfo(): string | null {
           <h2>总分与百分位</h2>
           <ScoreRing :value="result.tot" :max="100" label="综合评分" />
           <p class="pctl-line">{{ pctlText }}</p>
+          <p v-if="distText" class="dist-note">{{ distText }}</p>
           <svg width="240" height="130" viewBox="0 0 240 130" class="gauge">
             <path d="M 20 120 A 100 100 0 0 1 220 120" fill="none" stroke="var(--bar)" stroke-width="13" stroke-linecap="round" />
             <path
@@ -377,6 +388,7 @@ function lunarInfo(): string | null {
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .center-card { text-align: center; }
 .pctl-line { color: var(--amber); font-size: 0.92rem; margin: 8px 0; }
+.dist-note { color: var(--dim); font-size: 0.8rem; margin: 2px auto 8px; max-width: 40ch; line-height: 1.6; }
 .gauge-txt { fill: var(--dim); font-size: 13px; }
 
 .block-row { padding: 7px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; transition: background 0.2s ease; }

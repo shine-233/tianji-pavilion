@@ -41,6 +41,16 @@ export function percentile(t: number): number {
   return (lo / POOL.length) * 100
 }
 
+/** 全池总分中位数（原始分制）。池未装载返回 NaN。
+ *  总分分布高度集中在中低分区，展示必须搭配百分位——否则 10/100 的盘会被误读成"不及格"。 */
+export function poolMedian(): number {
+  if (!POOL || POOL.length === 0) return NaN
+  const mid = POOL.length >> 1
+  const a = POOL[mid - 1] ?? POOL[mid]!
+  const b = POOL[mid]!
+  return (a + b) / 200
+}
+
 export function runChart(y: number, m: number, d: number, hh: number, mm: number, gender: number): ChartResult {
   const solar = Solar.fromYmdHms(y, m, d, hh, mm, 0)
   const lunar = solar.getLunar()
