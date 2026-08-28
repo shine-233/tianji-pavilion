@@ -9,7 +9,7 @@ let timer: number | null = null
 watch(() => route.path, () => {
   active.value = true
   if (timer !== null) window.clearTimeout(timer)
-  timer = window.setTimeout(() => (active.value = false), 620)
+  timer = window.setTimeout(() => (active.value = false), 420)
 })
 
 onBeforeUnmount(() => {
@@ -54,8 +54,8 @@ onBeforeUnmount(() => {
 .veil-leave-active { transition: opacity 0.42s ease; }
 .veil-enter-from { opacity: 0; }
 .veil-leave-to { opacity: 0; }
-.veil-enter-active .veil-glyph { animation: veil-spin 0.62s linear; }
-.veil-enter-active .veil-ring { animation: veil-bloom 0.62s cubic-bezier(0.22, 1, 0.36, 1); }
+.veil-enter-active .veil-glyph { animation: veil-spin 0.42s linear; }
+.veil-enter-active .veil-ring { animation: veil-bloom 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
 @keyframes veil-spin {
   from { transform: rotate(-160deg) scale(0.4); opacity: 0; }
   60% { opacity: 1; }

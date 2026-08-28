@@ -64,16 +64,17 @@ onMounted(() => {
   // 六团辉光：颜色来自当前主题令牌
   let colors = readThemeColors()
   const orbs: Array<{ sprite: THREE.Sprite; base: THREE.Vector3; phase: number; speed: number }> = []
+  // 光团贴边角、整体缩小：氛围留给他，正文区保持干净
   const layoutFull = [
-    { x: -9, y: 4.5, size: 11 }, { x: 10, y: 3, size: 9 }, { x: -6, y: -5, size: 8 },
-    { x: 7, y: -6, size: 10 }, { x: 0, y: 6.5, size: 7.5 }, { x: 13, y: -1, size: 6 },
+    { x: -13, y: 6.5, size: 6.5 }, { x: 13.5, y: 5, size: 5.5 }, { x: -11, y: -6.5, size: 5 },
+    { x: 12, y: -7, size: 6 }, { x: 0, y: 9, size: 4.5 }, { x: 16, y: -1.5, size: 4 },
   ]
   const layout = LOW_END ? layoutFull.slice(0, 4) : layoutFull
   layout.forEach((cfg, i) => {
     const mat = new THREE.SpriteMaterial({
       map: glowTexture('#ffffff'),
       transparent: true,
-      opacity: 0.34,
+      opacity: 0.15,
       blending: THREE.AdditiveBlending,
       depthTest: false,
       depthWrite: false,
@@ -99,7 +100,7 @@ onMounted(() => {
   if (!LOW_END) {
     composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 0.85, 0.85, 0.1))
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 0.35, 0.85, 0.25))
   }
 
   function hexToCss(c: THREE.Color): string {

@@ -36,26 +36,33 @@ function pickTheme(id: string): void {
 function onDocClick(e: MouseEvent): void {
   const t = e.target as HTMLElement | null
   if (!t?.closest('.theme-wrap')) showThemes.value = false
+  if (!t?.closest('.nav')) openMenu.value = null
 }
 
 
 
 const route = useRoute()
 
-/** 导航四簇：算（排盘问命）/ 占（每日速占）/ 游（互动体验）/ 藏（资料库） */
-const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: string; glyph: string }> }> = [
+/** 导航四簇：算（排盘问命）/ 占（每日速占）/ 游（互动体验）/ 藏（资料库）。
+ *  顶栏只放四个下拉按钮，21 个入口收进面板里，Ctrl K 跳转面板兜底直达。 */
+const NAV_GROUPS: Array<{ key: string; cap: string; title: string; items: Array<{ to: string; label: string; glyph: string }> }> = [
   {
-    label: '算',
+    key: 'suan',
+    cap: '算',
+    title: '排盘问命',
     items: [
       { to: '/chart', label: '八字排盘', glyph: '八' },
       { to: '/ziwei', label: '紫微命盘', glyph: '紫' },
+      { to: '/qimen', label: '奇门入门', glyph: '奇' },
       { to: '/liuyao', label: '六爻纳甲', glyph: '爻' },
       { to: '/meihua', label: '梅花易数', glyph: '梅' },
       { to: '/shuzi', label: '数字能量', glyph: '数' },
     ],
   },
   {
-    label: '占',
+    key: 'zhan',
+    cap: '占',
+    title: '每日速占',
     items: [
       { to: '/daily', label: '每日一签', glyph: '签' },
       { to: '/almanac', label: '今日黄历', glyph: '历' },
@@ -64,27 +71,57 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ to: string; label: strin
     ],
   },
   {
-    label: '游',
+    key: 'you',
+    cap: '游',
+    title: '互动体验',
     items: [
       { to: '/wuxing', label: '五行天穹', glyph: '五' },
       { to: '/yanyi', label: '演易', glyph: '䷀' },
       { to: '/story', label: '易道长卷', glyph: '卷' },
-      { to: '/qimen', label: '奇门入门', glyph: '奇' },
       { to: '/map', label: '道观地图', glyph: '观' },
       { to: '/sages', label: '道长图鉴', glyph: '鉴' },
       { to: '/memory', label: '卦象记忆', glyph: '忆' },
     ],
   },
   {
-    label: '藏',
+    key: 'cang',
+    cap: '藏',
+    title: '资料库',
     items: [
-      { to: '/classics', label: '典籍', glyph: '书' },
-      { to: '/geju', label: '格局谱', glyph: '局' },
+      { to: '/classics', label: '典籍语料', glyph: '书' },
+      { to: '/geju', label: '格局辞典', glyph: '局' },
       { to: '/rules', label: '规则库', glyph: '规' },
       { to: '/cases', label: '命例库', glyph: '例' },
     ],
   },
 ]
+
+/* 下拉菜单：悬停/点击展开，Esc、点空白、切路由都会收起 */
+const openMenu = ref<string | null>(null)
+/** 区分"悬停展开"与"点击展开"：悬停已展开时第一次点击只锁定，再点才收起 */
+let openedByHover = false
+let dropCloseTimer: number | null = null
+function toggleMenu(key: string): void {
+  if (openMenu.value === key && !openedByHover) {
+    openMenu.value = null
+  } else {
+    openMenu.value = key
+    openedByHover = false
+    sfx.blip()
+  }
+}
+function enterMenu(key: string): void {
+  if (dropCloseTimer !== null) window.clearTimeout(dropCloseTimer)
+  if (openMenu.value !== key) {
+    openMenu.value = key
+    openedByHover = true
+  }
+}
+function leaveMenu(): void {
+  if (dropCloseTimer !== null) window.clearTimeout(dropCloseTimer)
+  dropCloseTimer = window.setTimeout(() => (openMenu.value = null), 160)
+}
+const activeGroup = computed(() => NAV_GROUPS.find((g) => g.items.some((i) => i.to === route.path))?.key ?? null)
 
 const ROUTE_SAGE: Record<string, string> = {
   '/': 'qingxuan',
@@ -112,8 +149,15 @@ const ROUTE_SAGE: Record<string, string> = {
 }
 const sageChar = computed(() => ROUTE_SAGE[route.path] ?? 'qingxuan')
 
-/** 切页轻响，让导航有"翻页"的实感 */
-watch(() => route.path, () => sfx.tick())
+/* 切页轻响，让导航有"翻页"的实感；顺手收起下拉 */
+watch(() => route.path, () => {
+  sfx.tick()
+  openMenu.value = null
+})
+
+function onEsc(e: KeyboardEvent): void {
+  if (e.key === 'Escape') openMenu.value = null
+}
 
 let lastTrail = 0
 let trailCount = 0
@@ -230,6 +274,7 @@ onMounted(() => {
   }
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('click', onDocClick)
+  window.addEventListener('keydown', onEsc)
   onScroll()
   scheduleShootingStar()
   if (!prefersReduced.matches && !coarsePointer) {
@@ -240,10 +285,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('click', onDocClick)
+  window.removeEventListener('keydown', onEsc)
   cancelAnimationFrame(rafId)
   if (starTimer !== null) window.clearTimeout(starTimer)
   if (paradeTimer !== null) window.clearTimeout(paradeTimer)
   if (clickReset !== null) window.clearTimeout(clickReset)
+  if (dropCloseTimer !== null) window.clearTimeout(dropCloseTimer)
 })
 </script>
 
@@ -260,15 +307,26 @@ onBeforeUnmount(() => {
       <RouterLink to="/" class="nav-link home-link" :class="{ 'router-link-exact-active': route.path === '/' }" @click="sfx.blip()">
         <span class="glyph">☯</span>山门
       </RouterLink>
-      <div v-for="g in NAV_GROUPS" :key="g.label" class="nav-group">
-        <i class="group-cap">{{ g.label }}</i>
-        <RouterLink
-          v-for="n in g.items" :key="n.to" :to="n.to" class="nav-link"
-          :class="{ fresh: route.path === n.to && ['/liuyao','/meihua','/daily','/almanac','/settings'].includes(n.to) }"
-          @click="sfx.blip()"
+      <div v-for="g in NAV_GROUPS" :key="g.key" class="nav-drop" @mouseenter="enterMenu(g.key)" @mouseleave="leaveMenu()">
+        <button
+          class="nav-top" :class="{ open: openMenu === g.key, hot: activeGroup === g.key }"
+          :aria-expanded="openMenu === g.key" aria-haspopup="true"
+          @click="toggleMenu(g.key)"
         >
-          <span class="glyph">{{ n.glyph }}</span>{{ n.label }}
-        </RouterLink>
+          <i class="cap">{{ g.cap }}</i>{{ g.title }}<b class="caret" aria-hidden="true">▾</b>
+        </button>
+        <transition name="drop">
+          <div v-if="openMenu === g.key" class="nav-panel card">
+            <RouterLink
+              v-for="n in g.items" :key="n.to" :to="n.to" class="panel-link"
+              :class="{ 'router-link-exact-active': route.path === n.to }"
+              :aria-label="n.label"
+              @click="sfx.blip()"
+            >
+              <span class="glyph">{{ n.glyph }}</span>{{ n.label }}
+            </RouterLink>
+          </div>
+        </transition>
       </div>
     </nav>
     <div class="top-actions">
@@ -390,25 +448,56 @@ onBeforeUnmount(() => {
 .name { font-family: var(--cute); font-size: 1.12rem; color: var(--gold-bright); line-height: 1.05; display: flex; flex-direction: column; }
 .name small { font-size: 0.62rem; color: var(--dim); letter-spacing: 0.35em; }
 
-.nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: none; align-items: center; }
-.nav::-webkit-scrollbar { display: none; }
-.nav-group {
-  display: flex; align-items: center; gap: 2px;
-  padding: 2px 8px 2px 6px;
-  border-right: 1px solid var(--line);
+.nav { display: flex; gap: 6px; flex: 1; align-items: center; justify-content: center; }
+.nav-drop { position: relative; }
+.nav-top {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 7px;
+  white-space: nowrap; color: var(--dim);
+  font-size: 0.88rem; font-family: inherit;
+  padding: 8px 13px; border-radius: 10px;
+  border: 1px solid transparent; background: none; cursor: pointer;
+  transition: all 0.2s ease;
 }
-.group-cap {
+.nav-top:hover, .nav-top.open { color: var(--gold-bright); background: rgba(232, 196, 115, 0.07); }
+.nav-top.hot { color: var(--gold-bright); }
+.nav-top.hot::after {
+  content: '';
+  position: absolute; left: 13px; right: 13px; bottom: 3px; height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--btn-a), var(--btn-b));
+}
+.nav-top .cap {
   font-style: normal;
   font-family: var(--cute);
   font-size: 0.72rem;
-  color: var(--dim);
-  opacity: 0.85;
-  margin-right: 3px;
-  padding: 1px 5px;
-  border: 1px solid var(--line);
+  padding: 1px 6px;
+  border: 1px solid rgba(var(--acc-rgb), 0.4);
   border-radius: 6px;
+  color: var(--gold);
   background: rgba(var(--acc-rgb), 0.05);
 }
+.nav-top .caret { font-size: 0.6rem; opacity: 0.6; transition: transform 0.2s ease; }
+.nav-top.open .caret { transform: rotate(180deg); }
+.nav-panel {
+  position: absolute; top: calc(100% + 10px); left: 0;
+  z-index: 950;
+  display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 2px;
+  padding: 8px; min-width: 330px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.panel-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: 8px;
+  color: var(--dim); font-size: 0.88rem; white-space: nowrap;
+  transition: all 0.16s ease;
+}
+.panel-link:hover { color: var(--gold-bright); background: rgba(232, 196, 115, 0.08); text-decoration: none; }
+.panel-link.router-link-exact-active { color: var(--btn-ink); background: linear-gradient(140deg, var(--btn-a), var(--btn-b)); font-weight: bold; }
+.drop-enter-active { transition: opacity 0.18s ease, transform 0.18s ease; }
+.drop-leave-active { transition: opacity 0.13s ease; }
+.drop-enter-from { opacity: 0; transform: translateY(-6px); }
+.drop-leave-to { opacity: 0; }
 .nav-link {
   white-space: nowrap;
   color: var(--dim);
@@ -419,8 +508,8 @@ onBeforeUnmount(() => {
 }
 .nav-link:hover { color: var(--gold-bright); background: rgba(232, 196, 115, 0.07); text-decoration: none; }
 .nav-link.router-link-exact-active { color: var(--btn-ink); background: linear-gradient(140deg, var(--btn-a), var(--btn-b)); font-weight: bold; }
-.nav-link .glyph {
-  margin-right: 5px;
+.nav-link .glyph, .panel-link .glyph {
+  margin-right: 2px;
   font-size: 0.68rem;
   display: inline-flex;
   align-items: center;
@@ -586,7 +675,13 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .topbar { flex-wrap: wrap; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); }
-  .nav { order: 3; width: 100%; }
+  .nav { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-panel {
+    position: fixed; top: calc(env(safe-area-inset-top) + 104px); left: 8px; right: 8px;
+    min-width: 0; grid-template-columns: repeat(2, 1fr);
+    max-height: 62vh; overflow-y: auto;
+  }
   .name small { display: none; }
 }
 </style>
