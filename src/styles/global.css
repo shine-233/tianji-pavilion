@@ -54,7 +54,7 @@
   --card-2: #f7fafc;
   --line: #c9d4de;
   --fg: #2a3644;
-  --dim: #64748b;
+  --dim: #5b6b80;
   --gold: #3a6ea5;
   --gold-bright: #2d5a8a;
   --teal: #c25b4e;
@@ -122,7 +122,7 @@
   --card-2: #f3f1e8;
   --line: #cfccc0;
   --fg: #3a3a34;
-  --dim: #7c7a6d;
+  --dim: #65635a;
   --gold: #4a5568;
   --gold-bright: #333d4d;
   --teal: #7a9e9f;
@@ -352,6 +352,13 @@ input:focus, select:focus {
 }
 select option { background: var(--card); color: var(--fg); }
 
+/* 键盘焦点可见性：鼠标点击不描边（:focus-visible 只对键盘聚焦生效），Tab 导航必见 */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 td, th { padding: 6px 9px; text-align: left; border-bottom: 1px solid var(--line); }
 th { color: var(--dim); font-weight: normal; white-space: nowrap; }
@@ -369,6 +376,13 @@ th { color: var(--dim); font-weight: normal; white-space: nowrap; }
 
 .note { font-size: 0.74rem; color: var(--dim); line-height: 1.8; }
 .big-num { font-size: 2.6rem; font-weight: bold; color: var(--gold-bright); font-family: var(--cute); }
+
+/* ---- 空态引导卡：交互前置页通用（起局/起课前说明会出现什么） ---- */
+.empty-hint { border-style: dashed; }
+.hint-list { list-style: none; padding: 0; margin: 10px 0 14px; }
+.hint-list li { padding: 7px 0; border-bottom: 1px dashed var(--line); line-height: 1.7; color: var(--fg); }
+.hint-list li:last-child { border-bottom: none; }
+.empty-hint a, .note a { color: var(--teal); text-decoration: underline; text-underline-offset: 3px; }
 
 .tag {
   display: inline-block; padding: 2px 10px; margin: 2px;

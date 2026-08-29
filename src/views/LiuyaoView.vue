@@ -149,13 +149,13 @@ const libRows = computed(() => {
           </select>
         </div>
         <div class="mode-toggle">
-          <label>起卦方式</label>
+          <label>起卦方式（当前：{{ autoMode ? '自动摇币' : '手动记录' }}）</label>
           <button
             class="ghost small"
             :disabled="phase === 'casting'"
             :title="phase === 'casting' ? '摇卦进行中，等这一卦落定再切换' : undefined"
             @click="autoMode = !autoMode; sfx.toggle()"
-          >{{ autoMode ? '自动摇币' : '手动记录' }}</button>
+          >{{ autoMode ? '切换为手动记录' : '切换为自动摇币' }}</button>
         </div>
         <button class="cast-btn" :disabled="phase === 'casting' || phase === 'done' || !autoMode" @click="startCast">
           {{ phase === 'ready' ? '☯ 心诚则灵，开始摇卦' : phase === 'casting' ? '卦成中…' : '已成一卦' }}

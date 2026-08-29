@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import { hourGods } from '../data/oracleData'
-import XiaoLiuren from '../components/XiaoLiuren.vue'
 import { ALL_SIGNS, drawSign, hashStr, todayKey, TIER_STYLE, type Sign } from '../data/dailySigns'
 import { addRecord } from '../lib/records'
 import { sfx } from '../lib/sfx'
@@ -245,10 +244,14 @@ function reshuffle(): void {
       </div>
     </section>
 
-    <section class="card" v-reveal="60">
-      <h2>小六壬 · 掐指速断</h2>
-      <XiaoLiuren />
-    </section>
+    <!-- 小六壬有独立页面：这里只留入口卡，避免同一功能两处维护 -->
+    <a class="card xlr-entry" href="#/xiaoliuren" v-reveal="60">
+      <div class="xlr-left">
+        <h2>小六壬 · 掐指速断</h2>
+        <p class="sub">心里想事，报三个数，指尖点过六宫落定吉凶。诸葛马前课，最快的一种。</p>
+      </div>
+      <span class="xlr-go">去掐一算 →</span>
+    </a>
 
     <!-- 集签册：抽到过的签点亮入册 -->
     <section v-reveal class="card">
@@ -295,6 +298,11 @@ function reshuffle(): void {
 
 <style scoped>
 .grid-top { display: grid; grid-template-columns: 1fr 1.25fr; gap: 14px; align-items: stretch; }
+
+/* 小六壬入口卡（功能已收敛到独立页 /xiaoliuren） */
+.xlr-entry { display: flex; align-items: center; justify-content: space-between; gap: 14px; text-decoration: none; color: inherit; transition: transform 0.25s ease, border-color 0.25s ease; }
+.xlr-entry:hover { transform: translateY(-3px); border-color: var(--card-glow); }
+.xlr-go { flex-shrink: 0; color: var(--teal); font-family: var(--cute); white-space: nowrap; }
 
 .today-card {
   text-align: center;

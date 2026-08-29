@@ -358,7 +358,9 @@ onBeforeUnmount(() => {
   </header>
 
   <RouterView v-slot="{ Component }">
-    <transition name="fade" mode="out-in">
+    <!-- :duration 显式声明过渡时长，Vue 改用定时器收尾，不再依赖 transitionend——
+         后台标签页被 rAF 节流时（如切走再切回），out-in 不会卡在旧视图上几秒钟。 -->
+    <transition name="fade" mode="out-in" :duration="{ enter: 460, leave: 210 }">
       <component :is="Component" />
     </transition>
   </RouterView>
@@ -538,7 +540,7 @@ onBeforeUnmount(() => {
 .footer {
   text-align: center;
   color: var(--dim);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   padding: 30px 16px 90px;
 }
 
