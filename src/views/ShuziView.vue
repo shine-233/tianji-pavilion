@@ -7,6 +7,8 @@ import { loadRecords, addRecord } from '../lib/records'
 import { sfx } from '../lib/sfx'
 import { toast } from '../lib/toast'
 import { sparkle } from '../lib/sparkle'
+import PageShell from '../components/PageShell.vue'
+import SectionCard from '../components/SectionCard.vue'
 
 const digits = ref('')
 const result = ref<null | { chart: MeihuaChart; upper: Trigram; lower: Trigram; mv: number }>(null)
@@ -75,18 +77,23 @@ function calc(e?: MouseEvent): void {
 </script>
 
 <template>
-  <main class="page">
-    <div class="card" v-reveal>
-      <h2>数字能量 · 梅花心易</h2>
+  <PageShell>
+    <SectionCard title="数字能量 · 梅花心易">
       <p class="sub">手机号、QQ号、生日都行。前半求上卦，后半求下卦，总数除六取动爻——梅花旧法，号码新用。</p>
       <input v-model="digits" inputmode="numeric" maxlength="20" placeholder="输入一串数字" @keyup.enter="calc()" />
       <div style="margin-top: 12px"><button @click="calc($event)">☯ 起卦</button></div>
-    </div>
+    </SectionCard>
 
-    <div v-if="result" class="card" v-reveal="80">
-      <h2>{{ result.chart.upperName }}{{ result.chart.lowerName }}<small>（{{
-        TRI_NATURE[result.upper]
-      }}{{ result.upper }} 上 {{ TRI_NATURE[result.lower] }}{{ result.lower }} 下 · 动爻{{ result.mv }}）</small></h2>
+    <SectionCard v-if="!result" title="起卦之后，这里会出现什么" :delay="60" class="empty-hint">
+      <ul class="hint-list">
+        <li><b class="gold-t">上卦 + 下卦</b> —— 号码前半求上卦、后半求下卦，动爻自动标亮</li>
+        <li><b class="gold-t">本 · 互 · 变三卦链</b> —— 开端、过程、走向一条线讲完</li>
+        <li><b class="gold-t">体用生克断语</b> —— 每条断语都标了出处规则，可点开复核</li>
+      </ul>
+      <p class="sub">试试手头的手机号，或者 <a href="#/meihua">用时辰起一卦</a>。</p>
+    </SectionCard>
+
+    <SectionCard v-if="result" :delay="80" :title="`${result.chart.upperName}${result.chart.lowerName}（${TRI_NATURE[result.upper]}${result.upper} 上 ${TRI_NATURE[result.lower]}${result.lower} 下 · 动爻${result.mv}）`">
 
       <!-- 卦画：点爻听爻位 -->
       <div class="gua" role="img" :aria-label="`${result.chart.upperName}${result.chart.lowerName}卦象`">
@@ -130,10 +137,9 @@ function calc(e?: MouseEvent): void {
       </ul>
 
       <p class="note" style="margin-top: 8px">数字能量属娱乐参考；号码与命运并无科学关联。</p>
-    </div>
+    </SectionCard>
 
-    <div v-if="history.length" class="card" v-reveal="120">
-      <h2>最近起的数字卦</h2>
+    <SectionCard v-if="history.length" title="最近起的数字卦" :delay="120">
       <ul class="hist">
         <li v-for="r in history" :key="r.ts">
           <button class="hist-item" :title="r.detail" @click="refill(r.detail)">
@@ -143,8 +149,8 @@ function calc(e?: MouseEvent): void {
         </li>
       </ul>
       <p class="note">点一条把号码填回去重算。记录只存在你自己的浏览器里。</p>
-    </div>
-  </main>
+    </SectionCard>
+  </PageShell>
 </template>
 
 <style scoped>

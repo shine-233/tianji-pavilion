@@ -5,8 +5,15 @@ import { computed, ref } from 'vue'
 import { ziweiFromDate } from '../lib/runtime'
 import type { ZiweiChart } from '../lib/ziwei'
 import { starSpritePixels, STAR_PERSONAS, starAccent } from '../data/starSprites'
+import { brightnessOf } from '../data/starBrightness'
 import { sfx } from '../lib/sfx'
 import { toast } from '../lib/toast'
+import ShareButton from '../components/ShareButton.vue'
+
+/** 主星亮度小字（庙旺得利平不陷）；查不到的星返回 null，标签自动隐藏 */
+function briOf(star: string, ganzhi: string) {
+  return brightnessOf(star, ganzhi)
+}
 
 interface ScoredDetail { palace: string; stars: string[]; delta: number }
 interface Scored { score: number; detail: ScoredDetail[] }
@@ -47,6 +54,24 @@ function calc(): void {
   pillars.value = [...r.pillars]
   sel.value = null
 }
+
+/** 分享卡：四柱大字 + 命宫/五行局 + 三方四正总分 + 四化，不走七维分数条 */
+const shareSpec = computed(() => {
+  const z = zc.value
+  const s = scored.value
+  if (!z || !s) return null
+  return {
+    title: `${z.palaces[z.mingIndex]!.ganzhi.slice(0, 2)} 命宫 · ${z.juName}`,
+    subtitle: `紫微斗数十二宫 · 三方四正 ${s.score.toFixed(1)} / 10 · 天机阁`,
+    pillars: pillars.value,
+    total: `${s.score.toFixed(1)} / 10`,
+    notes: [
+      `四化：${Object.entries(z.siHua).map(([k, v]) => k + v).join(' · ')}`,
+      '安星规则全公开 · 仅供把玩参考',
+    ],
+    footer: '天机阁 · 子平 × 紫微量化研究工坊',
+  }
+})
 
 function pick(i: number): void {
   sel.value = sel.value === i ? null : i
@@ -190,6 +215,18 @@ function tapStar(st: string): void {
           <button class="ghost sky-toggle" style="margin-left: auto" @click="skyMode = !skyMode; sfx.toggle()">
             {{ skyMode ? '⬚ 回到平面盘' : '🌌 升入星空' }}
           </button>
+          <ShareButton v-if="shareSpec" :spec="shareSpec" filename="tianji-ziwei.png" style="margin-left: 8px" />
+        </div>
+
+        <!-- 颜色图例：与宫位卡 starClass 配色一一对应 -->
+        <div class="legend-row" aria-label="星曜颜色图例">
+          <span class="lg"><i class="dot" style="background: var(--teal)"></i>禄 / 权 · 吉星</span>
+          <span class="lg"><i class="dot" style="background: var(--gold-bright)"></i>科 · 文名</span>
+          <span class="lg"><i class="dot" style="background: #f87171"></i>忌 / 煞星</span>
+          <span class="lg"><i class="dot dot-line"></i>其余辅星</span>
+          <span class="lg"><i class="dot" style="background: var(--gold)"></i>命宫</span>
+          <span class="lg"><i class="bri bri-hi">庙</i><i class="bri bri-mid">得</i><i class="bri bri-lo">陷</i>主星亮度（庙旺得利平不陷）</span>
+          <span class="lg note">点星听小传 · 点宫连三方四正</span>
         </div>
 
         <ZiweiSky3D
@@ -215,7 +252,7 @@ function tapStar(st: string): void {
             <span class="p-gz">{{ p.ganzhi }}</span>
             <span class="p-mains twinkle">
               <template v-if="p.mains">
-                <button v-for="st in starList(p.mains)" :key="st" type="button" class="star" :data-tip="chipTip(st)" :aria-label="`听${st}的星曜小传`" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}</button>
+                <button v-for="st in starList(p.mains)" :key="st" type="button" class="star" :data-tip="chipTip(st)" :aria-label="`听${st}的星曜小传`" @click.stop="tapStar(st)"><svg v-if="starSpritePixels(st).length" class="star-face" viewBox="0 0 12 13" shape-rendering="crispEdges"><rect v-for="(q, qi) in starSpritePixels(st)" :key="qi" :x="q.x" :y="q.y" width="1.04" height="1.04" :fill="q.fill" /></svg>{{ st }}<i v-if="briOf(st, p.ganzhi)" class="bri" :class="`bri-${briOf(st, p.ganzhi)!.rank <= 1 ? 'hi' : briOf(st, p.ganzhi)!.rank >= 5 ? 'lo' : 'mid'}`">{{ briOf(st, p.ganzhi)!.level }}</i></button>
               </template>
               <template v-else>空宫</template>
             </span>
@@ -496,6 +533,26 @@ function tapStar(st: string): void {
 .st-teal { color: var(--teal); border-color: rgba(94,234,212,0.35) !important; }
 .st-gold { color: var(--gold-bright); border-color: rgba(232,196,115,0.4) !important; }
 .st-red { color: #f87171; border-color: rgba(248,113,113,0.4) !important; }
+
+/* 星曜颜色图例 */
+.legend-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 8px 2px 2px; }
+.legend-row .lg { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--dim); }
+.legend-row .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legend-row .dot-line { background: transparent; border: 1px solid var(--line); }
+.legend-row .note { margin-left: auto; }
+
+/* 主星亮度小字：亮(庙旺)/中(得利平)/弱(不陷) 三档着色 */
+.star .bri {
+  font-style: normal;
+  font-size: 0.58rem;
+  margin-left: 1px;
+  opacity: 0.85;
+  transform: translateY(-0.35em);
+  display: inline-block;
+}
+.bri-hi { color: var(--gold-bright); }
+.bri-mid { color: var(--dim); }
+.bri-lo { color: var(--red); }
 
 .center-info {
   grid-column: 2 / span 2;

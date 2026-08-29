@@ -1,0 +1,43 @@
+/*
+ * 设计令牌 · Design Tokens
+ * ============
+ * 颜色令牌在 global.css 的 :root / [data-theme] 里（6 套主题成套定义）。
+ * 这里补齐尺度令牌：间距、字号、行高、圆角。全站新增/改动样式一律引用令牌，
+ * 不再手写裸数值——这是 2026-08 前端审计后的收敛约定（详见仓库根 DESIGN.md）。
+ *
+ * 示例：
+ *   padding: var(--sp-2) var(--sp-4);   (8px 16px)
+ *   font-size: var(--fs-sub);           (副文案字号)
+ *   gap: var(--sp-3);
+ */
+
+:root {
+  /* 间距尺度：4px 基，仅允许取表内档位 */
+  --sp-0: 0px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* 字号尺度：正文最小 16px（可读底线），辅助文字 12-14px 只作短注不做长文 */
+  --fs-display: 2.15rem;
+  --fs-h2: 1.18rem;
+  --fs-body: 1rem;
+  --fs-sub: 0.86rem;
+  --fs-note: 0.78rem;
+
+  /* 行高 */
+  --lh-tight: 1.35;
+  --lh-body: 1.7;
+  --lh-loose: 1.8;
+
+  /* 圆角 */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+}

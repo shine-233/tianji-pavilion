@@ -4,6 +4,7 @@ import { Lunar } from 'lunar-javascript'
 import { chartText, fromNumbers, timeChart, TRIG_SYMBOL, TRIG_DESC, TRIG_WUXING, type MeihuaChart } from '../lib/meihua'
 import { addRecord } from '../lib/records'
 import { sfx } from '../lib/sfx'
+import SectionCard from '../components/SectionCard.vue'
 
 const mode = ref<'time' | 'number'>('time')
 const numA = ref('')
@@ -72,7 +73,7 @@ function reroll(): void {
       <br />顺手一提：<a href="#/memory">卦象记忆</a>能帮你把八卦长相记熟，<a href="#/shuzi">数字能量</a>是同款算法拿手机号来玩。
     </p>
 
-    <section v-reveal="0" class="card">
+    <SectionCard>
       <div class="tabs">
         <button :class="{ active: mode === 'time' }" @click="mode = 'time'; sfx.blip()">⏱ 以当下时辰起卦</button>
         <button :class="{ active: mode === 'number' }" @click="mode = 'number'; sfx.blip()">🔢 以两数起卦</button>
@@ -95,10 +96,10 @@ function reroll(): void {
       </div>
 
       <button class="go-btn" :disabled="!chart" @click="reroll">☰ 起一卦看看</button>
-    </section>
+    </SectionCard>
 
     <template v-if="revealed && chart">
-      <section class="card result">
+      <SectionCard class="result">
         <div class="trig-row">
           <div class="trig upper" :style="{ '--i': 0 }">
             <span class="sym">{{ TRIG_SYMBOL[chart.upperName] }}</span>
@@ -129,7 +130,7 @@ function reroll(): void {
           <span class="tag teal">互卦 {{ chart.huUpper }}{{ chart.huLower }}</span>
           <span class="tag gold">变卦 {{ chart.changedUpper }}{{ chart.changedLower }}</span>
         </div>
-      </section>
+      </SectionCard>
     </template>
   </main>
 </template>

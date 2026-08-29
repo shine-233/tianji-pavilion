@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { Solar } from 'lunar-javascript'
 import { xunKong } from '../lib/liuyaoExtra'
 import { sfx } from '../lib/sfx'
+import SectionCard from '../components/SectionCard.vue'
 
 const GAN = '甲乙丙丁戊己庚辛壬癸'
 const ZHI = '子丑寅卯辰巳午未申酉戌亥'
@@ -197,18 +198,26 @@ const ysVerdict = computed(() => {
 
 <template>
   <main class="page">
-    <div class="card" v-reveal>
-      <h2>奇门遁甲 · 入门盘</h2>
+    <SectionCard title="奇门遁甲 · 入门盘">
       <p class="sub">
         以当前时辰起局：<b class="gold-t">定阴阳遁、取局数、布地盘三奇六仪</b>，
         再转动天盘，安上九星八门与八神，标出旬空、驿马，顺手点几处显性格局。
         时干逢甲的时辰会自动改用旬首遁干定直符——排错一宫，全盘皆废，所以这里每步都按古法来。
       </p>
       <button @click="calc()">☯ 以当前时辰起局</button>
-    </div>
+    </SectionCard>
+
+    <SectionCard v-if="!pan" title="起局之后，这里会出现什么" :delay="60" class="empty-hint">
+      <ul class="hint-list">
+        <li><b class="gold-t">阴阳遁与局数</b> —— 按节气与日辰定三元，符头标明出处</li>
+        <li><b class="gold-t">地盘九宫</b> —— 三奇六仪各归其宫，旬空、驿马一眼可见</li>
+        <li><b class="gold-t">天盘九星八门八神</b> —— 转盘安星，点宫位看含义</li>
+      </ul>
+      <p class="sub">全程只用当前时辰，不需要填任何资料。想先看别的？<a href="#/liuyao">去摇一卦</a> 或 <a href="#/ziwei">排张紫微盘</a>。</p>
+    </SectionCard>
 
     <template v-if="pan">
-      <div class="card" v-reveal="60">
+      <SectionCard :delay="60">
         <div class="head-row">
           <span class="tag gold">{{ pan.yangDun ? '阳遁' : '阴遁' }}{{ pan.ju }}局</span>
           <span class="tag">{{ pan.yuan }}</span>
@@ -218,9 +227,9 @@ const ysVerdict = computed(() => {
         <p class="sub" style="margin-top: 8px">
           今日 {{ pan.dayGZ }} · 此时 {{ pan.timeGZ }} · 旬空 <b>{{ pan.kong }}</b> · 驿马在 <b>{{ pan.ma }}</b>
         </p>
-      </div>
+      </SectionCard>
 
-      <div class="card" v-reveal="120">
+      <SectionCard title="地盘九宫 · 三奇六仪" :delay="120">
         <h2>地盘九宫 · 三奇六仪</h2>
         <div class="palaces">
           <div v-for="(row, ri) in GRID" :key="row.join()" class="prow">
@@ -253,10 +262,9 @@ const ysVerdict = computed(() => {
           {{ pan.yangDun ? '阳遁顺布六仪，阴遁逆布' : '' }}戊己庚辛壬癸为六仪，乙丙丁为三奇；
           中五宫寄坤二宫。
         </p>
-      </div>
+      </SectionCard>
 
-      <div class="card" v-reveal="180">
-        <h2>格局提示</h2>
+      <SectionCard title="格局提示" :delay="180">
         <p v-for="(gj, gi) in pan.geju" :key="gi" class="note gj-line">{{ gj }}</p>
         <p v-if="!pan.geju.length" class="note">未见伏吟、反吟、击刑、门迫，盘面平和。</p>
         <div style="margin-top: 14px">
@@ -270,7 +278,7 @@ const ysVerdict = computed(() => {
           值符星：{{ pan.zhiFuXing }} · 值使门：{{ pan.zhiShiMen }}。格局仅列最显性的四类，
           三奇得使、玉女守门等吉格需结合用神宫细断。
         </p>
-      </div>
+      </SectionCard>
     </template>
   </main>
 </template>

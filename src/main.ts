@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import '@fontsource/zcool-kuaile'
 import './styles/global.css'
+import './styles/tokens.css'
 import App from './App.vue'
 import router from './router'
 import { vReveal } from './lib/reveal'

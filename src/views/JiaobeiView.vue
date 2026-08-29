@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { sfx } from '../lib/sfx'
 import { addRecord } from '../lib/records'
+import SectionCard from '../components/SectionCard.vue'
 
 type Face = 'yang' | 'yin'
 interface Toss { a: Face; b: Face; ok: boolean }
@@ -75,8 +76,7 @@ async function castThree(): Promise<void> {
 
 <template>
   <main class="page">
-    <div class="card" v-reveal>
-      <h2>杯筊问事 · 一问一掷见分晓</h2>
+    <SectionCard title="杯筊问事 · 一问一掷见分晓">
       <p class="sub">
         两片半月木筊掷在地上：一片平一面凸即是<b class="gold-t">圣杯</b>（应允），
         两片皆凸是<b>阴杯</b>（不宜），两片皆平是<b>笑杯</b>（一笑置之，再问问看）。
@@ -88,22 +88,26 @@ async function castThree(): Promise<void> {
         <button :disabled="tossing" @click="cast()">🥢 掷一次</button>
         <button class="ghost" :disabled="tossing" @click="castThree()">连掷三次定乾坤</button>
       </div>
-    </div>
+    </SectionCard>
 
-    <div class="card center-card" v-reveal="80">
+    <SectionCard class="center-card" :delay="80">
       <div class="blocks" :class="{ spin: spinning }">
         <div v-for="s in ['a', 'b'] as const" :key="s" class="jiao" :class="[current ? current[s] : 'yang', `pos-${s}`]"></div>
       </div>
       <transition name="pop">
         <p v-if="current && !spinning" class="res-line">{{ judge(current) }}</p>
       </transition>
+      <p v-if="!current" class="note" style="margin-top: 10px">
+        筊已备好，还没掷。心里默念所问之事，点上面「掷一次」——
+        <a href="#/daily">拿不定先抽支签</a> 也行。
+      </p>
       <div v-if="history.length" class="beads">
         <span v-for="(ok, i) in history" :key="i" class="bead" :class="{ ok }">{{ ok ? '圣' : '×' }}</span>
       </div>
       <transition name="pop">
         <p v-if="verdict" class="verdict">{{ verdict }}</p>
       </transition>
-    </div>
+    </SectionCard>
   </main>
 </template>
 
